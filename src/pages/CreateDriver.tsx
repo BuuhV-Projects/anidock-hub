@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,8 @@ import { crawlWithDriver } from '@/lib/crawler';
 import { saveLocalDriver, type Driver } from '@/lib/localStorage';
 
 const CreateDriver = () => {
+  const [searchParams] = useSearchParams();
+  const existingDriverId = searchParams.get('driver');
   const [url, setUrl] = useState('');
   const [isPublic, setIsPublic] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -22,8 +24,48 @@ const CreateDriver = () => {
   const [indexStatus, setIndexStatus] = useState('');
   const [generatedDriver, setGeneratedDriver] = useState<any>(null);
   const [totalAnimes, setTotalAnimes] = useState(0);
+  const [existingDriver, setExistingDriver] = useState<any>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  useEffect(() => {
+    if (existingDriverId && user) {
+      loadExistingDriver();
+    }
+  }, [existingDriverId, user]);
+
+  const loadExistingDriver = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('drivers')
+        .select('*')
+        .eq('public_id', existingDriverId)
+        .eq('user_id', user?.id)
+        .single();
+
+      if (error) throw error;
+
+      setExistingDriver(data);
+      setUrl(data.source_url || '');
+      setIsPublic(data.is_public || false);
+      setGeneratedDriver(data);
+    } catch (error: any) {
+      console.error('Error loading driver:', error);
+      toast.error('Erro ao carregar driver');
+    }
+  };
+
+  const handleReindex = async () => {
+    if (!existingDriver) return;
+
+    if (!existingDriver.source_url) {
+      toast.error('Este driver não tem uma URL configurada');
+      return;
+    }
+
+    setIsIndexing(true);
+    await generateIndexFromDriver(existingDriver);
+  };
 
   const handleGenerate = async () => {
     if (!url.trim()) {
@@ -87,16 +129,19 @@ const CreateDriver = () => {
     setIndexProgress(0);
     setIndexStatus('Iniciando indexação...');
 
+    // Usar a source_url do driver se estiver re-indexando
+    const sourceUrl = driver.source_url || url;
+
     try {
       setIndexStatus('Acessando site...');
       
       // Normalizar config do driver para o crawler
-      const baseUrl = (driver.config as any)?.baseUrl || new URL(url).origin;
+      const baseUrl = (driver.config as any)?.baseUrl || new URL(sourceUrl).origin;
       const selectors = (driver.config as any)?.selectors || driver.config;
 
       // Crawl website
       const crawlResult = await crawlWithDriver(
-        url,
+        sourceUrl,
         {
           id: driver.public_id,
           name: driver.name,
@@ -155,9 +200,15 @@ const CreateDriver = () => {
       setTotalAnimes(hasAnimes ? crawlResult.animes.length : 0);
       
       if (hasAnimes) {
-        toast.success(`Driver criado e ${crawlResult.animes.length} animes indexados!`);
+        toast.success(existingDriver 
+          ? `Driver re-indexado! ${crawlResult.animes.length} animes encontrados.`
+          : `Driver criado e ${crawlResult.animes.length} animes indexados!`
+        );
       } else {
-        toast.warning('Driver criado, mas nenhum anime foi encontrado. Verifique os seletores ou tente outro site.');
+        toast.warning(existingDriver
+          ? 'Re-indexação concluída, mas nenhum anime foi encontrado. Verifique os seletores.'
+          : 'Driver criado, mas nenhum anime foi encontrado. Verifique os seletores ou tente outro site.'
+        );
       }
 
       // Redirecionar para a tela de drivers após 2 segundos
@@ -206,7 +257,7 @@ const CreateDriver = () => {
               </Button>
               <Sparkles className="h-8 w-8 text-primary animate-pulse-glow" />
               <h1 className="font-display text-2xl font-bold text-gradient-primary">
-                Criar Driver com IA
+                {existingDriver ? 'Re-indexar Driver com IA' : 'Criar Driver com IA'}
               </h1>
             </div>
           </div>
@@ -217,16 +268,25 @@ const CreateDriver = () => {
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8 text-center">
           <h2 className="text-3xl font-display font-bold mb-3">
-            Gere um Driver Automaticamente
+            {existingDriver ? 'Re-indexar Driver' : 'Gere um Driver Automaticamente'}
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Cole a URL de um site de anime e nossa IA irá analisar a estrutura 
-            e criar um driver personalizado para você.
+            {existingDriver 
+              ? 'A IA irá analisar novamente o site usando a configuração já existente do driver.'
+              : 'Cole a URL de um site de anime e nossa IA irá analisar a estrutura e criar um driver personalizado para você.'
+            }
           </p>
         </div>
 
         <Card className="glass p-8 border-border/50 mb-6">
           <div className="space-y-6">
+            {existingDriver && (
+              <div className="bg-muted/30 p-4 rounded-lg border border-border/50">
+                <p className="text-sm font-medium mb-1">Driver: {existingDriver.name}</p>
+                <p className="text-xs text-muted-foreground">Domínio: {existingDriver.domain}</p>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium mb-2">
                 URL do Site de Anime
@@ -237,10 +297,13 @@ const CreateDriver = () => {
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://exemplo-anime.com/lista"
                 className="bg-input border-border"
-                disabled={isGenerating || isIndexing}
+                disabled={isGenerating || isIndexing || !!existingDriver}
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Cole a URL da página que lista os animes
+                {existingDriver 
+                  ? 'URL configurada no driver'
+                  : 'Cole a URL da página que lista os animes'
+                }
               </p>
             </div>
 
@@ -266,7 +329,7 @@ const CreateDriver = () => {
                 id="public-toggle"
                 checked={isPublic}
                 onCheckedChange={setIsPublic}
-                disabled={isGenerating || isIndexing}
+                disabled={isGenerating || isIndexing || !!existingDriver}
               />
             </div>
 
@@ -281,25 +344,25 @@ const CreateDriver = () => {
             )}
 
             <Button
-              onClick={handleGenerate}
-              disabled={isGenerating || isIndexing || !url.trim()}
+              onClick={existingDriver ? handleReindex : handleGenerate}
+              disabled={isGenerating || isIndexing || (!existingDriver && !url.trim())}
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90 glow-cyan"
               size="lg"
             >
               {isGenerating ? (
                 <>
-                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  Analisando site...
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                  Gerando Driver...
                 </>
               ) : isIndexing ? (
                 <>
-                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  Indexando animes...
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                  Indexando...
                 </>
               ) : (
                 <>
                   <Sparkles className="h-5 w-5 mr-2" />
-                  Gerar Driver e Indexar
+                  {existingDriver ? 'Re-indexar com IA' : 'Gerar Driver'}
                 </>
               )}
             </Button>
