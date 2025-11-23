@@ -43,22 +43,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signUp = async (nickname: string, email: string, password: string) => {
+    // First create the auth user without email confirmation
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           nickname: nickname
-        }
+        },
+        emailRedirectTo: undefined // Disable Supabase emails
       }
     });
     
     if (error) {
       toast.error(error.message);
       return { error, email: null };
-    } else {
+    }
+
+    // Send custom verification code via Resend
+    try {
+      const { data: codeData, error: codeError } = await supabase.functions.invoke('send-verification-code', {
+        body: { email }
+      });
+
+      if (codeError) {
+        console.error('Error sending verification code:', codeError);
+        toast.error('Conta criada, mas houve erro ao enviar o código.');
+        return { error: codeError, email: null };
+      }
+
       toast.success('Código de verificação enviado para seu email!');
       return { error: null, email };
+    } catch (emailError: any) {
+      console.error('Error sending verification code:', emailError);
+      toast.error('Erro ao enviar código de verificação');
+      return { error: emailError, email: null };
     }
   };
 

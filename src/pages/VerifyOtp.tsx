@@ -37,37 +37,48 @@ const VerifyOtp = () => {
 
     setIsLoading(true);
     
-    const { error } = await supabase.auth.verifyOtp({
-      email: email!,
-      token: otp,
-      type: 'signup'
-    });
-    
-    setIsLoading(false);
-    
-    if (error) {
-      toast.error('Código inválido ou expirado');
-    } else {
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-code', {
+        body: { email: email!, code: otp }
+      });
+
+      if (error || !data?.success) {
+        throw new Error(data?.error || 'Código inválido ou expirado');
+      }
+
       toast.success('Conta verificada com sucesso!');
+      
+      // Refresh session to get the updated user
+      await supabase.auth.refreshSession();
+      
       navigate('/');
+    } catch (error: any) {
+      console.error('Error verifying code:', error);
+      toast.error(error.message || 'Código inválido ou expirado');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleResendCode = async () => {
     setIsResending(true);
     
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email: email!,
-    });
-    
-    setIsResending(false);
-    
-    if (error) {
-      toast.error('Erro ao reenviar código');
-    } else {
+    try {
+      const { data, error } = await supabase.functions.invoke('send-verification-code', {
+        body: { email: email! }
+      });
+
+      if (error || !data?.success) {
+        throw new Error(data?.error || 'Erro ao reenviar código');
+      }
+
       toast.success('Novo código enviado para seu email!');
       setOtp('');
+    } catch (error: any) {
+      console.error('Error resending code:', error);
+      toast.error(error.message || 'Erro ao reenviar código');
+    } finally {
+      setIsResending(false);
     }
   };
 
