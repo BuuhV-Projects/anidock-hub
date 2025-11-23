@@ -224,14 +224,15 @@ Retorne APENAS o JSON, sem explicações.`
       );
     }
 
-    // Extract domain from URL
+    // Extract domain from URL (use catalog_url if provided)
+    const targetUrlObj = new URL(catalog_url || url);
     const urlObj = new URL(url);
     const domain = urlObj.hostname;
 
     // Normalize driver config to match crawler expectations
     const rawSelectors = (driverConfig as any).selectors || driverConfig;
     const normalizedConfig = {
-      baseUrl: urlObj.origin,
+      baseUrl: targetUrlObj.origin,
       selectors: {
         animeList: rawSelectors.animeList,
         animeTitle: rawSelectors.animeTitle,
@@ -247,6 +248,7 @@ Retorne APENAS o JSON, sem explicações.`
     };
 
     // Save driver to database using admin client
+    // Use catalog_url as source_url if provided, otherwise use main url
     const { data: driver, error: insertError } = await supabaseAdmin
       .from('drivers')
       .insert({
@@ -255,7 +257,7 @@ Retorne APENAS o JSON, sem explicações.`
         config: normalizedConfig,
         user_id: user.id,
         is_public: is_public,
-        source_url: url,
+        source_url: catalog_url || url,
       })
       .select()
       .single();
