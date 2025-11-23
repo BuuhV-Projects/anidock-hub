@@ -40,6 +40,7 @@ const CreateDriver = () => {
 
     setIsGenerating(true);
     setGeneratedDriver(null);
+    let createdDriver: any = null;
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-driver', {
@@ -54,14 +55,28 @@ const CreateDriver = () => {
       }
 
       if (data?.success) {
+        createdDriver = data.driver;
         setGeneratedDriver(data.driver);
-        toast.success(data.message || 'Driver criado com sucesso!');
         
         // Automaticamente gerar indexação
         await generateIndexFromDriver(data.driver);
       }
     } catch (error: any) {
       console.error('Erro ao gerar driver:', error);
+      
+      // Se criou o driver mas falhou, deletar o driver
+      if (createdDriver) {
+        try {
+          await supabase
+            .from('drivers')
+            .delete()
+            .eq('id', createdDriver.id);
+          console.log('Driver deletado após falha na indexação');
+        } catch (deleteError) {
+          console.error('Erro ao deletar driver:', deleteError);
+        }
+      }
+      
       toast.error('Erro ao gerar driver. Tente novamente.');
     } finally {
       setIsGenerating(false);
@@ -94,6 +109,11 @@ const CreateDriver = () => {
           setIndexProgress(20 + (progressVal * 60));
         }
       );
+
+      // Se não indexou nenhum anime, falhar
+      if (!crawlResult.animes || crawlResult.animes.length === 0) {
+        throw new Error('Nenhum anime encontrado. O driver pode não estar configurado corretamente.');
+      }
 
       setIndexProgress(85);
       setIndexStatus('Criando indexação...');
@@ -140,10 +160,27 @@ const CreateDriver = () => {
       setIndexProgress(100);
       setIndexStatus('Indexação concluída!');
       setGeneratedIndex(indexData);
-      toast.success(`${crawlResult.animes.length} animes indexados automaticamente!`);
+      toast.success(`Driver criado e ${crawlResult.animes.length} animes indexados!`);
     } catch (err: any) {
       console.error('Error generating index:', err);
-      toast.error('Erro ao gerar indexação: ' + (err.message || 'Erro desconhecido'));
+      
+      // Se falhou a indexação, deletar o driver criado
+      if (driver && user) {
+        try {
+          await supabase
+            .from('drivers')
+            .delete()
+            .eq('id', driver.id);
+          console.log('Driver deletado após falha na indexação');
+        } catch (deleteError) {
+          console.error('Erro ao deletar driver:', deleteError);
+        }
+      }
+      
+      // Limpar estado
+      setGeneratedDriver(null);
+      
+      throw err; // Re-throw para ser capturado no handleGenerate
     } finally {
       setIsIndexing(false);
     }
