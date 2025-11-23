@@ -1,0 +1,238 @@
+// Local storage utilities for offline-first functionality
+
+export interface Driver {
+  id: string;
+  name: string;
+  domain: string;
+  version: string;
+  author?: string;
+  config: {
+    selectors: {
+      animeList?: string;
+      animeTitle: string;
+      animeImage?: string;
+      animeSynopsis?: string;
+      animeUrl: string;
+      episodeList: string;
+      episodeNumber: string;
+      episodeTitle?: string;
+      episodeUrl: string;
+      videoPlayer?: string;
+    };
+    pagination?: {
+      nextButton?: string;
+      pageParam?: string;
+    };
+    baseUrl: string;
+  };
+  isLocal: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LocalAnime {
+  id: string;
+  driverId: string;
+  title: string;
+  alternativeTitles?: string[];
+  synopsis?: string;
+  coverUrl?: string;
+  sourceUrl: string;
+  metadata?: Record<string, any>;
+  episodes: LocalEpisode[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LocalEpisode {
+  id: string;
+  episodeNumber: number;
+  title?: string;
+  sourceUrl: string;
+  thumbnailUrl?: string;
+  watched?: boolean;
+  watchedAt?: string;
+}
+
+const DRIVERS_KEY = 'anidock_drivers';
+const ANIMES_KEY = 'anidock_animes';
+const SETTINGS_KEY = 'anidock_settings';
+
+// Drivers Management
+export const getLocalDrivers = (): Driver[] => {
+  try {
+    const data = localStorage.getItem(DRIVERS_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error('Error loading drivers:', error);
+    return [];
+  }
+};
+
+export const saveLocalDriver = (driver: Driver): void => {
+  try {
+    const drivers = getLocalDrivers();
+    const existingIndex = drivers.findIndex(d => d.id === driver.id);
+    
+    if (existingIndex >= 0) {
+      drivers[existingIndex] = { ...driver, updatedAt: new Date().toISOString() };
+    } else {
+      drivers.push({ ...driver, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    }
+    
+    localStorage.setItem(DRIVERS_KEY, JSON.stringify(drivers));
+  } catch (error) {
+    console.error('Error saving driver:', error);
+    throw error;
+  }
+};
+
+export const deleteLocalDriver = (driverId: string): void => {
+  try {
+    const drivers = getLocalDrivers().filter(d => d.id !== driverId);
+    localStorage.setItem(DRIVERS_KEY, JSON.stringify(drivers));
+    
+    // Also delete related animes
+    const animes = getLocalAnimes().filter(a => a.driverId !== driverId);
+    localStorage.setItem(ANIMES_KEY, JSON.stringify(animes));
+  } catch (error) {
+    console.error('Error deleting driver:', error);
+    throw error;
+  }
+};
+
+export const getLocalDriver = (driverId: string): Driver | null => {
+  const drivers = getLocalDrivers();
+  return drivers.find(d => d.id === driverId) || null;
+};
+
+// Animes Management
+export const getLocalAnimes = (): LocalAnime[] => {
+  try {
+    const data = localStorage.getItem(ANIMES_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error('Error loading animes:', error);
+    return [];
+  }
+};
+
+export const saveLocalAnime = (anime: LocalAnime): void => {
+  try {
+    const animes = getLocalAnimes();
+    const existingIndex = animes.findIndex(a => a.id === anime.id);
+    
+    if (existingIndex >= 0) {
+      animes[existingIndex] = { ...anime, updatedAt: new Date().toISOString() };
+    } else {
+      animes.push({ ...anime, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    }
+    
+    localStorage.setItem(ANIMES_KEY, JSON.stringify(animes));
+  } catch (error) {
+    console.error('Error saving anime:', error);
+    throw error;
+  }
+};
+
+export const deleteLocalAnime = (animeId: string): void => {
+  try {
+    const animes = getLocalAnimes().filter(a => a.id !== animeId);
+    localStorage.setItem(ANIMES_KEY, JSON.stringify(animes));
+  } catch (error) {
+    console.error('Error deleting anime:', error);
+    throw error;
+  }
+};
+
+export const getLocalAnime = (animeId: string): LocalAnime | null => {
+  const animes = getLocalAnimes();
+  return animes.find(a => a.id === animeId) || null;
+};
+
+export const getAnimesByDriver = (driverId: string): LocalAnime[] => {
+  return getLocalAnimes().filter(a => a.driverId === driverId);
+};
+
+// Episode Management
+export const markEpisodeWatched = (animeId: string, episodeId: string): void => {
+  try {
+    const animes = getLocalAnimes();
+    const anime = animes.find(a => a.id === animeId);
+    
+    if (anime) {
+      const episode = anime.episodes.find(e => e.id === episodeId);
+      if (episode) {
+        episode.watched = true;
+        episode.watchedAt = new Date().toISOString();
+        anime.updatedAt = new Date().toISOString();
+        localStorage.setItem(ANIMES_KEY, JSON.stringify(animes));
+      }
+    }
+  } catch (error) {
+    console.error('Error marking episode as watched:', error);
+  }
+};
+
+// Settings Management
+export const getSettings = (): Record<string, any> => {
+  try {
+    const data = localStorage.getItem(SETTINGS_KEY);
+    return data ? JSON.parse(data) : {};
+  } catch (error) {
+    console.error('Error loading settings:', error);
+    return {};
+  }
+};
+
+export const saveSetting = (key: string, value: any): void => {
+  try {
+    const settings = getSettings();
+    settings[key] = value;
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  } catch (error) {
+    console.error('Error saving setting:', error);
+  }
+};
+
+// Import/Export
+export const exportDriver = (driverId: string): string => {
+  const driver = getLocalDriver(driverId);
+  if (!driver) throw new Error('Driver not found');
+  return JSON.stringify(driver, null, 2);
+};
+
+export const importDriver = (driverJson: string): Driver => {
+  try {
+    const driver = JSON.parse(driverJson) as Driver;
+    
+    // Validate driver structure
+    if (!driver.name || !driver.domain || !driver.config) {
+      throw new Error('Invalid driver structure');
+    }
+    
+    // Generate new ID if importing
+    const newDriver: Driver = {
+      ...driver,
+      id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      isLocal: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    saveLocalDriver(newDriver);
+    return newDriver;
+  } catch (error) {
+    console.error('Error importing driver:', error);
+    throw new Error('Invalid driver file');
+  }
+};
+
+// Clear all local data
+export const clearAllLocalData = (): void => {
+  if (confirm('Tem certeza que deseja limpar todos os dados locais? Esta ação não pode ser desfeita.')) {
+    localStorage.removeItem(DRIVERS_KEY);
+    localStorage.removeItem(ANIMES_KEY);
+    localStorage.removeItem(SETTINGS_KEY);
+  }
+};
