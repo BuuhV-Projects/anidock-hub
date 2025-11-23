@@ -77,12 +77,12 @@ const parseWithDriver = (html: string, driver: Driver): { animes: any[], errors:
         // If animeUrl is empty/falsy, the animeList selector itself points to the link
         if (!selectors.animeUrl || selectors.animeUrl === '') {
           const linkElement = element as HTMLAnchorElement;
-          sourceUrl = linkElement.href || linkElement.getAttribute('href') || '';
+          sourceUrl = linkElement.getAttribute('href') || '';
           console.log(`🔗 Anime ${index + 1} - Using animeList as link: ${sourceUrl}`);
         } else {
-          // animeUrl is relative to animeList container
+          // animeUrl is relative to animeList container - ALWAYS use getAttribute
           const urlEl = element.querySelector(selectors.animeUrl) as HTMLAnchorElement;
-          sourceUrl = urlEl?.href || urlEl?.getAttribute('href') || '';
+          sourceUrl = urlEl?.getAttribute('href') || '';
           console.log(`🔗 Anime ${index + 1} - Found link with selector "${selectors.animeUrl}": ${sourceUrl}`);
         }
         
@@ -209,10 +209,11 @@ export const crawlEpisodes = async (
         const numberText = numberEl?.textContent?.trim();
         const episodeNumber = numberText ? parseInt(numberText.replace(/\D/g, '')) : index + 1;
         
-        // Extract episode URL
+        // Extract episode URL - ALWAYS use getAttribute to get the raw href
         const urlEl = element.querySelector(selectors.episodeUrl) as HTMLAnchorElement;
-        let sourceUrl = urlEl?.href || urlEl?.getAttribute('href') || '';
+        let sourceUrl = urlEl?.getAttribute('href') || '';
         
+        // Make URL absolute if relative
         if (sourceUrl && !sourceUrl.startsWith('http')) {
           sourceUrl = new URL(sourceUrl, driver.config.baseUrl).href;
         }
