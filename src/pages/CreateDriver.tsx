@@ -48,6 +48,7 @@ const CreateDriver = () => {
 
       setExistingDriver(data);
       setUrl(data.source_url || '');
+      setCatalogUrl(data.catalog_url || '');
       setIsPublic(data.is_public || false);
       setGeneratedDriver(data);
     } catch (error: any) {
@@ -147,8 +148,8 @@ const CreateDriver = () => {
     setIndexProgress(0);
     setIndexStatus('Iniciando indexação...');
 
-    // Usar a source_url do driver se estiver re-indexando
-    const sourceUrl = driver.source_url || url;
+    // Usar a catalog_url do driver se existir, caso contrário usar source_url
+    const sourceUrl = driver.catalog_url || driver.source_url || url;
 
     try {
       setIndexStatus('Acessando site...');

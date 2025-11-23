@@ -48,6 +48,7 @@ interface Driver {
   created_at: string;
   indexed_data?: any[];
   source_url?: string;
+  catalog_url?: string;
   total_animes?: number;
   last_indexed_at?: string;
 }

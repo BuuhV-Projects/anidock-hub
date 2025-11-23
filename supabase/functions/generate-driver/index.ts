@@ -486,7 +486,8 @@ IMPORTANTE:
         config: normalizedConfig,
         user_id: user.id,
         is_public: is_public,
-        source_url: catalog_url || url,
+        source_url: url,
+        catalog_url: catalog_url || null,
       })
       .select()
       .single();
