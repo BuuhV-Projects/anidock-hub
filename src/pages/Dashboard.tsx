@@ -23,28 +23,19 @@ const Dashboard = () => {
 
     const fetchStats = async () => {
       try {
-        // Fetch drivers count
-        const { count: dCount, error: dError } = await supabase
+        // Fetch drivers count and total animes
+        const { data: driversData, error: dError } = await supabase
           .from('drivers')
-          .select('*', { count: 'exact', head: true })
+          .select('total_animes')
           .eq('user_id', user.id);
 
         if (dError) {
           console.error('Error fetching drivers:', dError);
         } else {
-          setDriversCount(dCount || 0);
-        }
-
-        // Fetch animes count
-        const { count: aCount, error: aError } = await supabase
-          .from('animes')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
-
-        if (aError) {
-          console.error('Error fetching animes:', aError);
-        } else {
-          setAnimesCount(aCount || 0);
+          setDriversCount(driversData?.length || 0);
+          // Sum total_animes from all drivers
+          const totalAnimes = driversData?.reduce((sum, driver) => sum + (driver.total_animes || 0), 0) || 0;
+          setAnimesCount(totalAnimes);
         }
 
         // Fetch user role
