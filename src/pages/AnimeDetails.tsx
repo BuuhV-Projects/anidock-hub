@@ -284,6 +284,7 @@ const AnimeDetails = () => {
                 <img
                   src={anime.coverUrl}
                   alt={anime.title}
+                  referrerPolicy="no-referrer"
                   className="w-full rounded-lg shadow-lg"
                 />
               ) : (

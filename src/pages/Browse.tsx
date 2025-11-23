@@ -225,6 +225,7 @@ const Browse = () => {
                       <img
                         src={anime.coverUrl}
                         alt={anime.title}
+                        referrerPolicy="no-referrer"
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
                     ) : (
