@@ -11,19 +11,19 @@ serve(async (req) => {
   }
 
   try {
-    const { url, driver } = await req.json();
+    const { episode_url, external_link_selector } = await req.json();
 
-    if (!url || !driver) {
+    if (!episode_url) {
       return new Response(
-        JSON.stringify({ error: 'URL e driver são obrigatórios' }),
+        JSON.stringify({ error: 'URL do episódio é obrigatória' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Fetching HTML from:', url);
+    console.log('Fetching HTML from:', episode_url);
 
     // Fetch HTML content
-    const htmlResponse = await fetch(url, {
+    const htmlResponse = await fetch(episode_url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -38,25 +38,16 @@ serve(async (req) => {
     const html = await htmlResponse.text();
 
     // Prepare AI prompt
-    const prompt = `Analise o HTML abaixo e extraia as seguintes informações de um episódio/vídeo de anime:
+    const prompt = `Analise o HTML abaixo e extraia o link/URL do vídeo externo.
 
-1. Número do episódio
-2. Título do episódio (se disponível)
-3. Imagem/thumbnail (URL)
-4. Seletor CSS do player de vídeo (pode ser iframe, video, ou div com player)
-
-Driver Context (seletores já conhecidos):
-${JSON.stringify(driver.config.selectors, null, 2)}
+${external_link_selector ? `Use este seletor CSS como referência: ${external_link_selector}` : 'Procure por links que redirecionam para players externos, iframes, ou URLs de vídeo.'}
 
 HTML da página:
 ${html.substring(0, 50000)}
 
 Retorne APENAS um JSON válido no seguinte formato:
 {
-  "episodeNumber": número,
-  "title": "título" ou null,
-  "thumbnailUrl": "url" ou null,
-  "videoPlayerSelector": "seletor CSS do player"
+  "videoUrl": "url_completa_do_video"
 }`;
 
     console.log('Calling AI to extract data...');
@@ -110,8 +101,12 @@ Retorne APENAS um JSON válido no seguinte formato:
       throw new Error('Resposta da IA não está em formato JSON válido');
     }
 
+    if (!extractedData.videoUrl) {
+      throw new Error('URL do vídeo não foi encontrada');
+    }
+
     return new Response(
-      JSON.stringify({ success: true, data: extractedData }),
+      JSON.stringify({ success: true, videoUrl: extractedData.videoUrl }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
