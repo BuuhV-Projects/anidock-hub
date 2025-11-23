@@ -27,6 +27,8 @@ interface EpisodeForm {
   title: string;
   thumbnailUrl: string;
   videoPlayerSelector: string;
+  hasEmbeddedPlayer: boolean | null;
+  externalLinkSelector: string;
   isExtracting: boolean;
 }
 
@@ -48,6 +50,8 @@ const IndexManual = () => {
     title: '',
     thumbnailUrl: '',
     videoPlayerSelector: '',
+    hasEmbeddedPlayer: null,
+    externalLinkSelector: '',
     isExtracting: false
   }]);
   const [isLoading, setIsLoading] = useState(true);
@@ -171,6 +175,8 @@ const IndexManual = () => {
       title: '',
       thumbnailUrl: '',
       videoPlayerSelector: '',
+      hasEmbeddedPlayer: null,
+      externalLinkSelector: '',
       isExtracting: false
     }]);
   };
@@ -200,7 +206,10 @@ const IndexManual = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke('extract-video-data', {
-        body: { url: episode.url, driver }
+        body: { 
+          episode_url: episode.url,
+          external_link_selector: driver?.config?.selectors?.externalLinkSelector
+        }
       });
 
       if (error) throw error;
@@ -216,13 +225,16 @@ const IndexManual = () => {
               episodeNumber: extracted.episodeNumber ?? e.episodeNumber,
               title: extracted.title || e.title,
               thumbnailUrl: extracted.thumbnailUrl || e.thumbnailUrl,
-              videoPlayerSelector: extracted.videoPlayerSelector || e.videoPlayerSelector,
+              videoPlayerSelector: extracted.videoSelector || e.videoPlayerSelector,
+              hasEmbeddedPlayer: extracted.hasEmbeddedPlayer,
+              externalLinkSelector: extracted.externalLinkSelector || e.externalLinkSelector,
               isExtracting: false
             } 
           : e
       ));
 
-      toast.success('Dados extraídos com sucesso!');
+      const playerType = extracted.hasEmbeddedPlayer ? 'Player Embarcado' : 'Link Externo';
+      toast.success(`Dados extraídos! Tipo: ${playerType}`);
     } catch (error: any) {
       console.error('Error extracting episode data:', error);
       toast.error('Erro ao extrair dados: ' + error.message);
@@ -604,21 +616,54 @@ const IndexManual = () => {
                       />
                     </div>
 
-                    <div>
-                      <Label htmlFor={`player-${episode.id}`}>
-                        Seletor CSS do Player de Vídeo <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id={`player-${episode.id}`}
-                        value={episode.videoPlayerSelector}
-                        onChange={(e) => updateEpisode(episode.id, 'videoPlayerSelector', e.target.value)}
-                        placeholder="iframe, .video-player, #player"
-                        className="bg-input border-border"
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Seletor CSS para encontrar o iframe/vídeo na página
-                      </p>
-                    </div>
+                    {episode.hasEmbeddedPlayer !== null && (
+                      <div className="p-3 rounded-lg border border-border bg-muted/20">
+                        <p className="text-sm font-medium mb-1">
+                          Tipo de Player Detectado:
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {episode.hasEmbeddedPlayer ? (
+                            <span className="text-green-500">✓ Player Embarcado (iframe/video)</span>
+                          ) : (
+                            <span className="text-blue-500">→ Link Externo</span>
+                          )}
+                        </p>
+                      </div>
+                    )}
+
+                    {episode.hasEmbeddedPlayer ? (
+                      <div>
+                        <Label htmlFor={`player-${episode.id}`}>
+                          Seletor CSS do Player de Vídeo
+                        </Label>
+                        <Input
+                          id={`player-${episode.id}`}
+                          value={episode.videoPlayerSelector}
+                          onChange={(e) => updateEpisode(episode.id, 'videoPlayerSelector', e.target.value)}
+                          placeholder="iframe, .video-player, #player"
+                          className="bg-input border-border"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Seletor CSS para encontrar o iframe/vídeo na página
+                        </p>
+                      </div>
+                    ) : episode.hasEmbeddedPlayer === false ? (
+                      <div>
+                        <Label htmlFor={`link-${episode.id}`}>
+                          Seletor CSS do Link Externo
+                        </Label>
+                        <Input
+                          id={`link-${episode.id}`}
+                          value={episode.externalLinkSelector}
+                          onChange={(e) => updateEpisode(episode.id, 'externalLinkSelector', e.target.value)}
+                          placeholder="a.external-link, .watch-button"
+                          className="bg-input border-border"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Seletor CSS para o link que leva ao vídeo externo
+                        </p>
+                      </div>
+                    ) : null}
                   </div>
                 </Card>
               ))}
