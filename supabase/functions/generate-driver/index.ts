@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { url } = await req.json();
+    const { url, is_public = false } = await req.json();
     
     if (!url) {
       return new Response(
@@ -208,7 +208,7 @@ IMPORTANTE:
         domain: driverConfig.domain || domain,
         config: driverConfig.selectors || driverConfig,
         user_id: user.id,
-        is_public: false,
+        is_public: is_public,
       })
       .select()
       .single();
