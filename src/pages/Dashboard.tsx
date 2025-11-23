@@ -1,18 +1,75 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Cpu, Plus, Database, Zap, LogOut } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [driversCount, setDriversCount] = useState(0);
+  const [animesCount, setAnimesCount] = useState(0);
+  const [userRole, setUserRole] = useState<string>('Free');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
       navigate('/auth');
+      return;
     }
+
+    const fetchStats = async () => {
+      try {
+        // Fetch drivers count
+        const { count: dCount, error: dError } = await supabase
+          .from('drivers')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        if (dError) {
+          console.error('Error fetching drivers:', dError);
+        } else {
+          setDriversCount(dCount || 0);
+        }
+
+        // Fetch animes count
+        const { count: aCount, error: aError } = await supabase
+          .from('animes')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        if (aError) {
+          console.error('Error fetching animes:', aError);
+        } else {
+          setAnimesCount(aCount || 0);
+        }
+
+        // Fetch user role
+        const { data: roleData, error: roleError } = await supabase
+          .rpc('get_user_role', { _user_id: user.id });
+
+        if (roleError) {
+          console.error('Error fetching role:', roleError);
+        } else {
+          const roleMap = {
+            free: 'Free',
+            premium: 'Premium',
+            premium_plus: 'Premium+'
+          };
+          setUserRole(roleMap[roleData as keyof typeof roleMap] || 'Free');
+        }
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+        toast.error('Erro ao carregar estatísticas');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStats();
   }, [user, navigate]);
 
   if (!user) {
@@ -80,7 +137,9 @@ const Dashboard = () => {
                 <Database className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-display font-bold">0</p>
+                <p className="text-2xl font-display font-bold">
+                  {isLoading ? '...' : driversCount}
+                </p>
                 <p className="text-sm text-muted-foreground">Drivers Ativos</p>
               </div>
             </div>
@@ -92,7 +151,9 @@ const Dashboard = () => {
                 <Zap className="h-6 w-6 text-secondary" />
               </div>
               <div>
-                <p className="text-2xl font-display font-bold">0</p>
+                <p className="text-2xl font-display font-bold">
+                  {isLoading ? '...' : animesCount}
+                </p>
                 <p className="text-sm text-muted-foreground">Animes Indexados</p>
               </div>
             </div>
@@ -104,7 +165,9 @@ const Dashboard = () => {
                 <Cpu className="h-6 w-6 text-accent" />
               </div>
               <div>
-                <p className="text-2xl font-display font-bold">Free</p>
+                <p className="text-2xl font-display font-bold">
+                  {isLoading ? '...' : userRole}
+                </p>
                 <p className="text-sm text-muted-foreground">Plano Atual</p>
               </div>
             </div>
