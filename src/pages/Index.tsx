@@ -145,7 +145,7 @@ const Index = () => {
                     <div>
                       <h4 className="font-semibold mb-1">Drivers Compartilháveis</h4>
                       <p className="text-sm text-muted-foreground">
-                        Comunidade pode criar e compartilhar drivers para novos sites
+                        Compartilhe drivers com amigos para que eles assistam localmente. Comunidade pode criar e trocar drivers para novos sites
                       </p>
                     </div>
                   </div>
