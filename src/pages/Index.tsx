@@ -99,7 +99,7 @@ const Index = () => {
               </div>
               <h3 className="font-display font-semibold text-lg mb-2">2. IA Analisa</h3>
               <p className="text-sm text-muted-foreground">
-                Nossa IA detecta padrões, aprende a estrutura e cria um driver personalizado.
+                Nossa IA analisa e cria um driver personalizado.
               </p>
             </Card>
 
