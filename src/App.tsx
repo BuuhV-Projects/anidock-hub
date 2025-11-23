@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Browse from "./pages/Browse";
+import ImportDriver from "./pages/ImportDriver";
 import VerifyOtp from "./pages/VerifyOtp";
 import ResetPassword from "./pages/ResetPassword";
 import UpdatePassword from "./pages/UpdatePassword";
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/browse" element={<Browse />} />
+            <Route path="/drivers/import" element={<ImportDriver />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
