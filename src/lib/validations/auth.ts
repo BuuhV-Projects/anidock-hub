@@ -19,7 +19,17 @@ export const signInSchema = z.object({
   password: passwordSchema
 });
 
+export const nicknameSchema = z
+  .string()
+  .trim()
+  .min(3, { message: "Nickname deve ter no mínimo 3 caracteres" })
+  .max(20, { message: "Nickname deve ter no máximo 20 caracteres" })
+  .regex(/^[a-zA-Z0-9_]+$/, { 
+    message: "Nickname deve conter apenas letras, números e underline" 
+  });
+
 export const signUpSchema = z.object({
+  nickname: nicknameSchema,
   email: emailSchema.shape.email,
   password: passwordSchema,
   confirmPassword: passwordSchema

@@ -11,6 +11,7 @@ import { signInSchema, signUpSchema } from '@/lib/validations/auth';
 import { toast } from 'sonner';
 
 const Auth = () => {
+  const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -50,7 +51,7 @@ const Auth = () => {
     
     // Validar inputs
     try {
-      signUpSchema.parse({ email, password, confirmPassword });
+      signUpSchema.parse({ nickname, email, password, confirmPassword });
     } catch (error: any) {
       const errorMessage = error.errors?.[0]?.message || 'Dados inválidos';
       toast.error(errorMessage);
@@ -58,7 +59,7 @@ const Auth = () => {
     }
 
     setIsLoading(true);
-    const { error } = await signUp(email, password);
+    const { error } = await signUp(nickname, email, password);
     setIsLoading(false);
     
     if (!error) {
@@ -150,6 +151,28 @@ const Auth = () => {
 
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-nickname" className="flex items-center gap-2">
+                    <Cpu className="h-4 w-4" />
+                    Nickname
+                  </Label>
+                  <Input
+                    id="signup-nickname"
+                    type="text"
+                    placeholder="seu_nickname"
+                    value={nickname}
+                    onChange={(e) => setNickname(e.target.value)}
+                    required
+                    minLength={3}
+                    maxLength={20}
+                    pattern="[a-zA-Z0-9_]+"
+                    className="bg-input border-border"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    3-20 caracteres: letras, números e underline
+                  </p>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="signup-email" className="flex items-center gap-2">
                     <Mail className="h-4 w-4" />
