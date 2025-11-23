@@ -21,6 +21,7 @@ serve(async (req) => {
     }
 
     console.log('Fetching HTML from:', episode_url);
+    console.log('External link selector:', external_link_selector);
 
     // Fetch HTML content
     const htmlResponse = await fetch(episode_url, {
@@ -36,138 +37,113 @@ serve(async (req) => {
     }
 
     const html = await htmlResponse.text();
+    console.log('HTML fetched, length:', html.length);
 
-    // If we received a selector from the driver, try to extrair o link diretamente
+    // Strategy 1: Use the provided selector directly
     if (external_link_selector) {
       try {
         const { DOMParser } = await import('https://deno.land/x/deno_dom/deno-dom-wasm.ts');
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 
-        const linkEl = doc.querySelector(external_link_selector) as any;
-        const href = linkEl?.getAttribute('href') || linkEl?.getAttribute('data-href') || '';
+        if (!doc) {
+          throw new Error('Failed to parse HTML');
+        }
 
-        if (href) {
-          const finalUrl = href.startsWith('http')
-            ? href
-            : new URL(href, episode_url).href;
+        console.log('Searching for selector:', external_link_selector);
+        const linkEl = doc.querySelector(external_link_selector);
+        
+        if (linkEl) {
+          const href = linkEl.getAttribute('href') || linkEl.getAttribute('data-href') || '';
+          console.log('Found link with selector:', href);
 
-          return new Response(
-            JSON.stringify({ success: true, videoUrl: finalUrl }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+          if (href) {
+            const finalUrl = href.startsWith('http')
+              ? href
+              : new URL(href, episode_url).href;
+
+            console.log('Final URL:', finalUrl);
+
+            return new Response(
+              JSON.stringify({ success: true, videoUrl: finalUrl }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+        } else {
+          console.log('No element found with selector:', external_link_selector);
         }
       } catch (e) {
-        console.error('Erro ao tentar extrair link direto com selector:', e);
-        // Se falhar, continuamos para a abordagem via IA abaixo
+        console.error('Error using selector:', e);
       }
     }
 
-    // Caso o seletor direto não funcione, usamos IA como fallback
-    const prompt = `Analise o HTML abaixo e determine o tipo de player de vídeo:
+    // Strategy 2: Try common selectors for external links
+    const commonSelectors = [
+      'a[href*="assistir"]',
+      'a[href*="watch"]',
+      'a.watch-button',
+      'a.btn-watch',
+      'a[target="_blank"]',
+      '.video-link a',
+      '.player-link a',
+    ];
 
-1. Se há um player EMBARCADO (iframe, video tag) na página
-2. Se há apenas um LINK EXTERNO que leva para outro site
-
-HTML da página:
-${html.substring(0, 50000)}
-
-Retorne APENAS um JSON válido no seguinte formato:
-{
-  "hasEmbeddedPlayer": boolean,
-  "videoSelector": "seletor CSS do player (iframe, video, etc)" ou null,
-  "externalLinkSelector": "seletor CSS do link externo" ou null,
-  "episodeNumber": número do episódio (se detectado) ou null,
-  "title": "título do episódio" ou null,
-  "thumbnailUrl": "url da thumbnail" ou null
-}`;
-
-    console.log('Calling AI to extract data...');
-
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY não configurada');
-    }
-
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          {
-            role: 'system',
-            content: 'Você é um especialista em extrair dados estruturados de HTML. Sempre retorne apenas JSON válido, sem explicações ou markdown.'
-          },
-          {
-            role: 'user',
-            content: prompt
+    for (const selector of commonSelectors) {
+      try {
+        const { DOMParser } = await import('https://deno.land/x/deno_dom/deno-dom-wasm.ts');
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        const linkEl = doc.querySelector(selector);
+        if (linkEl) {
+          const href = linkEl.getAttribute('href') || '';
+          if (href && (href.startsWith('http') || href.startsWith('/'))) {
+            const finalUrl = href.startsWith('http')
+              ? href
+              : new URL(href, episode_url).href;
+            
+            console.log('Found link with common selector', selector, ':', finalUrl);
+            
+            return new Response(
+              JSON.stringify({ success: true, videoUrl: finalUrl }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
           }
-        ],
-        temperature: 0.1,
-      }),
-    });
-
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error('AI API error:', errorText);
-      throw new Error(`Erro na API de IA: ${aiResponse.status}`);
+        }
+      } catch (e) {
+        console.error('Error trying selector', selector, ':', e);
+      }
     }
 
-    const aiData = await aiResponse.json();
-    const content = aiData.choices[0].message.content;
-
-    console.log('AI response:', content);
-
-    // Parse JSON from AI response
-    let extractedData;
-    try {
-      // Remove markdown code blocks if present
-      const cleanContent = content.replace(/```json\n?|\n?```/g, '').trim();
-      extractedData = JSON.parse(cleanContent);
-    } catch (e) {
-      console.error('Failed to parse AI response:', content);
-      throw new Error('Resposta da IA não está em formato JSON válido');
-    }
-
-    // Tentar extrair um link final a partir dos seletores retornados pela IA
-    let finalUrl: string | null = null;
+    // Strategy 3: Check for embedded player (iframe, video)
     try {
       const { DOMParser } = await import('https://deno.land/x/deno_dom/deno-dom-wasm.ts');
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
-
-      if (extractedData.hasEmbeddedPlayer && extractedData.videoSelector) {
-        const playerEl = doc.querySelector(extractedData.videoSelector) as any;
-        const src = playerEl?.getAttribute('src') || '';
+      
+      const iframe = doc.querySelector('iframe[src]');
+      if (iframe) {
+        const src = iframe.getAttribute('src') || '';
         if (src) {
-          finalUrl = src.startsWith('http') ? src : new URL(src, episode_url).href;
-        }
-      }
-
-      if (!finalUrl && extractedData.externalLinkSelector) {
-        const linkEl = doc.querySelector(extractedData.externalLinkSelector) as any;
-        const href = linkEl?.getAttribute('href') || '';
-        if (href) {
-          finalUrl = href.startsWith('http') ? href : new URL(href, episode_url).href;
+          const finalUrl = src.startsWith('http') ? src : new URL(src, episode_url).href;
+          console.log('Found iframe:', finalUrl);
+          
+          return new Response(
+            JSON.stringify({ success: true, videoUrl: finalUrl, hasEmbeddedPlayer: true }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
         }
       }
     } catch (e) {
-      console.error('Erro ao usar seletores da IA para extrair URL final:', e);
+      console.error('Error checking for iframe:', e);
     }
 
-    if (!finalUrl) {
-      return new Response(
-        JSON.stringify({ success: true, data: extractedData }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
+    // No link found with any strategy
     return new Response(
-      JSON.stringify({ success: true, videoUrl: finalUrl, data: extractedData }),
+      JSON.stringify({ 
+        success: false, 
+        error: 'Não foi possível encontrar o link do vídeo. Tente abrir manualmente a URL do episódio.' 
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

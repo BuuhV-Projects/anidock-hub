@@ -218,7 +218,16 @@ const AnimeDetails = () => {
         }
 
         if (!data?.success || !data?.videoUrl) {
+          console.error('No video URL found:', data);
           toast.error(data?.error || 'Não foi possível extrair o link do vídeo');
+          
+          // Oferecer abrir a URL original como fallback
+          toast.info('Abrindo página do episódio...', {
+            action: {
+              label: 'Abrir',
+              onClick: () => window.open(episode.sourceUrl, '_blank')
+            }
+          });
           return;
         }
 
@@ -227,6 +236,7 @@ const AnimeDetails = () => {
         toast.success('Link extraído com sucesso!');
       } catch (error) {
         console.error('Error calling extract-video-data:', error);
+        toast.dismiss();
         toast.error('Erro ao processar episódio');
       }
     } else {
