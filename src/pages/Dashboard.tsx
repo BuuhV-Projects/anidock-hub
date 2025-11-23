@@ -175,7 +175,7 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="glass p-8 border-border/50">
             <h3 className="text-xl font-display font-bold mb-4">
               Criar Novo Driver
@@ -226,6 +226,24 @@ const Dashboard = () => {
             >
               <Cpu className="h-5 w-5" />
               Ver Drivers
+            </Button>
+          </Card>
+
+          <Card className="glass p-8 border-border/50">
+            <h3 className="text-xl font-display font-bold mb-4">
+              Minhas Indexações
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              Veja e gerencie todas as suas indexações de animes.
+            </p>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-accent/50 hover:bg-accent/10 w-full gap-2"
+              onClick={() => navigate('/indexes')}
+            >
+              <Database className="h-5 w-5" />
+              Ver Indexações
             </Button>
           </Card>
         </div>
