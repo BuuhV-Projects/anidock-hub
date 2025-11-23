@@ -22,7 +22,7 @@ serve(async (req) => {
       );
     }
 
-    // Get authorization header
+    // Get authorization header and extract JWT
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       console.error('No authorization header found');
@@ -32,33 +32,24 @@ serve(async (req) => {
       );
     }
 
-    console.log('Authorization header present');
+    // Extract JWT token (remove "Bearer " prefix)
+    const jwt = authHeader.replace('Bearer ', '');
+    console.log('JWT token extracted, length:', jwt.length);
 
-    // Initialize Supabase client with service role for admin operations
+    // Initialize Supabase admin client
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Initialize client with user's JWT for auth operations
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: authHeader },
-        },
-      }
-    );
-
-    // Get user from JWT
+    // Validate JWT and get user using admin client
     const {
       data: { user },
       error: userError,
-    } = await supabaseClient.auth.getUser();
+    } = await supabaseAdmin.auth.getUser(jwt);
 
     if (userError) {
-      console.error('Error getting user:', userError);
+      console.error('Error validating JWT:', userError.message);
       return new Response(
         JSON.stringify({ error: 'Token inválido ou expirado' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -66,7 +57,7 @@ serve(async (req) => {
     }
 
     if (!user) {
-      console.error('No user found in token');
+      console.error('No user found in JWT');
       return new Response(
         JSON.stringify({ error: 'Usuário não autenticado' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
