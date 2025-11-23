@@ -78,11 +78,12 @@ const Index = () => {
                 {user ? 'Ir para Dashboard' : 'Começar Gratuitamente'}
               </Button>
               <Button 
-                size="lg" 
+                size="lg"
+                onClick={() => navigate('/browse')}
                 variant="outline"
                 className="border-border hover:border-primary hover:bg-primary/10 transition-all duration-300"
               >
-                Ver Como Funciona
+                Navegar Animes
               </Button>
             </div>
 

@@ -14,6 +14,145 @@ export type Database = {
   }
   public: {
     Tables: {
+      animes: {
+        Row: {
+          alternative_titles: string[] | null
+          banner_url: string | null
+          cover_url: string | null
+          created_at: string
+          driver_id: number | null
+          id: number
+          metadata: Json | null
+          public_id: string
+          source_url: string
+          synopsis: string | null
+          title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          alternative_titles?: string[] | null
+          banner_url?: string | null
+          cover_url?: string | null
+          created_at?: string
+          driver_id?: number | null
+          id?: number
+          metadata?: Json | null
+          public_id?: string
+          source_url: string
+          synopsis?: string | null
+          title: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          alternative_titles?: string[] | null
+          banner_url?: string | null
+          cover_url?: string | null
+          created_at?: string
+          driver_id?: number | null
+          id?: number
+          metadata?: Json | null
+          public_id?: string
+          source_url?: string
+          synopsis?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "animes_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drivers: {
+        Row: {
+          config: Json
+          created_at: string
+          domain: string
+          id: number
+          is_public: boolean
+          name: string
+          public_id: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          config: Json
+          created_at?: string
+          domain: string
+          id?: number
+          is_public?: boolean
+          name: string
+          public_id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          domain?: string
+          id?: number
+          is_public?: boolean
+          name?: string
+          public_id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      episodes: {
+        Row: {
+          anime_id: number | null
+          created_at: string
+          duration: number | null
+          episode_number: number
+          id: number
+          public_id: string
+          source_url: string
+          thumbnail_url: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          anime_id?: number | null
+          created_at?: string
+          duration?: number | null
+          episode_number: number
+          id?: number
+          public_id?: string
+          source_url: string
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          anime_id?: number | null
+          created_at?: string
+          duration?: number | null
+          episode_number?: number
+          id?: number
+          public_id?: string
+          source_url?: string
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "episodes_anime_id_fkey"
+            columns: ["anime_id"]
+            isOneToOne: false
+            referencedRelation: "animes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
