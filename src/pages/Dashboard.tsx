@@ -175,7 +175,7 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           <Card className="glass p-8 border-border/50">
             <h3 className="text-xl font-display font-bold mb-4">
               Criar Novo Driver
@@ -208,6 +208,24 @@ const Dashboard = () => {
             >
               <Database className="h-5 w-5" />
               Importar Driver
+            </Button>
+          </Card>
+
+          <Card className="glass p-8 border-border/50">
+            <h3 className="text-xl font-display font-bold mb-4">
+              Meus Drivers
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              Gerencie, exporte e compartilhe os drivers que você criou.
+            </p>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-secondary/50 hover:bg-secondary/10 w-full gap-2"
+              onClick={() => navigate('/drivers')}
+            >
+              <Cpu className="h-5 w-5" />
+              Ver Drivers
             </Button>
           </Card>
         </div>

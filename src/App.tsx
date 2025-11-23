@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Browse from "./pages/Browse";
 import ImportDriver from "./pages/ImportDriver";
 import CreateDriver from "./pages/CreateDriver";
+import MyDrivers from "./pages/MyDrivers";
 import VerifyOtp from "./pages/VerifyOtp";
 import ResetPassword from "./pages/ResetPassword";
 import UpdatePassword from "./pages/UpdatePassword";
@@ -33,6 +34,11 @@ const App = () => (
             <Route path="/drivers/create" element={
               <ProtectedRoute>
                 <CreateDriver />
+              </ProtectedRoute>
+            } />
+            <Route path="/drivers" element={
+              <ProtectedRoute>
+                <MyDrivers />
               </ProtectedRoute>
             } />
             <Route path="/dashboard" element={
