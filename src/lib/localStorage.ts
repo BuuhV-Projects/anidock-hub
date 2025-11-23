@@ -54,9 +54,21 @@ export interface LocalEpisode {
   watchedAt?: string;
 }
 
+export interface AnimeIndex {
+  id: string;
+  driver_id: string;
+  name: string;
+  source_url: string;
+  total_animes: number;
+  animes: LocalAnime[];
+  created_at: string;
+  updated_at: string;
+}
+
 const DRIVERS_KEY = 'anidock_drivers';
 const ANIMES_KEY = 'anidock_animes';
 const SETTINGS_KEY = 'anidock_settings';
+const INDEXES_KEY = 'anidock_indexes';
 
 // Drivers Management
 export const getLocalDrivers = (): Driver[] => {
@@ -234,5 +246,81 @@ export const clearAllLocalData = (): void => {
     localStorage.removeItem(DRIVERS_KEY);
     localStorage.removeItem(ANIMES_KEY);
     localStorage.removeItem(SETTINGS_KEY);
+    localStorage.removeItem(INDEXES_KEY);
   }
+};
+
+// ========== INDEX MANAGEMENT ==========
+export const getLocalIndexes = (): AnimeIndex[] => {
+  try {
+    const data = localStorage.getItem(INDEXES_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error('Error loading indexes:', error);
+    return [];
+  }
+};
+
+export const saveLocalIndex = (index: AnimeIndex): void => {
+  try {
+    const indexes = getLocalIndexes();
+    const existingIndex = indexes.findIndex(i => i.id === index.id);
+    
+    if (existingIndex >= 0) {
+      indexes[existingIndex] = { ...index, updated_at: new Date().toISOString() };
+    } else {
+      indexes.push(index);
+    }
+    
+    localStorage.setItem(INDEXES_KEY, JSON.stringify(indexes));
+  } catch (error) {
+    console.error('Error saving index:', error);
+    throw error;
+  }
+};
+
+export const deleteLocalIndex = (indexId: string): void => {
+  try {
+    const indexes = getLocalIndexes().filter(i => i.id !== indexId);
+    localStorage.setItem(INDEXES_KEY, JSON.stringify(indexes));
+  } catch (error) {
+    console.error('Error deleting index:', error);
+    throw error;
+  }
+};
+
+export const getLocalIndexById = (indexId: string): AnimeIndex | null => {
+  const indexes = getLocalIndexes();
+  return indexes.find(i => i.id === indexId) || null;
+};
+
+export const importIndex = (jsonString: string): AnimeIndex => {
+  try {
+    const index = JSON.parse(jsonString) as AnimeIndex;
+    
+    // Validate index structure
+    if (!index.name || !index.source_url || !index.animes) {
+      throw new Error('Invalid index structure');
+    }
+    
+    // Generate new ID if importing
+    const newIndex: AnimeIndex = {
+      ...index,
+      id: `index_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    saveLocalIndex(newIndex);
+    return newIndex;
+  } catch (error) {
+    console.error('Error importing index:', error);
+    throw new Error('Invalid index file');
+  }
+};
+
+export const exportIndex = (indexId: string): string => {
+  const index = getLocalIndexById(indexId);
+  if (!index) throw new Error('Index not found');
+  return JSON.stringify(index, null, 2);
 };
