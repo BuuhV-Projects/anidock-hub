@@ -4,10 +4,11 @@ import { toast } from 'sonner';
 interface SendEmailParams {
   to: string;
   subject: string;
-  type: 'welcome' | 'notification' | 'custom';
+  type: 'welcome' | 'notification' | 'verification' | 'custom';
   data?: {
     name?: string;
     message?: string;
+    code?: string;
     html?: string;
   };
 }
@@ -34,6 +35,15 @@ export const useEmailService = () => {
     }
   };
 
+  const sendVerificationEmail = async (email: string, code: string) => {
+    return sendEmail({
+      to: email,
+      subject: 'Código de Verificação - AniDock 🔐',
+      type: 'verification',
+      data: { code }
+    });
+  };
+
   const sendWelcomeEmail = async (email: string, name?: string) => {
     return sendEmail({
       to: email,
@@ -54,6 +64,7 @@ export const useEmailService = () => {
 
   return {
     sendEmail,
+    sendVerificationEmail,
     sendWelcomeEmail,
     sendNotificationEmail
   };
