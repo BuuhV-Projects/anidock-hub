@@ -1,11 +1,11 @@
 {
   "files": [],
-  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
+  "references": [
+    { "path": "./src/apps/web/tsconfig.json" },
+    { "path": "./src/apps/desktop/tsconfig.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
     "noImplicitAny": false,
     "noUnusedParameters": false,
     "skipLibCheck": true,
