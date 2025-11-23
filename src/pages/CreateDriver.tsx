@@ -17,6 +17,7 @@ const CreateDriver = () => {
   const [searchParams] = useSearchParams();
   const existingDriverId = searchParams.get('driver');
   const [url, setUrl] = useState('');
+  const [catalogUrl, setCatalogUrl] = useState(''); // Optional: specific catalog page
   const [isPublic, setIsPublic] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isIndexing, setIsIndexing] = useState(false);
@@ -85,13 +86,24 @@ const CreateDriver = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-driver', {
-        body: { url, is_public: isPublic }
+        body: { 
+          url: url.trim(),
+          catalog_url: catalogUrl.trim() || undefined,
+          is_public: isPublic 
+        }
       });
 
       if (error) throw error;
 
       if (data?.error) {
-        toast.error(data.error);
+        if (data.suggestion) {
+          toast.error(data.error, {
+            description: data.suggestion,
+            duration: 5000
+          });
+        } else {
+          toast.error(data.error);
+        }
         return;
       }
 
@@ -345,14 +357,34 @@ const CreateDriver = () => {
                 type="url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://exemplo-anime.com/lista"
+                placeholder="https://exemplo-anime.com"
                 className="bg-input border-border"
                 disabled={isGenerating || isIndexing || !!existingDriver}
               />
               <p className="text-xs text-muted-foreground mt-1">
                 {existingDriver 
                   ? 'URL configurada no driver'
-                  : 'Cole a URL da página que lista os animes'
+                  : 'Cole a URL principal do site'
+                }
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                URL do Catálogo (Opcional)
+              </label>
+              <Input
+                type="url"
+                value={catalogUrl}
+                onChange={(e) => setCatalogUrl(e.target.value)}
+                placeholder="https://exemplo-anime.com/animes"
+                className="bg-input border-border"
+                disabled={isGenerating || isIndexing || !!existingDriver}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                {existingDriver 
+                  ? 'Deixe vazio se não houver página de catálogo'
+                  : 'Se a home não lista animes, informe a URL do catálogo. A IA tentará encontrar automaticamente.'
                 }
               </p>
             </div>

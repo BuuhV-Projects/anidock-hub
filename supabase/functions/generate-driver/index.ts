@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { url, is_public = false } = await req.json();
+    const { url, catalog_url, is_public = false } = await req.json();
     
     if (!url) {
       return new Response(
@@ -108,10 +108,18 @@ serve(async (req) => {
       }
     }
 
-    // Fetch the website HTML
-    console.log('Fetching HTML from:', url);
-    const htmlResponse = await fetch(url);
+    // Determine which URL to analyze
+    const targetUrl = catalog_url || url;
+    console.log('Fetching HTML from:', targetUrl);
+    const htmlResponse = await fetch(targetUrl);
     const html = await htmlResponse.text();
+    
+    // Also fetch main page to look for catalog links if catalog_url not provided
+    let mainPageHtml = '';
+    if (!catalog_url && url !== targetUrl) {
+      const mainResponse = await fetch(url);
+      mainPageHtml = await mainResponse.text();
+    }
 
     // Use OpenAI to analyze and generate driver
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
@@ -134,12 +142,18 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `Você é um especialista em web scraping. Analise o HTML fornecido e crie um driver JSON para extrair informações de anime.
+            content: `Você é um especialista em web scraping de sites de anime. Analise o HTML e crie um driver JSON.
 
-O driver deve ter este formato:
+REGRAS CRÍTICAS:
+1. Identifique se a página mostra uma LISTA DE ANIMES ou LISTA DE EPISÓDIOS
+2. Se for lista de EPISÓDIOS (não animes), retorne: {"error": "Esta página lista episódios, não animes. Forneça a URL do catálogo de animes."}
+3. Se for lista de ANIMES, extraia os seletores corretos
+
+Formato esperado:
 {
   "name": "Nome do Site",
   "domain": "exemplo.com",
+  "pageType": "anime_catalog",
   "selectors": {
     "animeList": ".anime-item",
     "animeTitle": ".title",
@@ -149,18 +163,20 @@ O driver deve ter este formato:
     "episodeList": ".episode",
     "episodeNumber": ".ep-number",
     "episodeUrl": "a.episode-link"
-  }
+  },
+  "catalogUrl": "url_do_catalogo_se_encontrada"
 }
 
-IMPORTANTE:
-- Use seletores CSS válidos
-- Seja específico mas flexível
-- Priorize classes e IDs sobre tags genéricas
-- Retorne APENAS o JSON, sem explicações`
+DICAS PARA IDENTIFICAÇÃO:
+- Lista de ANIMES: múltiplos títulos diferentes, capas, sinopses
+- Lista de EPISÓDIOS: mesmo anime, múltiplos episódios numerados
+- Se a página tem "Episódio X", "EP X", é lista de episódios
+
+Retorne APENAS o JSON, sem explicações.`
           },
           {
             role: 'user',
-            content: `Analise este HTML e extraia seletores para um site de anime:\n\n${html.slice(0, 15000)}`
+            content: `Analise este HTML e determine se é um catálogo de animes ou lista de episódios:\n\n${html.slice(0, 15000)}`
           }
         ],
         temperature: 0.3,
@@ -188,6 +204,17 @@ IMPORTANTE:
       const jsonMatch = generatedText.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || 
                        [null, generatedText];
       driverConfig = JSON.parse(jsonMatch[1].trim());
+      
+      // Check if AI detected episode list instead of anime catalog
+      if (driverConfig.error) {
+        return new Response(
+          JSON.stringify({ 
+            error: driverConfig.error,
+            suggestion: driverConfig.catalogUrl || 'Forneça a URL da página que lista os animes, não episódios.'
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     } catch (e) {
       console.error('Error parsing driver JSON:', e);
       return new Response(
