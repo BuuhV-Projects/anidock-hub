@@ -25,6 +25,7 @@ const EditDriver = () => {
     animeImage: '',
     animeSynopsis: '',
     animeUrl: '',
+    animePageTitle: '',
     episodeList: '',
     episodeNumber: '',
     episodeTitle: '',
@@ -58,6 +59,7 @@ const EditDriver = () => {
           animeImage: config.selectors.animeImage || '',
           animeSynopsis: config.selectors.animeSynopsis || '',
           animeUrl: config.selectors.animeUrl || '',
+          animePageTitle: config.selectors.animePageTitle || '',
           episodeList: config.selectors.episodeList || '',
           episodeNumber: config.selectors.episodeNumber || '',
           episodeTitle: config.selectors.episodeTitle || '',
@@ -241,6 +243,20 @@ const EditDriver = () => {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="animePageTitle" className="text-primary">Título na Página do Anime *</Label>
+                <Input
+                  id="animePageTitle"
+                  value={selectors.animePageTitle}
+                  onChange={(e) => setSelectors({ ...selectors, animePageTitle: e.target.value })}
+                  placeholder="h1.title, .anime-title, .nome-anime"
+                  className="border-primary/50"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Título do anime na página individual (não na lista)
+                </p>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="episodeList" className="text-accent">Lista de Episódios *</Label>
                 <Input
                   id="episodeList"
@@ -324,6 +340,7 @@ const EditDriver = () => {
               <div className="bg-muted/30 p-4 rounded-lg text-sm font-mono space-y-1">
                 <div><span className="text-muted-foreground">animeList:</span> .ani_loop_item</div>
                 <div><span className="text-muted-foreground">animeTitle:</span> .ani_loop_item_infos_nome</div>
+                <div><span className="text-muted-foreground">animePageTitle:</span> h1.anime-title</div>
                 <div><span className="text-muted-foreground">episodeList:</span> .animepag_episodios_item</div>
                 <div><span className="text-muted-foreground">episodeNumber:</span> .animepag_episodios_item_numero</div>
                 <div><span className="text-muted-foreground">episodeUrl:</span> a</div>
