@@ -1,19 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Database, Zap, Shield, Cpu, LogOut, User } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { Database, Zap, Shield, Cpu, Download, HardDrive, MonitorPlay } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {
-  const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
-  const handleAuthClick = () => {
-    if (user) {
-      signOut();
-    } else {
-      navigate('/auth');
-    }
+  const handleDownload = () => {
+    // TODO: Link para download quando o Electron build estiver pronto
+    window.open('https://github.com/seu-repo/anidock/releases', '_blank');
   };
 
   return (
@@ -23,34 +18,13 @@ const Index = () => {
         {/* Animated background grid */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f12_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f12_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
         
-        {/* Auth Button */}
-        <div className="absolute top-4 right-4 z-10">
-          <Button
-            variant="outline"
-            onClick={handleAuthClick}
-            className="border-primary/50 hover:bg-primary/10 gap-2"
-          >
-            {user ? (
-              <>
-                <LogOut className="h-4 w-4" />
-                Sair
-              </>
-            ) : (
-              <>
-                <User className="h-4 w-4" />
-                Entrar
-              </>
-            )}
-          </Button>
-        </div>
-        
         <div className="container relative mx-auto px-4 py-20 md:py-32">
           <div className="mx-auto max-w-4xl text-center">
             {/* Logo/Badge */}
             <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card/50 px-4 py-2 backdrop-blur-sm">
               <Cpu className="h-4 w-4 text-primary animate-pulse-glow" />
               <span className="text-sm font-medium text-muted-foreground">
-                Next-Gen Anime Indexing
+                Software Desktop para Windows
               </span>
             </div>
 
@@ -64,18 +38,20 @@ const Index = () => {
             </p>
             
             <p className="mb-12 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Conecte qualquer site de anime. Nossa IA aprende a estrutura e indexa tudo automaticamente. 
-              Sem downloads, sem mirrors — apenas metadados organizados e busca instantânea.
+              Software desktop que roda 100% localmente no seu PC Windows. 
+              Conecte qualquer site de anime, nossa IA aprende e indexa tudo offline. 
+              Sem dependência de servidor.
             </p>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button 
                 size="lg" 
-                onClick={() => navigate(user ? '/dashboard' : '/auth')}
-                className="bg-primary text-primary-foreground hover:bg-primary/90 glow-cyan font-semibold px-8 transition-all duration-300 hover:scale-105"
+                onClick={handleDownload}
+                className="bg-primary text-primary-foreground hover:bg-primary/90 glow-cyan font-semibold px-8 transition-all duration-300 hover:scale-105 gap-2"
               >
-                {user ? 'Ir para Dashboard' : 'Começar Gratuitamente'}
+                <Download className="h-5 w-5" />
+                Baixar para Windows
               </Button>
               <Button 
                 size="lg"
@@ -83,23 +59,28 @@ const Index = () => {
                 variant="outline"
                 className="border-border hover:border-primary hover:bg-primary/10 transition-all duration-300"
               >
-                Navegar Animes
+                Ver Demo Online
               </Button>
+            </div>
+
+            {/* Version & Size Info */}
+            <div className="mt-6 text-sm text-muted-foreground">
+              Versão 1.0.0 • Gratuito • Windows 10/11
             </div>
 
             {/* Stats */}
             <div className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto">
               <div className="text-center">
                 <div className="text-3xl font-display font-bold text-primary mb-2">100%</div>
-                <div className="text-sm text-muted-foreground">Automático</div>
+                <div className="text-sm text-muted-foreground">Offline</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-display font-bold text-secondary mb-2">∞</div>
-                <div className="text-sm text-muted-foreground">Sites Suportados</div>
+                <div className="text-3xl font-display font-bold text-secondary mb-2">0</div>
+                <div className="text-sm text-muted-foreground">Servidores</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-display font-bold text-accent mb-2">0ms</div>
-                <div className="text-sm text-muted-foreground">Setup Time</div>
+                <div className="text-3xl font-display font-bold text-accent mb-2">∞</div>
+                <div className="text-sm text-muted-foreground">Sites</div>
               </div>
             </div>
           </div>
@@ -114,38 +95,38 @@ const Index = () => {
               Como Funciona
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Sistema de drivers inteligentes inspirado no Hydra. Cole um link, deixe a IA fazer o resto.
+              Instale, abra e comece. Tudo roda localmente no seu computador.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             <Card className="glass p-6 border-border/50 hover:border-primary/50 transition-all duration-300 group">
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                <Database className="h-6 w-6 text-primary" />
+                <Download className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-display font-semibold text-lg mb-2">1. Cole o Link</h3>
+              <h3 className="font-display font-semibold text-lg mb-2">1. Baixe e Instale</h3>
               <p className="text-sm text-muted-foreground">
-                Forneça o URL de qualquer site de anime. Não importa a estrutura.
+                Download rápido e instalação em segundos. Sem configuração complexa.
               </p>
             </Card>
 
             <Card className="glass p-6 border-border/50 hover:border-secondary/50 transition-all duration-300 group">
               <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center mb-4 group-hover:bg-secondary/20 transition-colors">
-                <Cpu className="h-6 w-6 text-secondary" />
+                <Database className="h-6 w-6 text-secondary" />
               </div>
-              <h3 className="font-display font-semibold text-lg mb-2">2. IA Analisa</h3>
+              <h3 className="font-display font-semibold text-lg mb-2">2. Cole o Link</h3>
               <p className="text-sm text-muted-foreground">
-                Nossa IA analisa e cria um driver personalizado.
+                Forneça o URL de qualquer site. IA analisa e cria driver automaticamente.
               </p>
             </Card>
 
             <Card className="glass p-6 border-border/50 hover:border-accent/50 transition-all duration-300 group">
               <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
-                <Shield className="h-6 w-6 text-accent" />
+                <MonitorPlay className="h-6 w-6 text-accent" />
               </div>
-              <h3 className="font-display font-semibold text-lg mb-2">3. Assista</h3>
+              <h3 className="font-display font-semibold text-lg mb-2">3. Assista Offline</h3>
               <p className="text-sm text-muted-foreground">
-                Player original em iframe. Sem pirataria, sem responsabilidade legal.
+                Tudo fica salvo localmente. Acesse sua biblioteca sem internet.
               </p>
             </Card>
           </div>
@@ -159,8 +140,8 @@ const Index = () => {
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
                 <h2 className="text-3xl md:text-4xl font-display font-bold mb-6">
-                  Sistema de Drivers
-                  <span className="text-gradient-accent"> Inteligente</span>
+                  100% Local.
+                  <span className="text-gradient-accent"> Zero Nuvem.</span>
                 </h2>
                 <div className="space-y-4">
                   <div className="flex gap-3">
@@ -168,9 +149,9 @@ const Index = () => {
                       <div className="w-2 h-2 rounded-full bg-primary" />
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-1">Auto-detecta Padrões</h4>
+                      <h4 className="font-semibold mb-1">Privacidade Total</h4>
                       <p className="text-sm text-muted-foreground">
-                        IA identifica seletores, estrutura de episódios e metadados automaticamente
+                        Nenhum dado sai do seu PC. Tudo fica armazenado localmente no seu Windows.
                       </p>
                     </div>
                   </div>
@@ -181,7 +162,7 @@ const Index = () => {
                     <div>
                       <h4 className="font-semibold mb-1">Drivers Compartilháveis</h4>
                       <p className="text-sm text-muted-foreground">
-                        Compartilhe drivers com amigos para que eles assistam localmente. Comunidade pode criar e trocar drivers para novos sites
+                        Compartilhe drivers com amigos via arquivo. Comunidade pode criar e trocar drivers.
                       </p>
                     </div>
                   </div>
@@ -190,9 +171,9 @@ const Index = () => {
                       <div className="w-2 h-2 rounded-full bg-accent" />
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-1">Proteção Legal</h4>
+                      <h4 className="font-semibold mb-1">Sem Dependências</h4>
                       <p className="text-sm text-muted-foreground">
-                        Você não distribui drivers prontos, apenas a ferramenta de criação
+                        Não precisa de servidor online. Funciona mesmo sem internet após a instalação.
                       </p>
                     </div>
                   </div>
@@ -200,19 +181,29 @@ const Index = () => {
               </div>
               
               <Card className="glass p-8 border-border/50">
-                <div className="bg-muted/50 rounded-lg p-4 font-mono text-xs overflow-x-auto">
-                  <pre className="text-primary">{`{
-  "titleSelector": "h1.title",
-  "episodeListSelector": ".episodes a",
-  "imageSelector": ".cover img",
-  "descriptionSelector": ".sinopse",
-  "pattern": "/episodio-{n}",
-  "pagination": true
-}`}</pre>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                    <HardDrive className="h-8 w-8 text-primary" />
+                    <div>
+                      <h4 className="font-semibold">Armazenamento Local</h4>
+                      <p className="text-sm text-muted-foreground">IndexedDB + LocalStorage</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                    <Shield className="h-8 w-8 text-secondary" />
+                    <div>
+                      <h4 className="font-semibold">Zero Telemetria</h4>
+                      <p className="text-sm text-muted-foreground">Nenhum tracking ou analytics</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                    <Zap className="h-8 w-8 text-accent" />
+                    <div>
+                      <h4 className="font-semibold">Leve e Rápido</h4>
+                      <p className="text-sm text-muted-foreground">~50MB de instalação</p>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-sm text-muted-foreground mt-4 text-center">
-                  Exemplo de driver gerado automaticamente
-                </p>
               </Card>
             </div>
           </div>
@@ -223,20 +214,35 @@ const Index = () => {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <Card className="glass max-w-4xl mx-auto p-12 text-center border-primary/30 glow-cyan">
+            <Download className="h-16 w-16 text-primary mx-auto mb-6" />
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
-              Pronto para começar?
+              Baixe AniDock Agora
             </h2>
             <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Crie sua conta gratuita e comece a indexar seus animes favoritos agora mesmo. 
-              Sem cartão de crédito necessário.
+              Software desktop gratuito e de código aberto. 
+              Instale em segundos e comece a organizar seus animes offline.
             </p>
-            <Button 
-              size="lg"
-              onClick={() => navigate('/auth')}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8"
-            >
-              Criar Conta Grátis
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                size="lg"
+                onClick={handleDownload}
+                className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8 gap-2"
+              >
+                <Download className="h-5 w-5" />
+                Download para Windows
+              </Button>
+              <Button 
+                size="lg"
+                variant="outline"
+                onClick={() => window.open('https://github.com/seu-repo/anidock', '_blank')}
+                className="border-border hover:border-primary hover:bg-primary/10"
+              >
+                Ver no GitHub
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground mt-6">
+              Windows 10 ou superior • ~50MB • Gratuito para sempre
+            </p>
           </Card>
         </div>
       </section>
