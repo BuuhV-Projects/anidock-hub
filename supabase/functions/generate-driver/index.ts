@@ -209,10 +209,11 @@ Retorne APENAS o JSON, sem explicações.`
       if (driverConfig.error) {
         return new Response(
           JSON.stringify({ 
+            success: false,
             error: driverConfig.error,
             suggestion: driverConfig.catalogUrl || 'Forneça a URL da página que lista os animes, não episódios.'
           }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
     } catch (e) {
