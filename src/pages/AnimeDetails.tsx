@@ -193,7 +193,18 @@ const AnimeDetails = () => {
   };
 
   const handleWatchEpisode = (episode: LocalEpisode) => {
-    window.open(episode.sourceUrl, '_blank');
+    // Navigate to player page with episode info
+    const params = new URLSearchParams({
+      url: episode.sourceUrl,
+      title: anime?.title || '',
+      ep: String(episode.episodeNumber),
+    });
+
+    if (animeId) params.append('anime', animeId);
+    if (driverId) params.append('driver', driverId);
+    if (indexId) params.append('index', indexId);
+
+    navigate(`/player?${params.toString()}`);
   };
 
   if (isLoading || isCrawling) {
