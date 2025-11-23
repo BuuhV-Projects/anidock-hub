@@ -113,23 +113,20 @@ const CreateDriver = () => {
         }
       );
 
-      // Se não indexou nenhum anime, falhar
-      if (!crawlResult.animes || crawlResult.animes.length === 0) {
-        throw new Error('Nenhum anime encontrado. O driver pode não estar configurado corretamente.');
-      }
+      const hasAnimes = crawlResult.animes && crawlResult.animes.length > 0;
 
       setIndexProgress(85);
-      setIndexStatus('Salvando indexação no driver...');
+      setIndexStatus(hasAnimes ? 'Salvando indexação no driver...' : 'Salvando driver sem indexação...');
 
-      // Update driver with indexed data
+      // Update driver with indexed data (can be empty)
       if (user) {
         const { error: updateError } = await supabase
           .from('drivers')
           .update({
-            indexed_data: crawlResult.animes as any,
+            indexed_data: hasAnimes ? (crawlResult.animes as any) : null,
             source_url: url,
-            total_animes: crawlResult.animes.length,
-            last_indexed_at: new Date().toISOString(),
+            total_animes: hasAnimes ? crawlResult.animes.length : 0,
+            last_indexed_at: hasAnimes ? new Date().toISOString() : null,
           })
           .eq('id', driver.id);
 
@@ -145,37 +142,44 @@ const CreateDriver = () => {
           isLocal: true,
           createdAt: driver.created_at,
           updatedAt: new Date().toISOString(),
-          indexedData: crawlResult.animes,
+          indexedData: hasAnimes ? crawlResult.animes : [],
           sourceUrl: url,
-          totalAnimes: crawlResult.animes.length,
-          lastIndexedAt: new Date().toISOString(),
+          totalAnimes: hasAnimes ? crawlResult.animes.length : 0,
+          lastIndexedAt: hasAnimes ? new Date().toISOString() : undefined,
         };
         saveLocalDriver(localDriver);
       }
 
       setIndexProgress(100);
-      setIndexStatus('Indexação concluída!');
-      setTotalAnimes(crawlResult.animes.length);
-      toast.success(`Driver criado e ${crawlResult.animes.length} animes indexados!`);
+      setIndexStatus(hasAnimes ? 'Indexação concluída!' : 'Driver criado!');
+      setTotalAnimes(hasAnimes ? crawlResult.animes.length : 0);
+      
+      if (hasAnimes) {
+        toast.success(`Driver criado e ${crawlResult.animes.length} animes indexados!`);
+      } else {
+        toast.warning('Driver criado, mas nenhum anime foi encontrado. Verifique os seletores ou tente outro site.');
+      }
     } catch (err: any) {
       console.error('Error generating index:', err);
       
-      // Se falhou a indexação, deletar o driver criado
-      if (driver && user) {
+      // Apenas deletar se houve erro real (não apenas ausência de animes)
+      if (driver && user && err.message && !err.message.includes('anime')) {
         try {
           await supabase
             .from('drivers')
             .delete()
             .eq('id', driver.id);
-          console.log('Driver deletado após falha na indexação');
+          console.log('Driver deletado após erro crítico');
         } catch (deleteError) {
           console.error('Erro ao deletar driver:', deleteError);
         }
+        
+        setGeneratedDriver(null);
+        toast.error(err?.message || 'Erro ao processar driver. Tente novamente.');
+      } else {
+        // Erro não crítico, manter o driver
+        toast.error(err?.message || 'Erro ao indexar. Driver criado mas sem animes.');
       }
-      
-      // Limpar estado e mostrar erro específico
-      setGeneratedDriver(null);
-      toast.error(err?.message || 'Erro ao indexar driver. O site pode não permitir extração automática.');
     } finally {
       setIsIndexing(false);
     }
