@@ -37,17 +37,23 @@ serve(async (req) => {
 
     const html = await htmlResponse.text();
 
-    // Prepare AI prompt
-    const prompt = `Analise o HTML abaixo e extraia o link/URL do vídeo externo.
+    // Prepare AI prompt for player detection
+    const prompt = `Analise o HTML abaixo e determine o tipo de player de vídeo:
 
-${external_link_selector ? `Use este seletor CSS como referência: ${external_link_selector}` : 'Procure por links que redirecionam para players externos, iframes, ou URLs de vídeo.'}
+1. Se há um player EMBARCADO (iframe, video tag) na página
+2. Se há apenas um LINK EXTERNO que leva para outro site
 
 HTML da página:
 ${html.substring(0, 50000)}
 
 Retorne APENAS um JSON válido no seguinte formato:
 {
-  "videoUrl": "url_completa_do_video"
+  "hasEmbeddedPlayer": boolean,
+  "videoSelector": "seletor CSS do player (iframe, video, etc)" ou null,
+  "externalLinkSelector": "seletor CSS do link externo" ou null,
+  "episodeNumber": número do episódio (se detectado) ou null,
+  "title": "título do episódio" ou null,
+  "thumbnailUrl": "url da thumbnail" ou null
 }`;
 
     console.log('Calling AI to extract data...');
@@ -101,12 +107,8 @@ Retorne APENAS um JSON válido no seguinte formato:
       throw new Error('Resposta da IA não está em formato JSON válido');
     }
 
-    if (!extractedData.videoUrl) {
-      throw new Error('URL do vídeo não foi encontrada');
-    }
-
     return new Response(
-      JSON.stringify({ success: true, videoUrl: extractedData.videoUrl }),
+      JSON.stringify({ success: true, data: extractedData }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
