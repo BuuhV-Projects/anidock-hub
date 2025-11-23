@@ -72,6 +72,7 @@ export type Database = {
       }
       drivers: {
         Row: {
+          catalog_url: string | null
           config: Json
           created_at: string
           domain: string
@@ -87,6 +88,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          catalog_url?: string | null
           config: Json
           created_at?: string
           domain: string
@@ -102,6 +104,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          catalog_url?: string | null
           config?: Json
           created_at?: string
           domain?: string
