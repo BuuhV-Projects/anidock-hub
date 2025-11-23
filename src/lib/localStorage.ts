@@ -322,5 +322,28 @@ export const importIndex = (jsonString: string): AnimeIndex => {
 export const exportIndex = (indexId: string): string => {
   const index = getLocalIndexById(indexId);
   if (!index) throw new Error('Index not found');
+  
+  const blob = new Blob([JSON.stringify(index, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${index.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_index.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  
   return JSON.stringify(index, null, 2);
+};
+
+export const exportIndexData = (index: AnimeIndex): void => {
+  const blob = new Blob([JSON.stringify(index, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${index.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_index.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 };

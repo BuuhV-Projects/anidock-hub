@@ -11,6 +11,7 @@ import Browse from "./pages/Browse";
 import ImportDriver from "./pages/ImportDriver";
 import CreateDriver from "./pages/CreateDriver";
 import MyDrivers from "./pages/MyDrivers";
+import MyIndexes from "./pages/MyIndexes";
 import GenerateIndex from "./pages/GenerateIndex";
 import ImportIndex from "./pages/ImportIndex";
 import VerifyOtp from "./pages/VerifyOtp";
@@ -47,6 +48,11 @@ const App = () => (
             <Route path="/drivers" element={
               <ProtectedRoute>
                 <MyDrivers />
+              </ProtectedRoute>
+            } />
+            <Route path="/indexes" element={
+              <ProtectedRoute>
+                <MyIndexes />
               </ProtectedRoute>
             } />
             <Route path="/dashboard" element={
