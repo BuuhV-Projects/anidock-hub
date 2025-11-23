@@ -1,14 +1,48 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Database, Zap, Shield, Cpu } from "lucide-react";
+import { Database, Zap, Shield, Cpu, LogOut, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleAuthClick = () => {
+    if (user) {
+      signOut();
+    } else {
+      navigate('/auth');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         {/* Animated background grid */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f12_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f12_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
+        
+        {/* Auth Button */}
+        <div className="absolute top-4 right-4 z-10">
+          <Button
+            variant="outline"
+            onClick={handleAuthClick}
+            className="border-primary/50 hover:bg-primary/10 gap-2"
+          >
+            {user ? (
+              <>
+                <LogOut className="h-4 w-4" />
+                Sair
+              </>
+            ) : (
+              <>
+                <User className="h-4 w-4" />
+                Entrar
+              </>
+            )}
+          </Button>
+        </div>
         
         <div className="container relative mx-auto px-4 py-20 md:py-32">
           <div className="mx-auto max-w-4xl text-center">
@@ -38,9 +72,10 @@ const Index = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button 
                 size="lg" 
+                onClick={() => navigate(user ? '/dashboard' : '/auth')}
                 className="bg-primary text-primary-foreground hover:bg-primary/90 glow-cyan font-semibold px-8 transition-all duration-300 hover:scale-105"
               >
-                Começar Gratuitamente
+                {user ? 'Ir para Dashboard' : 'Começar Gratuitamente'}
               </Button>
               <Button 
                 size="lg" 
@@ -196,6 +231,7 @@ const Index = () => {
             </p>
             <Button 
               size="lg"
+              onClick={() => navigate('/auth')}
               className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8"
             >
               Criar Conta Grátis
