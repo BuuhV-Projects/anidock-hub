@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.generate-driver]
 verify_jwt = true
+
+[functions.fetch-html]
+verify_jwt = false

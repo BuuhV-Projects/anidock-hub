@@ -11,26 +11,35 @@ export interface CrawlResult {
 }
 
 /**
- * Fetches HTML from URL using CORS proxy or direct fetch
- * IMPORTANT: Many anime sites block CORS, so we'll need a proxy for production
+ * Fetches HTML from URL using backend edge function to bypass CORS
  */
 const fetchHTML = async (url: string): Promise<string> => {
   try {
-    // Try direct fetch first
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
+    // Import supabase client dynamically to avoid circular dependencies
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    // Use edge function to fetch HTML and bypass CORS
+    const { data, error } = await supabase.functions.invoke('fetch-html', {
+      body: { url }
     });
     
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+    if (error) {
+      console.error('Edge function error:', error);
+      throw new Error('Não foi possível acessar o site via backend');
     }
     
-    return await response.text();
+    if (data?.error) {
+      throw new Error(data.error);
+    }
+    
+    if (!data?.html) {
+      throw new Error('Resposta inválida do servidor');
+    }
+    
+    return data.html;
   } catch (error) {
-    console.error('Direct fetch failed, CORS blocked:', error);
-    throw new Error('Não foi possível acessar o site. O site pode estar bloqueando acesso externo.');
+    console.error('Fetch HTML failed:', error);
+    throw error instanceof Error ? error : new Error('Não foi possível acessar o site');
   }
 };
 
