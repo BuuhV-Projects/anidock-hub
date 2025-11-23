@@ -5,10 +5,11 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Plus, Trash2, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, Loader2, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface AnimeForm {
   id: string;
@@ -16,6 +17,16 @@ interface AnimeForm {
   synopsis: string;
   coverUrl: string;
   sourceUrl: string;
+}
+
+interface EpisodeForm {
+  id: string;
+  url: string;
+  episodeNumber: number | null;
+  title: string;
+  thumbnailUrl: string;
+  videoPlayerSelector: string;
+  isExtracting: boolean;
 }
 
 const IndexManual = () => {
@@ -27,6 +38,15 @@ const IndexManual = () => {
     synopsis: '',
     coverUrl: '',
     sourceUrl: ''
+  }]);
+  const [episodes, setEpisodes] = useState<EpisodeForm[]>([{
+    id: crypto.randomUUID(),
+    url: '',
+    episodeNumber: null,
+    title: '',
+    thumbnailUrl: '',
+    videoPlayerSelector: '',
+    isExtracting: false
   }]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -97,6 +117,65 @@ const IndexManual = () => {
     setAnimes(animes.map(a => 
       a.id === id ? { ...a, [field]: value } : a
     ));
+  };
+
+  const addEpisode = () => {
+    setEpisodes([...episodes, {
+      id: crypto.randomUUID(),
+      url: '',
+      episodeNumber: null,
+      title: '',
+      thumbnailUrl: '',
+      videoPlayerSelector: '',
+      isExtracting: false
+    }]);
+  };
+
+  const removeEpisode = (id: string) => {
+    if (episodes.length === 1) {
+      toast.error('É necessário ter pelo menos um episódio');
+      return;
+    }
+    setEpisodes(episodes.filter(e => e.id !== id));
+  };
+
+  const updateEpisode = (id: string, field: keyof EpisodeForm, value: any) => {
+    setEpisodes(episodes.map(e => 
+      e.id === id ? { ...e, [field]: value } : e
+    ));
+  };
+
+  const extractEpisodeData = async (id: string) => {
+    const episode = episodes.find(e => e.id === id);
+    if (!episode?.url) {
+      toast.error('Insira a URL do episódio primeiro');
+      return;
+    }
+
+    updateEpisode(id, 'isExtracting', true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('extract-video-data', {
+        body: { url: episode.url, driver }
+      });
+
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      const extracted = data.data;
+      
+      updateEpisode(id, 'episodeNumber', extracted.episodeNumber);
+      updateEpisode(id, 'title', extracted.title || '');
+      updateEpisode(id, 'thumbnailUrl', extracted.thumbnailUrl || '');
+      updateEpisode(id, 'videoPlayerSelector', extracted.videoPlayerSelector || '');
+
+      toast.success('Dados extraídos com sucesso!');
+    } catch (error: any) {
+      console.error('Error extracting episode data:', error);
+      toast.error('Erro ao extrair dados: ' + error.message);
+    } finally {
+      updateEpisode(id, 'isExtracting', false);
+    }
   };
 
   const handleSave = async () => {
@@ -201,29 +280,38 @@ const IndexManual = () => {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="space-y-6">
+          <Tabs defaultValue="animes" className="space-y-6">
             <Card className="glass p-6 border-border/50">
               <h2 className="font-display font-bold text-lg mb-2">
                 {driver?.name}
               </h2>
               <p className="text-sm text-muted-foreground mb-4">
-                Adicione os animes manualmente seguindo a estrutura do driver
+                Adicione conteúdo manualmente ou use IA para extrair dados
               </p>
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  {animes.length} anime{animes.length !== 1 ? 's' : ''} adicionado{animes.length !== 1 ? 's' : ''}
-                </p>
-                <Button
-                  onClick={addAnime}
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Adicionar Anime
-                </Button>
-              </div>
+              
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="animes">Animes</TabsTrigger>
+                <TabsTrigger value="videos">Episódios/Vídeos</TabsTrigger>
+              </TabsList>
             </Card>
+
+            <TabsContent value="animes" className="space-y-6">
+              <Card className="glass p-6 border-border/50">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    {animes.length} anime{animes.length !== 1 ? 's' : ''} adicionado{animes.length !== 1 ? 's' : ''}
+                  </p>
+                  <Button
+                    onClick={addAnime}
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Adicionar Anime
+                  </Button>
+                </div>
+              </Card>
 
             {animes.map((anime, index) => (
               <Card key={anime.id} className="glass p-6 border-border/50">
@@ -295,14 +383,149 @@ const IndexManual = () => {
               </Card>
             ))}
 
-            <Card className="glass p-6 border-border/50 bg-muted/20">
-              <p className="text-sm text-muted-foreground">
-                <strong>Dica:</strong> Todos os animes adicionados devem seguir a mesma estrutura 
-                de páginas do site {driver?.domain}. O driver irá tentar extrair os episódios 
-                automaticamente quando você acessar cada anime.
-              </p>
-            </Card>
-          </div>
+              <Card className="glass p-6 border-border/50 bg-muted/20">
+                <p className="text-sm text-muted-foreground">
+                  <strong>Dica:</strong> Todos os animes adicionados devem seguir a mesma estrutura 
+                  de páginas do site {driver?.domain}. O driver irá tentar extrair os episódios 
+                  automaticamente quando você acessar cada anime.
+                </p>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="videos" className="space-y-6">
+              <Card className="glass p-6 border-border/50">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    {episodes.length} episódio{episodes.length !== 1 ? 's' : ''} adicionado{episodes.length !== 1 ? 's' : ''}
+                  </p>
+                  <Button
+                    onClick={addEpisode}
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Adicionar Episódio
+                  </Button>
+                </div>
+              </Card>
+
+              {episodes.map((episode, index) => (
+                <Card key={episode.id} className="glass p-6 border-border/50">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-display font-bold">
+                      Episódio #{index + 1}
+                    </h3>
+                    {episodes.length > 1 && (
+                      <Button
+                        onClick={() => removeEpisode(episode.id)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <Label htmlFor={`url-${episode.id}`}>
+                          URL do Episódio <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                          id={`url-${episode.id}`}
+                          value={episode.url}
+                          onChange={(e) => updateEpisode(episode.id, 'url', e.target.value)}
+                          placeholder="https://exemplo.com/anime/nome/episodio-1"
+                          className="bg-input border-border"
+                        />
+                      </div>
+                      <div className="flex items-end">
+                        <Button
+                          onClick={() => extractEpisodeData(episode.id)}
+                          disabled={episode.isExtracting || !episode.url}
+                          className="gap-2"
+                        >
+                          {episode.isExtracting ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Extraindo...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="h-4 w-4" />
+                              Extrair com IA
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor={`number-${episode.id}`}>Número do Episódio</Label>
+                        <Input
+                          id={`number-${episode.id}`}
+                          type="number"
+                          value={episode.episodeNumber || ''}
+                          onChange={(e) => updateEpisode(episode.id, 'episodeNumber', parseInt(e.target.value))}
+                          placeholder="1"
+                          className="bg-input border-border"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`title-${episode.id}`}>Título (opcional)</Label>
+                        <Input
+                          id={`title-${episode.id}`}
+                          value={episode.title}
+                          onChange={(e) => updateEpisode(episode.id, 'title', e.target.value)}
+                          placeholder="Nome do episódio"
+                          className="bg-input border-border"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor={`thumb-${episode.id}`}>URL da Thumbnail (opcional)</Label>
+                      <Input
+                        id={`thumb-${episode.id}`}
+                        value={episode.thumbnailUrl}
+                        onChange={(e) => updateEpisode(episode.id, 'thumbnailUrl', e.target.value)}
+                        placeholder="https://exemplo.com/thumb.jpg"
+                        className="bg-input border-border"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor={`player-${episode.id}`}>
+                        Seletor CSS do Player de Vídeo <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        id={`player-${episode.id}`}
+                        value={episode.videoPlayerSelector}
+                        onChange={(e) => updateEpisode(episode.id, 'videoPlayerSelector', e.target.value)}
+                        placeholder="iframe, .video-player, #player"
+                        className="bg-input border-border"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Seletor CSS para encontrar o iframe/vídeo na página
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+
+              <Card className="glass p-6 border-border/50 bg-muted/20">
+                <p className="text-sm text-muted-foreground">
+                  <strong>Dica:</strong> Cole a URL de um episódio e clique em "Extrair com IA" 
+                  para que o sistema detecte automaticamente os dados. Os seletores do driver 
+                  são usados como referência, mas você pode ajustar o seletor do player manualmente.
+                </p>
+              </Card>
+            </TabsContent>
+          </Tabs>
         )}
       </main>
     </div>

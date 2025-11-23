@@ -14,3 +14,6 @@ verify_jwt = true
 
 [functions.fetch-html]
 verify_jwt = false
+
+[functions.extract-video-data]
+verify_jwt = true
