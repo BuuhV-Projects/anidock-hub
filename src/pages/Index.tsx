@@ -124,9 +124,9 @@ const Index = () => {
               <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
                 <MonitorPlay className="h-6 w-6 text-accent" />
               </div>
-              <h3 className="font-display font-semibold text-lg mb-2">3. Assista Offline</h3>
+              <h3 className="font-display font-semibold text-lg mb-2">3. Assista Localmente</h3>
               <p className="text-sm text-muted-foreground">
-                Tudo fica salvo localmente. Acesse sua biblioteca sem internet.
+                Organize tudo localmente no seu PC. Acesse sua biblioteca completa.
               </p>
             </Card>
           </div>
@@ -222,7 +222,7 @@ const Index = () => {
               Software desktop gratuito e de código aberto. 
               Instale em segundos e comece a organizar seus animes offline.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex justify-center">
               <Button 
                 size="lg"
                 onClick={handleDownload}
@@ -230,14 +230,6 @@ const Index = () => {
               >
                 <Download className="h-5 w-5" />
                 Download para Windows
-              </Button>
-              <Button 
-                size="lg"
-                variant="outline"
-                onClick={() => window.open('https://github.com/seu-repo/anidock', '_blank')}
-                className="border-border hover:border-primary hover:bg-primary/10"
-              >
-                Ver no GitHub
               </Button>
             </div>
             <p className="text-sm text-muted-foreground mt-6">
@@ -254,6 +246,20 @@ const Index = () => {
             <div className="flex items-center gap-2">
               <Cpu className="h-5 w-5 text-primary" />
               <span className="font-display font-bold">AniDock</span>
+            </div>
+            <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
+              <button onClick={() => navigate('/termos')} className="hover:text-primary transition-colors">
+                Termos de Uso
+              </button>
+              <button onClick={() => navigate('/privacidade')} className="hover:text-primary transition-colors">
+                Privacidade
+              </button>
+              <button onClick={() => navigate('/lgpd')} className="hover:text-primary transition-colors">
+                LGPD
+              </button>
+              <button onClick={() => navigate('/direitos-autorais')} className="hover:text-primary transition-colors">
+                Direitos Autorais
+              </button>
             </div>
             <p className="text-sm text-muted-foreground">
               © 2024 AniDock. Indexação inteligente de animes.

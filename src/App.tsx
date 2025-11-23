@@ -19,6 +19,10 @@ import EditIndexedAnime from "./pages/EditIndexedAnime";
 import VerifyOtp from "./pages/VerifyOtp";
 import ResetPassword from "./pages/ResetPassword";
 import UpdatePassword from "./pages/UpdatePassword";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import LGPD from "./pages/LGPD";
+import Copyright from "./pages/Copyright";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -71,6 +75,10 @@ const App = () => (
             <Route path="/verify-otp" element={<VerifyOtp />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/update-password" element={<UpdatePassword />} />
+            <Route path="/termos" element={<TermsOfService />} />
+            <Route path="/privacidade" element={<PrivacyPolicy />} />
+            <Route path="/lgpd" element={<LGPD />} />
+            <Route path="/direitos-autorais" element={<Copyright />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
