@@ -1,5 +1,5 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { Alert, AlertDescription } from './ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog';
+import { Alert, AlertDescription } from './alert';
 import { Loader2, AlertCircle } from 'lucide-react';
 
 interface VideoPlayerModalProps {

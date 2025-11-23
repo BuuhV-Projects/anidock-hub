@@ -8,7 +8,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@anidock/anime-core": "workspace:*"
+    "@anidock/anime-core": "*"
   },
   "devDependencies": {
     "typescript": "^5.8.3"

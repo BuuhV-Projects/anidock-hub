@@ -4,16 +4,16 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
-    "preview": "vite preview"
+    "dev": "vite --config vite.config.ts",
+    "build": "vite build --config vite.config.ts",
+    "build:dev": "vite build --mode development --config vite.config.ts",
+    "preview": "vite preview --config vite.config.ts"
   },
   "dependencies": {
-    "@anidock/anime-core": "workspace:*",
-    "@anidock/anime-drivers": "workspace:*",
-    "@anidock/shared-ui": "workspace:*",
-    "@anidock/shared-utils": "workspace:*",
+    "@anidock/anime-core": "*",
+    "@anidock/anime-drivers": "*",
+    "@anidock/shared-ui": "*",
+    "@anidock/shared-utils": "*",
     "@hookform/resolvers": "^3.10.0",
     "@tanstack/react-query": "^5.83.0",
     "lucide-react": "^0.462.0",

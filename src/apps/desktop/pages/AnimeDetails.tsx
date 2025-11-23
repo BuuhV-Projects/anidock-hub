@@ -16,7 +16,7 @@ import {
 import { supabase } from '@anidock/shared-utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { VideoPlayerModal } from '@/components/VideoPlayerModal';
+import { VideoPlayerModal } from '@anidock/shared-ui';
 
 const AnimeDetails = () => {
   const navigate = useNavigate();

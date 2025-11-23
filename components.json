@@ -5,16 +5,16 @@
   "tsx": true,
   "tailwind": {
     "config": "tailwind.config.ts",
-    "css": "src/index.css",
+    "css": "src/packages/shared-ui/src/styles/index.css",
     "baseColor": "slate",
     "cssVariables": true,
     "prefix": ""
   },
   "aliases": {
-    "components": "@/components",
-    "utils": "@/lib/utils",
-    "ui": "@/components/ui",
-    "lib": "@/lib",
-    "hooks": "@/hooks"
+    "components": "@anidock/shared-ui/src/components",
+    "utils": "@anidock/shared-utils/src/utils",
+    "ui": "@anidock/shared-ui/src/components",
+    "lib": "@anidock/shared-utils/src",
+    "hooks": "@anidock/shared-utils/src/hooks"
   }
 }

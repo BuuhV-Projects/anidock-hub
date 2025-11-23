@@ -6,7 +6,8 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./components/*": "./src/components/*"
+    "./components/*": "./src/components/*",
+    "./styles/index.css": "./src/styles/index.css"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
