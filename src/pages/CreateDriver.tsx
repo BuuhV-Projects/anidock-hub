@@ -159,6 +159,11 @@ const CreateDriver = () => {
       } else {
         toast.warning('Driver criado, mas nenhum anime foi encontrado. Verifique os seletores ou tente outro site.');
       }
+
+      // Redirecionar para a tela de drivers após 2 segundos
+      setTimeout(() => {
+        navigate('/drivers/my');
+      }, 2000);
     } catch (err: any) {
       console.error('Error generating index:', err);
       
