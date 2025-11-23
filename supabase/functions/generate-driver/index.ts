@@ -22,32 +22,61 @@ serve(async (req) => {
       );
     }
 
-    // Initialize Supabase client
+    // Get authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('No authorization header found');
+      return new Response(
+        JSON.stringify({ error: 'Token de autenticação não fornecido' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Authorization header present');
+
+    // Initialize Supabase client with service role for admin operations
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Initialize client with user's JWT for auth operations
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
+          headers: { Authorization: authHeader },
         },
       }
     );
 
-    // Get user
+    // Get user from JWT
     const {
       data: { user },
       error: userError,
     } = await supabaseClient.auth.getUser();
 
-    if (userError || !user) {
+    if (userError) {
+      console.error('Error getting user:', userError);
+      return new Response(
+        JSON.stringify({ error: 'Token inválido ou expirado' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!user) {
+      console.error('No user found in token');
       return new Response(
         JSON.stringify({ error: 'Usuário não autenticado' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Get user role
-    const { data: roleData, error: roleError } = await supabaseClient
+    console.log('User authenticated:', user.id);
+
+    // Get user role using admin client
+    const { data: roleData, error: roleError } = await supabaseAdmin
       .rpc('get_user_role', { _user_id: user.id });
 
     if (roleError) {
@@ -59,10 +88,11 @@ serve(async (req) => {
     }
 
     const userRole = roleData as 'free' | 'premium' | 'premium_plus';
+    console.log('User role:', userRole);
 
     // Check driver count for free users
     if (userRole === 'free') {
-      const { count, error: countError } = await supabaseClient
+      const { count, error: countError } = await supabaseAdmin
         .from('drivers')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id);
@@ -74,6 +104,8 @@ serve(async (req) => {
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+
+      console.log('Free user driver count:', count);
 
       if (count !== null && count >= 3) {
         return new Response(
@@ -177,8 +209,8 @@ IMPORTANTE:
     const urlObj = new URL(url);
     const domain = urlObj.hostname;
 
-    // Save driver to database
-    const { data: driver, error: insertError } = await supabaseClient
+    // Save driver to database using admin client
+    const { data: driver, error: insertError } = await supabaseAdmin
       .from('drivers')
       .insert({
         name: driverConfig.name || `Driver ${domain}`,
