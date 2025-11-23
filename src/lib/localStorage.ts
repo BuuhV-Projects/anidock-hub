@@ -7,6 +7,7 @@ export interface Driver {
   version: string;
   author?: string;
   config: {
+    requiresExternalLink?: boolean;
     selectors: {
       animeList?: string;
       animeTitle: string;
@@ -18,6 +19,7 @@ export interface Driver {
       episodeTitle?: string;
       episodeUrl: string;
       videoPlayer?: string;
+      externalLinkSelector?: string;
     };
     pagination?: {
       nextButton?: string;

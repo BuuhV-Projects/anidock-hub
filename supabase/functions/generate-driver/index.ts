@@ -223,13 +223,22 @@ IMPORTANTE:
 
     console.log('First anime URL found:', animePageUrl);
 
-    let episodeSelectors = {
+    let episodeSelectors: {
+      episodeList: string;
+      episodeNumber: string;
+      episodeTitle: string;
+      episodeUrl: string;
+      videoPlayer?: string;
+      externalLinkSelector?: string;
+    } = {
       episodeList: '',
       episodeNumber: '',
       episodeTitle: '',
       episodeUrl: ''
     };
 
+    let requiresExternalLink = false;
+    
     if (animePageUrl) {
       try {
         const animePageResponse = await fetch(animePageUrl);
@@ -286,6 +295,92 @@ IMPORTANTE:
             console.warn('Could not parse episode selectors, using defaults');
           }
         }
+
+        // STEP 4: Check if first episode has embedded player or external link
+        const episodeDoc = parser.parseFromString(animePageHtml, 'text/html');
+        const episodeElements = episodeDoc.querySelectorAll(episodeSelectors.episodeList);
+        
+        if (episodeElements.length > 0) {
+          const firstEpisode = episodeElements[0];
+          const episodeUrlElement = firstEpisode.querySelector(episodeSelectors.episodeUrl);
+          let firstEpisodeUrl = episodeUrlElement?.getAttribute('href') || '';
+          
+          if (firstEpisodeUrl && !firstEpisodeUrl.startsWith('http')) {
+            firstEpisodeUrl = new URL(firstEpisodeUrl, animePageUrl).href;
+          }
+
+          if (firstEpisodeUrl) {
+            console.log('Analyzing first episode for player detection:', firstEpisodeUrl);
+            
+            try {
+              const episodePageResponse = await fetch(firstEpisodeUrl);
+              const episodePageHtml = await episodePageResponse.text();
+
+              // Check with AI if page has embedded player or requires external link
+              const playerDetectionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${openAIApiKey}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  model: 'gpt-4o-mini',
+                  messages: [
+                    {
+                      role: 'system',
+                      content: `Você é um especialista em análise de páginas de vídeo.
+
+TAREFA: Determinar se a página tem um player de vídeo embutido (iframe/video) ou se é apenas um link/botão que redireciona para outro site.
+
+Retorne JSON:
+{
+  "hasEmbeddedPlayer": true/false,
+  "videoSelector": "iframe.player" ou "video" (se houver player),
+  "externalLinkSelector": "a.watch-button" (se for link externo)
+}
+
+IMPORTANTE:
+- hasEmbeddedPlayer = true se houver <iframe> ou <video> na página
+- hasEmbeddedPlayer = false se for apenas um botão/link que abre outro site
+- Retorne APENAS o JSON, sem explicações`
+                    },
+                    {
+                      role: 'user',
+                      content: `Analise este HTML de página de episódio:\n\n${episodePageHtml.slice(0, 15000)}`
+                    }
+                  ],
+                  temperature: 0.3,
+                }),
+              });
+
+              if (playerDetectionResponse.ok) {
+                const playerData = await playerDetectionResponse.json();
+                const playerText = playerData.choices[0].message.content;
+                console.log('Player detection result:', playerText);
+
+                try {
+                  const playerJsonMatch = playerText.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || [null, playerText];
+                  const playerConfig = JSON.parse(playerJsonMatch[1].trim());
+                  
+                  requiresExternalLink = !playerConfig.hasEmbeddedPlayer;
+                  
+                  if (playerConfig.videoSelector) {
+                    episodeSelectors.videoPlayer = playerConfig.videoSelector;
+                  }
+                  if (playerConfig.externalLinkSelector) {
+                    episodeSelectors.externalLinkSelector = playerConfig.externalLinkSelector;
+                  }
+                  
+                  console.log('Player type detected:', requiresExternalLink ? 'External Link' : 'Embedded Player');
+                } catch (e) {
+                  console.warn('Could not parse player detection result, assuming embedded player');
+                }
+              }
+            } catch (error) {
+              console.warn('Could not analyze episode page for player:', error);
+            }
+          }
+        }
       } catch (error) {
         console.warn('Could not analyze anime page for episodes:', error);
       }
@@ -310,6 +405,7 @@ IMPORTANTE:
     const rawSelectors = (driverConfig as any).selectors || driverConfig;
     const normalizedConfig = {
       baseUrl: targetUrlObj.origin,
+      requiresExternalLink,
       selectors: {
         animeList: rawSelectors.animeList,
         animeTitle: rawSelectors.animeTitle,
@@ -321,6 +417,7 @@ IMPORTANTE:
         episodeTitle: rawSelectors.episodeTitle,
         episodeUrl: rawSelectors.episodeUrl,
         videoPlayer: rawSelectors.videoPlayer,
+        externalLinkSelector: rawSelectors.externalLinkSelector,
       },
     };
 
