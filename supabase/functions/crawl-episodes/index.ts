@@ -125,8 +125,34 @@ serve(async (req) => {
         throw new Error('Failed to parse HTML');
       }
 
+      console.log('Selectors being used:', JSON.stringify(selectors, null, 2));
+      console.log('Episode list selector:', selectors.episodeList);
+
       const episodeElements = doc.querySelectorAll(selectors.episodeList);
       console.log('Found episode elements:', episodeElements.length);
+
+      // If no elements found, try to find common episode selectors
+      if (episodeElements.length === 0) {
+        console.log('No episodes found with provided selector. Trying common selectors...');
+        
+        const commonSelectors = [
+          '.animepag_episodios_item',
+          '.episode-item',
+          '.episode',
+          '.ep-item',
+          '[class*="episode"]',
+          '[class*="ep-"]'
+        ];
+
+        for (const selector of commonSelectors) {
+          const elements = doc.querySelectorAll(selector);
+          console.log(`Trying selector "${selector}": found ${elements.length} elements`);
+          if (elements.length > 0) {
+            errors.push(`Seletor original "${selectors.episodeList}" não funcionou. Encontrado ${elements.length} episódios com "${selector}". Ajuste o driver.`);
+            break;
+          }
+        }
+      }
 
       episodeElements.forEach((element: any, index: number) => {
         try {

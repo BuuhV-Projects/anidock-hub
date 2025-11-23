@@ -15,7 +15,8 @@ import {
   Loader2,
   Sparkles,
   FileEdit,
-  ChevronDown
+  ChevronDown,
+  Settings
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -291,6 +292,15 @@ const MyDrivers = () => {
                   >
                     <Eye className="h-4 w-4 mr-1" />
                     Ver
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => navigate(`/drivers/${driver.public_id}/edit`)}
+                    className="gap-1"
+                    title="Editar seletores CSS"
+                  >
+                    <Settings className="h-4 w-4" />
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
