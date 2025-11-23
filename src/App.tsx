@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Browse from "./pages/Browse";
+import AnimeDetails from "./pages/AnimeDetails";
 import ImportDriver from "./pages/ImportDriver";
 import CreateDriver from "./pages/CreateDriver";
 import MyDrivers from "./pages/MyDrivers";
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/browse" element={<Browse />} />
+            <Route path="/anime" element={<AnimeDetails />} />
             <Route path="/drivers/import" element={<ImportDriver />} />
             <Route path="/drivers/create" element={
               <ProtectedRoute>
