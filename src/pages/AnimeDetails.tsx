@@ -303,7 +303,7 @@ const AnimeDetails = () => {
 
             <div>
               <h1 className="font-display text-4xl font-bold mb-4">
-                {anime.title}
+                {anime.title.length > 200 ? `${anime.title.slice(0, 200)}...` : anime.title}
               </h1>
               {anime.synopsis && (
                 <p className="text-muted-foreground mb-6">
