@@ -129,13 +129,20 @@ const parseWithDriver = (html: string, driver: Driver): { animes: any[], errors:
 
 /**
  * Crawls episodes for a specific anime and automatically saves to cloud if logged in
+ * Only crawls if episodes don't already exist in the anime data
  */
 export const crawlEpisodes = async (
   animeUrl: string, 
   driver: Driver, 
   animeId?: string,
-  indexId?: number
+  indexId?: number,
+  existingEpisodes?: LocalEpisode[]
 ): Promise<{ episodes: LocalEpisode[], errors: string[] }> => {
+  // If episodes already exist, return them without crawling
+  if (existingEpisodes && existingEpisodes.length > 0) {
+    return { episodes: existingEpisodes, errors: [] };
+  }
+
   const errors: string[] = [];
   const episodes: LocalEpisode[] = [];
   
@@ -185,7 +192,7 @@ export const crawlEpisodes = async (
       }
     });
     
-    // Auto-save to cloud if user is logged in and we have anime/index info
+    // Auto-save to cloud only if we actually crawled new episodes
     if (animeId && indexId && episodes.length > 0) {
       try {
         const { supabase } = await import('@/integrations/supabase/client');
