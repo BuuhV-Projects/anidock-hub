@@ -94,6 +94,11 @@ const CreateDriver = () => {
       return;
     }
 
+    if (!catalogUrl.trim()) {
+      toast.error('A URL do catálogo é obrigatória');
+      return;
+    }
+
     if (!user) {
       toast.error('Você precisa estar logado para criar drivers');
       navigate('/auth');
@@ -108,7 +113,7 @@ const CreateDriver = () => {
       const { data, error } = await supabase.functions.invoke('generate-driver', {
         body: { 
           url: url.trim(),
-          catalog_url: catalogUrl.trim() || undefined,
+          catalog_url: catalogUrl.trim(),
           is_public: isPublic 
         }
       });
@@ -397,7 +402,7 @@ const CreateDriver = () => {
 
             <div>
               <label className="block text-sm font-medium mb-2">
-                URL do Catálogo (Opcional)
+                URL do Catálogo <span className="text-destructive">*</span>
               </label>
               <Input
                 type="url"
@@ -406,11 +411,12 @@ const CreateDriver = () => {
                 placeholder="https://exemplo-anime.com/animes"
                 className="bg-input border-border"
                 disabled={isGenerating || isIndexing}
+                required
               />
               <p className="text-xs text-muted-foreground mt-1">
                 {existingDriver 
-                  ? 'Informe a URL específica da página de catálogo de animes (será usada na re-indexação)'
-                  : 'Se a home não lista animes, informe a URL do catálogo. A IA tentará encontrar automaticamente.'
+                  ? 'URL específica da página de catálogo de animes (obrigatório para re-indexação)'
+                  : 'URL da página que lista todos os animes do site (obrigatório)'
                 }
               </p>
             </div>
