@@ -3,7 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useEmailService } from '@/hooks/useEmailService';
+import { useEmailService } from '@/packages/shared-utils/hooks/useEmailService';
 
 interface AuthContextType {
   user: User | null;
