@@ -212,33 +212,14 @@ HTML:\n\n${html.slice(0, 30000)}`
     try {
       const jsonMatch = catalogText.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || [null, catalogText];
       catalogConfig = JSON.parse(jsonMatch[1].trim());
+      
+      console.log('📦 Parsed catalog config:', JSON.stringify(catalogConfig, null, 2));
     } catch (e) {
       console.error('Error parsing catalog JSON:', e);
       return new Response(
         JSON.stringify({ error: 'Erro ao processar seletores do catálogo' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
-    }
-
-    // Domain-specific correction for anroll.net where a lista de animes usa ".itemlistanime a"
-    try {
-      const parsedCatalogUrl = new URL(targetUrl);
-      const catalogDomain = parsedCatalogUrl.hostname.replace(/^www\./, '');
-      if (catalogDomain === 'anroll.net') {
-        catalogConfig = catalogConfig || {};
-        catalogConfig.name = catalogConfig.name || 'AnimesROLL';
-        catalogConfig.domain = 'anroll.net';
-        catalogConfig.selectors = {
-          ...(catalogConfig.selectors || {}),
-          // Cada anime é um <a> dentro de .itemlistanime
-          animeList: '.itemlistanime a',
-          // Quando o próprio animeList já é o link, deixamos animeUrl vazio
-          animeUrl: '',
-        };
-        console.log('Applied domain-specific selector override for anroll.net:', catalogConfig.selectors);
-      }
-    } catch (e) {
-      console.warn('Could not apply domain-specific override:', e);
     }
 
     // STEP 2: Fetch an anime page to analyze episodes
@@ -249,26 +230,39 @@ HTML:\n\n${html.slice(0, 30000)}`
     const catalogDoc = parser.parseFromString(html, 'text/html');
     const animeElements = catalogDoc.querySelectorAll(catalogConfig.selectors.animeList);
     
-    console.log(`Found ${animeElements.length} anime elements using selector: ${catalogConfig.selectors.animeList}`);
+    console.log(`📋 Found ${animeElements.length} anime elements using selector: "${catalogConfig.selectors.animeList}"`);
     
     let animePageUrl = '';
     if (animeElements.length > 0) {
       const firstAnime = animeElements[0];
       
-      // If animeUrl is empty, animeList itself is the link
-      if (!catalogConfig.selectors.animeUrl || catalogConfig.selectors.animeUrl === '') {
+      console.log('🔍 First anime element:', {
+        tagName: firstAnime.tagName,
+        className: firstAnime.className,
+        hasHref: !!firstAnime.getAttribute('href')
+      });
+      
+      // If animeUrl is empty/falsy OR animeList itself is an 'A' tag, use the element directly
+      if (!catalogConfig.selectors.animeUrl || catalogConfig.selectors.animeUrl === '' || firstAnime.tagName === 'A') {
         animePageUrl = firstAnime.getAttribute('href') || '';
+        console.log('✅ Using animeList element directly as link:', animePageUrl);
       } else {
+        // animeUrl is relative to animeList container
         const urlElement = firstAnime.querySelector(catalogConfig.selectors.animeUrl);
         animePageUrl = urlElement?.getAttribute('href') || '';
+        console.log(`🔗 Found link using selector "${catalogConfig.selectors.animeUrl}":`, animePageUrl);
       }
       
       if (animePageUrl && !animePageUrl.startsWith('http')) {
-        animePageUrl = new URL(animePageUrl, targetUrl).href;
+        const absoluteUrl = new URL(animePageUrl, targetUrl).href;
+        console.log(`🌐 Made URL absolute: ${animePageUrl} -> ${absoluteUrl}`);
+        animePageUrl = absoluteUrl;
       }
+    } else {
+      console.log('❌ No anime elements found! Selector may be incorrect.');
     }
 
-    console.log('First anime URL found:', animePageUrl);
+    console.log('🎯 First anime URL found:', animePageUrl);
 
     let episodeSelectors: {
       episodeList: string;

@@ -55,34 +55,72 @@ const parseWithDriver = (html: string, driver: Driver): { animes: any[], errors:
   try {
     const { selectors } = driver.config;
     
+    console.log('🔍 Parser - Starting with selectors:', JSON.stringify(selectors, null, 2));
+    
     // Get anime list
     const animeElements = selectors.animeList 
       ? doc.querySelectorAll(selectors.animeList)
       : [doc.body]; // If no list selector, treat the whole page as one anime
     
+    console.log(`📋 Parser - Found ${animeElements.length} anime elements using selector: "${selectors.animeList}"`);
+    
+    if (animeElements.length === 0) {
+      errors.push(`Nenhum anime encontrado usando o seletor: ${selectors.animeList}`);
+      return { animes: [], errors };
+    }
+    
     animeElements.forEach((element, index) => {
       try {
-        // Extract title
-        const titleEl = element.querySelector(selectors.animeTitle);
-        const title = titleEl?.textContent?.trim();
+        // Extract URL first (check if animeList itself is the link)
+        let sourceUrl = '';
         
-        if (!title) {
-          errors.push(`Anime ${index + 1}: título não encontrado`);
-          return;
+        // If animeUrl is empty/falsy, the animeList selector itself points to the link
+        if (!selectors.animeUrl || selectors.animeUrl === '') {
+          const linkElement = element as HTMLAnchorElement;
+          sourceUrl = linkElement.href || linkElement.getAttribute('href') || '';
+          console.log(`🔗 Anime ${index + 1} - Using animeList as link: ${sourceUrl}`);
+        } else {
+          // animeUrl is relative to animeList container
+          const urlEl = element.querySelector(selectors.animeUrl) as HTMLAnchorElement;
+          sourceUrl = urlEl?.href || urlEl?.getAttribute('href') || '';
+          console.log(`🔗 Anime ${index + 1} - Found link with selector "${selectors.animeUrl}": ${sourceUrl}`);
         }
-        
-        // Extract URL
-        const urlEl = element.querySelector(selectors.animeUrl) as HTMLAnchorElement;
-        let sourceUrl = urlEl?.href || urlEl?.getAttribute('href') || '';
         
         // Make URL absolute if relative
         if (sourceUrl && !sourceUrl.startsWith('http')) {
           sourceUrl = new URL(sourceUrl, driver.config.baseUrl).href;
+          console.log(`✅ Made URL absolute: ${sourceUrl}`);
         }
         
         if (!sourceUrl) {
-          errors.push(`${title}: URL não encontrada`);
+          errors.push(`Anime ${index + 1}: URL não encontrada`);
+          console.log(`❌ Anime ${index + 1} - No URL found`);
           return;
+        }
+        
+        // Extract title (might be inside link or in a specific selector)
+        let title = '';
+        if (selectors.animeTitle) {
+          const titleEl = element.querySelector(selectors.animeTitle);
+          title = titleEl?.textContent?.trim() || '';
+        }
+        
+        // If no title found and element is a link, use link text
+        if (!title && element.tagName === 'A') {
+          title = element.textContent?.trim() || '';
+        }
+        
+        console.log(`📝 Anime ${index + 1} - Title: "${title}"`);
+        
+        if (!title) {
+          // Use URL as fallback title
+          try {
+            const urlObj = new URL(sourceUrl);
+            title = urlObj.pathname.split('/').filter(Boolean).pop() || `Anime ${index + 1}`;
+            console.log(`⚠️ Anime ${index + 1} - No title found, using fallback: "${title}"`);
+          } catch {
+            title = `Anime ${index + 1}`;
+          }
         }
         
         // Extract image
@@ -96,13 +134,15 @@ const parseWithDriver = (html: string, driver: Driver): { animes: any[], errors:
           coverUrl = new URL(coverUrl, driver.config.baseUrl).href;
         }
         
+        console.log(`🖼️ Anime ${index + 1} - Image: ${coverUrl || 'none'}`);
+        
         // Extract synopsis
         const synopsisEl = selectors.animeSynopsis 
           ? element.querySelector(selectors.animeSynopsis)
           : null;
         const synopsis = synopsisEl?.textContent?.trim();
         
-        animes.push({
+        const animeData = {
           id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           driverId: driver.id,
           title,
@@ -114,15 +154,23 @@ const parseWithDriver = (html: string, driver: Driver): { animes: any[], errors:
             crawledAt: new Date().toISOString(),
             driverVersion: driver.version
           }
-        });
+        };
+        
+        console.log(`✅ Anime ${index + 1} processed successfully:`, animeData);
+        animes.push(animeData);
       } catch (err) {
-        errors.push(`Erro ao processar anime ${index + 1}: ${err instanceof Error ? err.message : 'erro desconhecido'}`);
+        const errorMsg = `Erro ao processar anime ${index + 1}: ${err instanceof Error ? err.message : 'erro desconhecido'}`;
+        errors.push(errorMsg);
+        console.error(`❌ ${errorMsg}`, err);
       }
     });
     
+    console.log(`🎉 Parser complete - ${animes.length} animes extracted, ${errors.length} errors`);
     return { animes, errors };
   } catch (error) {
-    errors.push(`Erro ao fazer parse do HTML: ${error instanceof Error ? error.message : 'erro desconhecido'}`);
+    const errorMsg = `Erro ao fazer parse do HTML: ${error instanceof Error ? error.message : 'erro desconhecido'}`;
+    errors.push(errorMsg);
+    console.error(`❌ ${errorMsg}`, error);
     return { animes: [], errors };
   }
 };
