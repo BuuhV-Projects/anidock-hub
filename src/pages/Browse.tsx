@@ -46,7 +46,13 @@ const Browse = () => {
         } else if (cloudIndexes) {
           cloudIndexes.forEach(index => {
             const indexAnimes = (index.index_data as any[]) || [];
-            animes = [...animes, ...indexAnimes];
+            // Add indexId metadata to each anime for proper episode saving
+            const animesWithIndexId = indexAnimes.map(anime => ({
+              ...anime,
+              _indexId: index.id, // Internal metadata for tracking
+              _driverId: index.driver_id
+            }));
+            animes = [...animes, ...animesWithIndexId];
           });
         }
       }
@@ -199,7 +205,20 @@ const Browse = () => {
                 <Card
                   key={anime.id}
                   className="glass border-border/50 hover:border-primary/50 transition-all cursor-pointer group overflow-hidden"
-                  onClick={() => window.open(anime.sourceUrl, '_blank')}
+                  onClick={() => {
+                    // Navigate to anime details page with necessary IDs
+                    const params = new URLSearchParams({
+                      id: anime.id,
+                      driver: anime.driverId || '',
+                    });
+                    
+                    // Add index ID if this anime comes from a cloud index
+                    if ((anime as any)._indexId) {
+                      params.append('index', String((anime as any)._indexId));
+                    }
+                    
+                    navigate(`/anime?${params.toString()}`);
+                  }}
                 >
                   <div className="aspect-[2/3] relative overflow-hidden">
                     {anime.coverUrl ? (
