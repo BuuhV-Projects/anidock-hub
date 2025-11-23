@@ -11,9 +11,6 @@ import Browse from "./pages/Browse";
 import ImportDriver from "./pages/ImportDriver";
 import CreateDriver from "./pages/CreateDriver";
 import MyDrivers from "./pages/MyDrivers";
-import MyIndexes from "./pages/MyIndexes";
-import GenerateIndex from "./pages/GenerateIndex";
-import ImportIndex from "./pages/ImportIndex";
 import VerifyOtp from "./pages/VerifyOtp";
 import ResetPassword from "./pages/ResetPassword";
 import UpdatePassword from "./pages/UpdatePassword";
@@ -34,25 +31,14 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/browse" element={<Browse />} />
             <Route path="/drivers/import" element={<ImportDriver />} />
-            <Route path="/indexes/import" element={<ImportIndex />} />
             <Route path="/drivers/create" element={
               <ProtectedRoute>
                 <CreateDriver />
               </ProtectedRoute>
             } />
-            <Route path="/indexes/generate" element={
-              <ProtectedRoute>
-                <GenerateIndex />
-              </ProtectedRoute>
-            } />
             <Route path="/drivers" element={
               <ProtectedRoute>
                 <MyDrivers />
-              </ProtectedRoute>
-            } />
-            <Route path="/indexes" element={
-              <ProtectedRoute>
-                <MyIndexes />
               </ProtectedRoute>
             } />
             <Route path="/dashboard" element={

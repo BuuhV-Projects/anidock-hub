@@ -76,9 +76,13 @@ export type Database = {
           created_at: string
           domain: string
           id: number
+          indexed_data: Json | null
           is_public: boolean
+          last_indexed_at: string | null
           name: string
           public_id: string
+          source_url: string | null
+          total_animes: number | null
           updated_at: string
           user_id: string | null
         }
@@ -87,9 +91,13 @@ export type Database = {
           created_at?: string
           domain: string
           id?: number
+          indexed_data?: Json | null
           is_public?: boolean
+          last_indexed_at?: string | null
           name: string
           public_id?: string
+          source_url?: string | null
+          total_animes?: number | null
           updated_at?: string
           user_id?: string | null
         }
@@ -98,9 +106,13 @@ export type Database = {
           created_at?: string
           domain?: string
           id?: number
+          indexed_data?: Json | null
           is_public?: boolean
+          last_indexed_at?: string | null
           name?: string
           public_id?: string
+          source_url?: string | null
+          total_animes?: number | null
           updated_at?: string
           user_id?: string | null
         }
