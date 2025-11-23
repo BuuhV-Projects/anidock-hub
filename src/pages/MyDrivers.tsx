@@ -58,6 +58,7 @@ const MyDrivers = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDriver, setDeleteDriver] = useState<Driver | null>(null);
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
+  const [canCreateMoreDrivers, setCanCreateMoreDrivers] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -81,7 +82,20 @@ const MyDrivers = () => {
 
       if (error) throw error;
 
-      setDrivers((data || []) as Driver[]);
+      const driversList = (data || []) as Driver[];
+      setDrivers(driversList);
+      
+      // Check driver limit for free users
+      if (user) {
+        const { data: roleData } = await supabase.rpc('get_user_role', { _user_id: user.id });
+        const userRole = roleData as 'free' | 'premium' | 'premium_plus';
+        
+        if (userRole === 'free') {
+          setCanCreateMoreDrivers(driversList.length < 3);
+        } else {
+          setCanCreateMoreDrivers(true);
+        }
+      }
     } catch (error: any) {
       console.error('Error fetching drivers:', error);
       toast.error('Erro ao carregar drivers');
@@ -202,8 +216,18 @@ const MyDrivers = () => {
               </h1>
             </div>
             <Button
-              onClick={() => navigate('/drivers/create')}
+              onClick={() => {
+                if (!canCreateMoreDrivers) {
+                  toast.error('Limite de 3 drivers atingido!', {
+                    description: 'Faça upgrade para Premium para criar drivers ilimitados',
+                    duration: 5000
+                  });
+                } else {
+                  navigate('/drivers/create');
+                }
+              }}
               className="bg-primary text-primary-foreground hover:bg-primary/90 glow-cyan gap-2"
+              disabled={!canCreateMoreDrivers}
             >
               <Plus className="h-4 w-4" />
               Criar Novo

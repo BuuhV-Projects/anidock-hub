@@ -1,18 +1,21 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Cpu, Upload, FileCode, Download, ArrowLeft } from 'lucide-react';
-import { importDriver, Driver, exportDriver } from '@/lib/localStorage';
+import { importDriver, Driver, exportDriver, getLocalDrivers } from '@/lib/localStorage';
 import { createExampleDriver } from '@/lib/crawler';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const ImportDriver = () => {
   const [driverJson, setDriverJson] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -30,6 +33,28 @@ const ImportDriver = () => {
     if (!driverJson.trim()) {
       toast.error('Cole o JSON do driver primeiro');
       return;
+    }
+
+    // Check driver limit for free users (only for authenticated users)
+    if (user) {
+      try {
+        const { data: roleData } = await supabase.rpc('get_user_role', { _user_id: user.id });
+        const userRole = roleData as 'free' | 'premium' | 'premium_plus';
+
+        if (userRole === 'free') {
+          const localDriversCount = getLocalDrivers().length;
+          
+          if (localDriversCount >= 3) {
+            toast.error('Limite de 3 drivers atingido!', {
+              description: 'Faça upgrade para Premium para ter drivers ilimitados',
+              duration: 5000
+            });
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Error checking driver limit:', error);
+      }
     }
 
     setIsLoading(true);

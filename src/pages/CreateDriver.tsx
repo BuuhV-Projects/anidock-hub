@@ -105,6 +105,29 @@ const CreateDriver = () => {
       return;
     }
 
+    // Check driver limit for free users
+    try {
+      const { data: roleData } = await supabase.rpc('get_user_role', { _user_id: user.id });
+      const userRole = roleData as 'free' | 'premium' | 'premium_plus';
+
+      if (userRole === 'free') {
+        const { count } = await supabase
+          .from('drivers')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        if (count !== null && count >= 3) {
+          toast.error('Limite de 3 drivers atingido!', {
+            description: 'Faça upgrade para Premium para criar drivers ilimitados',
+            duration: 5000
+          });
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error checking driver limit:', error);
+    }
+
     setIsGenerating(true);
     setGeneratedDriver(null);
     let createdDriver: any = null;
