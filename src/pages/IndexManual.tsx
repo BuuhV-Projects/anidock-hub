@@ -142,15 +142,23 @@ const IndexManual = () => {
 
       const extracted = data.data;
       
-      updateAnime(id, 'title', extracted.title || '');
-      updateAnime(id, 'synopsis', extracted.synopsis || '');
-      updateAnime(id, 'coverUrl', extracted.coverUrl || '');
+      // Atualizar todos os campos de uma vez
+      setAnimes(animes.map(a => 
+        a.id === id 
+          ? { 
+              ...a, 
+              title: extracted.title || a.title,
+              synopsis: extracted.synopsis || a.synopsis,
+              coverUrl: extracted.coverUrl || a.coverUrl,
+              isExtracting: false
+            } 
+          : a
+      ));
 
       toast.success('Dados extraídos com sucesso!');
     } catch (error: any) {
       console.error('Error extracting anime data:', error);
       toast.error('Erro ao extrair dados: ' + error.message);
-    } finally {
       updateAnime(id, 'isExtracting', false);
     }
   };
@@ -200,16 +208,24 @@ const IndexManual = () => {
 
       const extracted = data.data;
       
-      updateEpisode(id, 'episodeNumber', extracted.episodeNumber);
-      updateEpisode(id, 'title', extracted.title || '');
-      updateEpisode(id, 'thumbnailUrl', extracted.thumbnailUrl || '');
-      updateEpisode(id, 'videoPlayerSelector', extracted.videoPlayerSelector || '');
+      // Atualizar todos os campos de uma vez
+      setEpisodes(episodes.map(e => 
+        e.id === id 
+          ? { 
+              ...e, 
+              episodeNumber: extracted.episodeNumber ?? e.episodeNumber,
+              title: extracted.title || e.title,
+              thumbnailUrl: extracted.thumbnailUrl || e.thumbnailUrl,
+              videoPlayerSelector: extracted.videoPlayerSelector || e.videoPlayerSelector,
+              isExtracting: false
+            } 
+          : e
+      ));
 
       toast.success('Dados extraídos com sucesso!');
     } catch (error: any) {
       console.error('Error extracting episode data:', error);
       toast.error('Erro ao extrair dados: ' + error.message);
-    } finally {
       updateEpisode(id, 'isExtracting', false);
     }
   };
