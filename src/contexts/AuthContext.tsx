@@ -8,7 +8,7 @@ import { useEmailService } from '@/hooks/useEmailService';
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  signUp: (nickname: string, email: string, password: string) => Promise<{ error: any }>;
+  signUp: (nickname: string, email: string, password: string) => Promise<{ error: any; email: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   loading: boolean;
@@ -43,13 +43,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signUp = async (nickname: string, email: string, password: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
         data: {
           nickname: nickname
         }
@@ -58,13 +55,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     if (error) {
       toast.error(error.message);
+      return { error, email: null };
     } else {
-      toast.success('Conta criada! Verifique seu email para confirmar o cadastro.');
-      
-      // Não envia email de boas-vindas ainda, será enviado após confirmação
+      toast.success('Código de verificação enviado para seu email!');
+      return { error: null, email };
     }
-    
-    return { error };
   };
 
   const signIn = async (email: string, password: string) => {
