@@ -134,7 +134,7 @@ const Index = () => {
                     <div>
                       <h4 className="font-semibold mb-1">Auto-detecta Padrões</h4>
                       <p className="text-sm text-muted-foreground">
-                        IA identifica seletores CSS, estrutura de episódios e metadados automaticamente
+                        IA identifica seletores, estrutura de episódios e metadados automaticamente
                       </p>
                     </div>
                   </div>
