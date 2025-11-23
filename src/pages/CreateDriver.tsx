@@ -162,7 +162,7 @@ const CreateDriver = () => {
 
       // Redirecionar para a tela de drivers após 2 segundos
       setTimeout(() => {
-        navigate('/drivers/my');
+        navigate('/drivers');
       }, 2000);
     } catch (err: any) {
       console.error('Error generating index:', err);
