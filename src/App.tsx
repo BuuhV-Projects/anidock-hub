@@ -11,6 +11,7 @@ import Browse from "./pages/Browse";
 import ImportDriver from "./pages/ImportDriver";
 import CreateDriver from "./pages/CreateDriver";
 import MyDrivers from "./pages/MyDrivers";
+import IndexManual from "./pages/IndexManual";
 import VerifyOtp from "./pages/VerifyOtp";
 import ResetPassword from "./pages/ResetPassword";
 import UpdatePassword from "./pages/UpdatePassword";
@@ -39,6 +40,11 @@ const App = () => (
             <Route path="/drivers" element={
               <ProtectedRoute>
                 <MyDrivers />
+              </ProtectedRoute>
+            } />
+            <Route path="/drivers/:driverId/index-manual" element={
+              <ProtectedRoute>
+                <IndexManual />
               </ProtectedRoute>
             } />
             <Route path="/dashboard" element={

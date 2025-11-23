@@ -13,7 +13,9 @@ import {
   Plus,
   Eye,
   Loader2,
-  Sparkles
+  Sparkles,
+  FileEdit,
+  ChevronDown
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -28,6 +30,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Driver {
   id: number;
@@ -260,15 +268,29 @@ const MyDrivers = () => {
                     <Eye className="h-4 w-4 mr-1" />
                     Ver
                   </Button>
-                  <Button
-                    size="sm"
-                    variant={driver.total_animes && driver.total_animes > 0 ? "outline" : "default"}
-                    onClick={() => navigate(`/drivers/create?driver=${driver.public_id}`)}
-                    className={driver.total_animes && driver.total_animes > 0 ? "flex-1 min-w-[80px]" : "flex-1 min-w-[80px] bg-accent text-accent-foreground"}
-                  >
-                    <Sparkles className="h-4 w-4 mr-1" />
-                    {driver.total_animes && driver.total_animes > 0 ? 'Re-indexar' : 'Indexar'}
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant={driver.total_animes && driver.total_animes > 0 ? "outline" : "default"}
+                        className={driver.total_animes && driver.total_animes > 0 ? "flex-1 min-w-[80px]" : "flex-1 min-w-[80px] bg-accent text-accent-foreground"}
+                      >
+                        <Sparkles className="h-4 w-4 mr-1" />
+                        {driver.total_animes && driver.total_animes > 0 ? 'Re-indexar' : 'Indexar'}
+                        <ChevronDown className="h-3 w-3 ml-1" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => navigate(`/drivers/create?driver=${driver.public_id}`)}>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Indexar com IA
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate(`/drivers/${driver.public_id}/index-manual`)}>
+                        <FileEdit className="h-4 w-4 mr-2" />
+                        Adicionar Manualmente
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button
                     size="sm"
                     variant="outline"
