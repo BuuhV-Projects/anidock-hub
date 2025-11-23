@@ -275,6 +275,7 @@ HTML:\n\n${html.slice(0, 30000)}`
     console.log('🎯 First anime URL found:', animePageUrl);
 
     let episodeSelectors: {
+      animePageTitle?: string;
       episodeList: string;
       episodeNumber: string;
       episodeTitle: string;
@@ -295,7 +296,7 @@ HTML:\n\n${html.slice(0, 30000)}`
         const animePageResponse = await fetch(animePageUrl);
         const animePageHtml = await animePageResponse.text();
 
-        // STEP 3: Analyze anime page with AI to get episode selectors
+        // STEP 3: Analyze anime page with AI to get episode selectors AND anime title
         const episodeAnalysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -309,10 +310,11 @@ HTML:\n\n${html.slice(0, 30000)}`
                 role: 'system',
                 content: `Você é um especialista em web scraping. Analise o HTML da página de UM ANIME ESPECÍFICO.
 
-TAREFA: Extrair seletores para LISTAR EPISÓDIOS deste anime.
+TAREFA: Extrair seletores para o TÍTULO DO ANIME e LISTAR EPISÓDIOS.
 
 Formato esperado:
 {
+  "animePageTitle": "h1.anime-title",
   "episodeList": ".episode-item",
   "episodeNumber": ".ep-number",
   "episodeTitle": ".ep-title",
@@ -320,13 +322,14 @@ Formato esperado:
 }
 
 IMPORTANTE:
+- animePageTitle: Procure por h1, h2, h3 ou classes com "title", "titulo", "name", "nome" que contenha o NOME DO ANIME
 - episodeList é o container de cada episódio
 - episodeUrl deve apontar para a página do player/vídeo
 - Retorne APENAS o JSON, sem explicações`
               },
               {
                 role: 'user',
-                content: `Analise este HTML de página de anime e extraia seletores para listar episódios:\n\n${animePageHtml.slice(0, 15000)}`
+                content: `Analise este HTML de página de anime e extraia seletores para o título do anime e lista de episódios:\n\n${animePageHtml.slice(0, 15000)}`
               }
             ],
             temperature: 0.3,
@@ -463,6 +466,7 @@ IMPORTANTE:
         animeImage: rawSelectors.animeImage || rawSelectors.animeCover,
         animeSynopsis: rawSelectors.animeSynopsis,
         animeUrl: rawSelectors.animeUrl,
+        animePageTitle: rawSelectors.animePageTitle,
         episodeList: rawSelectors.episodeList,
         episodeNumber: rawSelectors.episodeNumber,
         episodeTitle: rawSelectors.episodeTitle,

@@ -14,6 +14,7 @@ export interface Driver {
       animeImage?: string;
       animeSynopsis?: string;
       animeUrl: string;
+      animePageTitle?: string;
       episodeList: string;
       episodeNumber: string;
       episodeTitle?: string;
