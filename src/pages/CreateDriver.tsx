@@ -93,13 +93,19 @@ const CreateDriver = () => {
         }
       });
 
-      if (error) throw error;
+      // Handle edge function errors (don't throw, just show message)
+      if (error) {
+        console.error('Edge function error:', error);
+        toast.error('Erro ao conectar com o servidor. Tente novamente.');
+        return;
+      }
 
+      // Handle validation errors from AI (e.g., episode list detection)
       if (data?.error) {
         if (data.suggestion) {
           toast.error(data.error, {
             description: data.suggestion,
-            duration: 5000
+            duration: 7000
           });
         } else {
           toast.error(data.error);
