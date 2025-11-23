@@ -90,6 +90,10 @@ const CreateDriver = () => {
     try {
       setIndexStatus('Acessando site...');
       
+      // Normalizar config do driver para o crawler
+      const baseUrl = (driver.config as any)?.baseUrl || new URL(url).origin;
+      const selectors = (driver.config as any)?.selectors || driver.config;
+
       // Crawl website
       const crawlResult = await crawlWithDriver(
         url,
@@ -98,7 +102,7 @@ const CreateDriver = () => {
           name: driver.name,
           domain: driver.domain,
           version: '1.0',
-          config: driver.config,
+          config: { baseUrl, selectors },
           isLocal: false,
           createdAt: driver.created_at,
           updatedAt: driver.updated_at,
