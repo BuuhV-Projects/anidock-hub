@@ -147,31 +147,49 @@ serve(async (req) => {
             role: 'system',
             content: `Você é um especialista em web scraping. Analise o HTML da página de CATÁLOGO de animes.
 
-TAREFA: Extrair seletores para LISTAR ANIMES (não episódios ainda).
+TAREFA: Extrair seletores CSS para LISTAR ANIMES (não episódios ainda).
+
+INSTRUÇÕES DETALHADAS:
+1. Encontre elementos que se REPETEM na página (cada um representa um anime)
+2. O seletor deve capturar TODOS os animes da lista
+3. Procure por padrões comuns: divs com classes, listas (ul/li), grids, etc.
+4. Teste mentalmente: "Se eu usar querySelectorAll() com este seletor, vou pegar todos os animes?"
+5. O seletor animeUrl pode ser um <a> DENTRO do animeList ou o próprio animeList já pode ser o link
+
+EXEMPLOS DE ESTRUTURAS COMUNS:
+- Links diretos: ".itemlistanime a" (onde cada <a> dentro de .itemlistanime é um anime)
+- Containers: ".anime-card" (onde cada div é um container de anime)
+- Lista: "ul.anime-list li" (cada li é um anime)
 
 Formato esperado:
 {
   "name": "Nome do Site",
   "domain": "exemplo.com",
   "selectors": {
-    "animeList": ".anime-item",
+    "animeList": ".itemlistanime a",
     "animeTitle": ".title",
-    "animeCover": "img.cover",
-    "animeUrl": "a.link",
+    "animeCover": "img",
+    "animeUrl": "",
     "animeSynopsis": ".synopsis"
   }
 }
 
 IMPORTANTE: 
-- animeUrl deve apontar para a página INDIVIDUAL do anime
-- Retorne APENAS o JSON, sem explicações`
+- animeList deve capturar TODOS os animes (use querySelectorAll mentalmente)
+- Se animeList já for o próprio link (ex: ".itemlistanime a"), deixe animeUrl vazio ""
+- Se animeList for um container, animeUrl deve ser o link DENTRO dele (ex: "a", "a.link")
+- Retorne APENAS o JSON válido, sem markdown ou explicações`
           },
           {
             role: 'user',
-            content: `Analise este HTML de catálogo e extraia seletores para listar animes:\n\n${html.slice(0, 15000)}`
+            content: `Analise este HTML de catálogo e extraia seletores CSS para listar animes.
+
+DICA: Procure por elementos que se REPETEM (um para cada anime). Pode ser links diretos ou containers com informações.
+
+HTML:\n\n${html.slice(0, 30000)}`
           }
         ],
-        temperature: 0.3,
+        temperature: 0.2,
       }),
     });
 
@@ -210,11 +228,19 @@ IMPORTANTE:
     const catalogDoc = parser.parseFromString(html, 'text/html');
     const animeElements = catalogDoc.querySelectorAll(catalogConfig.selectors.animeList);
     
+    console.log(`Found ${animeElements.length} anime elements using selector: ${catalogConfig.selectors.animeList}`);
+    
     let animePageUrl = '';
     if (animeElements.length > 0) {
       const firstAnime = animeElements[0];
-      const urlElement = firstAnime.querySelector(catalogConfig.selectors.animeUrl);
-      animePageUrl = urlElement?.getAttribute('href') || '';
+      
+      // If animeUrl is empty, animeList itself is the link
+      if (!catalogConfig.selectors.animeUrl || catalogConfig.selectors.animeUrl === '') {
+        animePageUrl = firstAnime.getAttribute('href') || '';
+      } else {
+        const urlElement = firstAnime.querySelector(catalogConfig.selectors.animeUrl);
+        animePageUrl = urlElement?.getAttribute('href') || '';
+      }
       
       if (animePageUrl && !animePageUrl.startsWith('http')) {
         animePageUrl = new URL(animePageUrl, targetUrl).href;
