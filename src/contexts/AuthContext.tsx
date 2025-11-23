@@ -56,12 +56,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success('Conta criada com sucesso!');
+      toast.success('Conta criada! Verifique seu email para confirmar o cadastro.');
       
-      // Enviar email de boas-vindas
-      setTimeout(() => {
-        sendWelcomeEmail(email).catch(console.error);
-      }, 0);
+      // Não envia email de boas-vindas ainda, será enviado após confirmação
     }
     
     return { error };
