@@ -161,9 +161,9 @@ serve(async (req) => {
           const numberText = numberEl?.textContent?.trim();
           const episodeNumber = numberText ? parseInt(numberText.replace(/\D/g, '')) : index + 1;
 
-          // Extract episode URL
+          // Extract episode URL - ALWAYS use getAttribute to get the raw href
           const urlEl = element.querySelector(selectors.episodeUrl);
-          let sourceUrl = urlEl?.href || urlEl?.getAttribute('href') || '';
+          let sourceUrl = urlEl?.getAttribute('href') || '';
 
           if (sourceUrl && !sourceUrl.startsWith('http')) {
             const baseUrl = new URL(anime_url).origin;
