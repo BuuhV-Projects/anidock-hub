@@ -9,6 +9,7 @@ import { getLocalDrivers, type LocalAnime, type LocalEpisode, type Driver } from
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { AnimeImage } from '@/components/AnimeImage';
 
 const AnimeDetails = () => {
   const navigate = useNavigate();
@@ -281,10 +282,9 @@ const AnimeDetails = () => {
           <div className="grid md:grid-cols-[300px_1fr] gap-8 mb-12">
             <div className="space-y-4">
               {anime.coverUrl ? (
-                <img
+                <AnimeImage
                   src={anime.coverUrl}
                   alt={anime.title}
-                  referrerPolicy="no-referrer"
                   className="w-full rounded-lg shadow-lg"
                 />
               ) : (
