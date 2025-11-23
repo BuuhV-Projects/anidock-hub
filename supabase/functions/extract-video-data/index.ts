@@ -37,7 +37,33 @@ serve(async (req) => {
 
     const html = await htmlResponse.text();
 
-    // Prepare AI prompt for player detection
+    // If we received a selector from the driver, try to extrair o link diretamente
+    if (external_link_selector) {
+      try {
+        const { DOMParser } = await import('https://deno.land/x/deno_dom/deno-dom-wasm.ts');
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        const linkEl = doc.querySelector(external_link_selector) as any;
+        const href = linkEl?.getAttribute('href') || linkEl?.getAttribute('data-href') || '';
+
+        if (href) {
+          const finalUrl = href.startsWith('http')
+            ? href
+            : new URL(href, episode_url).href;
+
+          return new Response(
+            JSON.stringify({ success: true, videoUrl: finalUrl }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } catch (e) {
+        console.error('Erro ao tentar extrair link direto com selector:', e);
+        // Se falhar, continuamos para a abordagem via IA abaixo
+      }
+    }
+
+    // Caso o seletor direto não funcione, usamos IA como fallback
     const prompt = `Analise o HTML abaixo e determine o tipo de player de vídeo:
 
 1. Se há um player EMBARCADO (iframe, video tag) na página
@@ -107,8 +133,41 @@ Retorne APENAS um JSON válido no seguinte formato:
       throw new Error('Resposta da IA não está em formato JSON válido');
     }
 
+    // Tentar extrair um link final a partir dos seletores retornados pela IA
+    let finalUrl: string | null = null;
+    try {
+      const { DOMParser } = await import('https://deno.land/x/deno_dom/deno-dom-wasm.ts');
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+
+      if (extractedData.hasEmbeddedPlayer && extractedData.videoSelector) {
+        const playerEl = doc.querySelector(extractedData.videoSelector) as any;
+        const src = playerEl?.getAttribute('src') || '';
+        if (src) {
+          finalUrl = src.startsWith('http') ? src : new URL(src, episode_url).href;
+        }
+      }
+
+      if (!finalUrl && extractedData.externalLinkSelector) {
+        const linkEl = doc.querySelector(extractedData.externalLinkSelector) as any;
+        const href = linkEl?.getAttribute('href') || '';
+        if (href) {
+          finalUrl = href.startsWith('http') ? href : new URL(href, episode_url).href;
+        }
+      }
+    } catch (e) {
+      console.error('Erro ao usar seletores da IA para extrair URL final:', e);
+    }
+
+    if (!finalUrl) {
+      return new Response(
+        JSON.stringify({ success: true, data: extractedData }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     return new Response(
-      JSON.stringify({ success: true, data: extractedData }),
+      JSON.stringify({ success: true, videoUrl: finalUrl, data: extractedData }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
