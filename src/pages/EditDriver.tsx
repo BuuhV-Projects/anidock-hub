@@ -182,16 +182,23 @@ const EditDriver = () => {
                   onChange={(e) => setSelectors({ ...selectors, animeList: e.target.value })}
                   placeholder=".anime-item"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Seletor para cada item de anime na lista (ex: .anime-card, .itemlistanime a)
+                </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="animeTitle">Título do Anime</Label>
+                <Label htmlFor="animeTitle" className="text-primary">Título do Anime (na lista) *</Label>
                 <Input
                   id="animeTitle"
                   value={selectors.animeTitle}
                   onChange={(e) => setSelectors({ ...selectors, animeTitle: e.target.value })}
-                  placeholder=".anime-title"
+                  placeholder="h2, .title, .nome-anime"
+                  className="border-primary/50"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Procure por tags h1-h6 ou classes com "title", "titulo", "name", "nome"
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -200,8 +207,11 @@ const EditDriver = () => {
                   id="animeImage"
                   value={selectors.animeImage}
                   onChange={(e) => setSelectors({ ...selectors, animeImage: e.target.value })}
-                  placeholder="img.anime-cover"
+                  placeholder="img, img.cover"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Tag img dentro de cada item da lista
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -210,8 +220,11 @@ const EditDriver = () => {
                   id="animeSynopsis"
                   value={selectors.animeSynopsis}
                   onChange={(e) => setSelectors({ ...selectors, animeSynopsis: e.target.value })}
-                  placeholder=".anime-synopsis"
+                  placeholder=".synopsis, .sinopse, .description"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Texto descritivo do anime (opcional)
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -220,21 +233,24 @@ const EditDriver = () => {
                   id="animeUrl"
                   value={selectors.animeUrl}
                   onChange={(e) => setSelectors({ ...selectors, animeUrl: e.target.value })}
-                  placeholder="a.anime-link"
+                  placeholder="a, a.link"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Deixe vazio se animeList já for o próprio link (&lt;a&gt;)
+                </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="episodeList" className="text-primary">Lista de Episódios *</Label>
+                <Label htmlFor="episodeList" className="text-accent">Lista de Episódios *</Label>
                 <Input
                   id="episodeList"
                   value={selectors.episodeList}
                   onChange={(e) => setSelectors({ ...selectors, episodeList: e.target.value })}
-                  placeholder=".episode-item"
-                  className="border-primary/50"
+                  placeholder=".episode-item, .animepag_episodios_item"
+                  className="border-accent/50"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Seletor para os itens de episódio na página do anime
+                  Seletor para cada episódio na página do anime
                 </p>
               </div>
 
@@ -244,8 +260,11 @@ const EditDriver = () => {
                   id="episodeNumber"
                   value={selectors.episodeNumber}
                   onChange={(e) => setSelectors({ ...selectors, episodeNumber: e.target.value })}
-                  placeholder=".episode-number"
+                  placeholder=".episode-number, .ep-numero"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Tag com o número do episódio
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -254,8 +273,11 @@ const EditDriver = () => {
                   id="episodeTitle"
                   value={selectors.episodeTitle}
                   onChange={(e) => setSelectors({ ...selectors, episodeTitle: e.target.value })}
-                  placeholder=".episode-title"
+                  placeholder=".episode-title, .ep-titulo"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Nome do episódio (se disponível)
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -264,14 +286,44 @@ const EditDriver = () => {
                   id="episodeUrl"
                   value={selectors.episodeUrl}
                   onChange={(e) => setSelectors({ ...selectors, episodeUrl: e.target.value })}
-                  placeholder="a.episode-link"
+                  placeholder="a, a.episode-link"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Link para a página de player do episódio
+                </p>
               </div>
             </div>
 
             <div className="pt-4 border-t border-border">
-              <h3 className="font-semibold mb-2">Exemplo para Anitube.vip:</h3>
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                💡 Dicas para encontrar seletores CSS:
+              </h3>
+              <div className="space-y-3 text-sm">
+                <div className="bg-muted/30 p-4 rounded-lg">
+                  <p className="font-medium mb-2">1. Abra o DevTools do navegador (F12 ou Ctrl+Shift+I)</p>
+                  <p className="text-muted-foreground">Clique com o botão direito em um elemento → "Inspecionar"</p>
+                </div>
+                <div className="bg-muted/30 p-4 rounded-lg">
+                  <p className="font-medium mb-2">2. Para o título do anime:</p>
+                  <p className="text-muted-foreground">
+                    Procure por tags &lt;h1&gt;, &lt;h2&gt;, &lt;h3&gt;, etc.<br/>
+                    Ou classes CSS que contenham: "title", "titulo", "name", "nome", "heading"
+                  </p>
+                </div>
+                <div className="bg-muted/30 p-4 rounded-lg">
+                  <p className="font-medium mb-2">3. Teste seus seletores:</p>
+                  <p className="text-muted-foreground">
+                    No Console do DevTools: <code className="bg-background px-2 py-1 rounded">document.querySelectorAll('SEU_SELETOR')</code>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-border">
+              <h3 className="font-semibold mb-2">Exemplo completo (Anitube.vip):</h3>
               <div className="bg-muted/30 p-4 rounded-lg text-sm font-mono space-y-1">
+                <div><span className="text-muted-foreground">animeList:</span> .ani_loop_item</div>
+                <div><span className="text-muted-foreground">animeTitle:</span> .ani_loop_item_infos_nome</div>
                 <div><span className="text-muted-foreground">episodeList:</span> .animepag_episodios_item</div>
                 <div><span className="text-muted-foreground">episodeNumber:</span> .animepag_episodios_item_numero</div>
                 <div><span className="text-muted-foreground">episodeUrl:</span> a</div>

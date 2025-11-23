@@ -156,10 +156,19 @@ INSTRUÇÕES DETALHADAS:
 4. Teste mentalmente: "Se eu usar querySelectorAll() com este seletor, vou pegar todos os animes?"
 5. O seletor animeUrl pode ser um <a> DENTRO do animeList ou o próprio animeList já pode ser o link
 
+PARA O TÍTULO (IMPORTANTE):
+- Procure por tags de cabeçalho: h1, h2, h3, h4, h5, h6
+- Procure por classes/IDs que contenham palavras-chave: "title", "titulo", "nome", "name", "heading"
+- O título geralmente é o texto mais proeminente dentro de cada item da lista
+- Se o título estiver DENTRO do link (animeList é o <a>), o seletor pode ser vazio "" ou apenas uma tag como "h2"
+
 EXEMPLOS DE ESTRUTURAS COMUNS:
 - Links diretos: ".itemlistanime a" (onde cada <a> dentro de .itemlistanime é um anime)
+  - Título pode estar em: "h2", ".title", ".nome-anime"
 - Containers: ".anime-card" (onde cada div é um container de anime)
+  - Título pode estar em: ".anime-title", "h3.title", ".nome"
 - Lista: "ul.anime-list li" (cada li é um anime)
+  - Título pode estar em: "h4", ".episode-title", ".anime-name"
 
 Formato esperado:
 {
@@ -167,7 +176,7 @@ Formato esperado:
   "domain": "exemplo.com",
   "selectors": {
     "animeList": ".itemlistanime a",
-    "animeTitle": ".title",
+    "animeTitle": "h2.title",
     "animeCover": "img",
     "animeUrl": "",
     "animeSynopsis": ".synopsis"
@@ -176,6 +185,7 @@ Formato esperado:
 
 IMPORTANTE: 
 - animeList deve capturar TODOS os animes (use querySelectorAll mentalmente)
+- animeTitle deve apontar para a tag/classe que contém o NOME do anime (procure h1-h6, ou classes com "title", "titulo", "name", "nome")
 - Se animeList já for o próprio link (ex: ".itemlistanime a"), deixe animeUrl vazio ""
 - Se animeList for um container, animeUrl deve ser o link DENTRO dele (ex: "a", "a.link")
 - Retorne APENAS o JSON válido, sem markdown ou explicações`
