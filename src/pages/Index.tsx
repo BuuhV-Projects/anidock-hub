@@ -82,7 +82,7 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             <Card className="glass p-6 border-border/50 hover:border-primary/50 transition-all duration-300 group">
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                 <Database className="h-6 w-6 text-primary" />
@@ -105,19 +105,9 @@ const Index = () => {
 
             <Card className="glass p-6 border-border/50 hover:border-accent/50 transition-all duration-300 group">
               <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
-                <Zap className="h-6 w-6 text-accent" />
+                <Shield className="h-6 w-6 text-accent" />
               </div>
-              <h3 className="font-display font-semibold text-lg mb-2">3. Indexa Tudo</h3>
-              <p className="text-sm text-muted-foreground">
-                Crawler automático extrai metadados: títulos, capas, sinopses, episódios.
-              </p>
-            </Card>
-
-            <Card className="glass p-6 border-border/50 hover:border-primary/50 transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                <Shield className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="font-display font-semibold text-lg mb-2">4. Assista</h3>
+              <h3 className="font-display font-semibold text-lg mb-2">3. Assista</h3>
               <p className="text-sm text-muted-foreground">
                 Player original em iframe. Sem pirataria, sem responsabilidade legal.
               </p>
