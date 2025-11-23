@@ -173,10 +173,9 @@ const CreateDriver = () => {
         }
       }
       
-      // Limpar estado
+      // Limpar estado e mostrar erro específico
       setGeneratedDriver(null);
-      
-      throw err; // Re-throw para ser capturado no handleGenerate
+      toast.error(err?.message || 'Erro ao indexar driver. O site pode não permitir extração automática.');
     } finally {
       setIsIndexing(false);
     }
