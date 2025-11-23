@@ -28,6 +28,11 @@ export interface Driver {
   isLocal: boolean;
   createdAt: string;
   updatedAt: string;
+  // Indexing fields
+  indexedData?: LocalAnime[];
+  sourceUrl?: string;
+  totalAnimes?: number;
+  lastIndexedAt?: string;
 }
 
 export interface LocalAnime {

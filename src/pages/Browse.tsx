@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Cpu, Search, User, Upload, Play, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { getLocalIndexes, type AnimeIndex, type LocalAnime } from '@/lib/localStorage';
+import { getLocalDrivers, type LocalAnime } from '@/lib/localStorage';
 import { toast } from 'sonner';
 
 const Browse = () => {
@@ -26,25 +26,28 @@ const Browse = () => {
     try {
       let animes: LocalAnime[] = [];
 
-      // Load local indexes
-      const localIndexes = getLocalIndexes();
-      localIndexes.forEach(index => {
-        animes = [...animes, ...index.animes];
+      // Load local drivers with indexed data
+      const localDrivers = getLocalDrivers().filter(d => d.indexedData && d.indexedData.length > 0);
+      localDrivers.forEach(driver => {
+        if (driver.indexedData) {
+          animes = [...animes, ...driver.indexedData];
+        }
       });
 
-      // Load cloud indexes if logged in
+      // Load cloud drivers if logged in
       if (user) {
-        const { data: cloudIndexes, error } = await supabase
-          .from('indexes')
+        const { data: cloudDrivers, error } = await supabase
+          .from('drivers')
           .select('*')
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .not('indexed_data', 'is', null);
 
         if (error) {
-          console.error('Error fetching cloud indexes:', error);
-        } else if (cloudIndexes) {
-          cloudIndexes.forEach(index => {
-            const indexAnimes = (index.index_data as any[]) || [];
-            animes = [...animes, ...indexAnimes];
+          console.error('Error fetching cloud drivers:', error);
+        } else if (cloudDrivers) {
+          cloudDrivers.forEach(driver => {
+            const driverAnimes = (driver.indexed_data as any[]) || [];
+            animes = [...animes, ...driverAnimes];
           });
         }
       }
@@ -141,16 +144,16 @@ const Browse = () => {
               </h3>
               <p className="text-muted-foreground mb-6">
                 {user 
-                  ? 'Crie drivers e gere indexações para começar a assistir seus animes favoritos.'
-                  : 'Importe indexações compartilhadas pela comunidade e comece a assistir seus animes favoritos.'}
+                  ? 'Crie drivers e indexe sites de anime para começar a assistir seus favoritos.'
+                  : 'Importe drivers compartilhados pela comunidade e comece a assistir seus animes favoritos.'}
               </p>
               <div className="flex gap-4 justify-center">
                 <Button
                   size="lg"
                   className="bg-primary text-primary-foreground hover:bg-primary/90"
-                  onClick={() => navigate('/indexes/import')}
+                  onClick={() => navigate('/drivers/import')}
                 >
-                  Importar Indexação
+                  Importar Driver
                 </Button>
                 {user ? (
                   <Button

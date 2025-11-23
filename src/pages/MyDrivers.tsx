@@ -37,6 +37,10 @@ interface Driver {
   is_public: boolean;
   config: any;
   created_at: string;
+  indexed_data?: any[];
+  source_url?: string;
+  total_animes?: number;
+  last_indexed_at?: string;
 }
 
 const MyDrivers = () => {
@@ -67,7 +71,7 @@ const MyDrivers = () => {
 
       if (error) throw error;
 
-      setDrivers(data || []);
+      setDrivers((data || []) as Driver[]);
     } catch (error: any) {
       console.error('Error fetching drivers:', error);
       toast.error('Erro ao carregar drivers');
@@ -212,6 +216,11 @@ const MyDrivers = () => {
                     <p className="text-sm text-muted-foreground">
                       {driver.domain}
                     </p>
+                    {driver.total_animes && driver.total_animes > 0 && (
+                      <p className="text-xs text-accent font-medium mt-1">
+                        {driver.total_animes} animes indexados
+                      </p>
+                    )}
                   </div>
                   <Badge
                     variant={driver.is_public ? "default" : "secondary"}
@@ -233,26 +242,32 @@ const MyDrivers = () => {
 
                 <div className="text-xs text-muted-foreground mb-4">
                   Criado em {new Date(driver.created_at).toLocaleDateString('pt-BR')}
+                  {driver.last_indexed_at && (
+                    <>
+                      <br />
+                      Última indexação: {new Date(driver.last_indexed_at).toLocaleDateString('pt-BR')}
+                    </>
+                  )}
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => setSelectedDriver(driver)}
-                    className="flex-1"
+                    className="flex-1 min-w-[80px]"
                   >
                     <Eye className="h-4 w-4 mr-1" />
                     Ver
                   </Button>
                   <Button
                     size="sm"
-                    variant="default"
-                    onClick={() => navigate(`/indexes/generate?driver=${driver.public_id}`)}
-                    className="flex-1 bg-accent text-accent-foreground"
+                    variant={driver.total_animes && driver.total_animes > 0 ? "outline" : "default"}
+                    onClick={() => navigate(`/drivers/create?driver=${driver.public_id}`)}
+                    className={driver.total_animes && driver.total_animes > 0 ? "flex-1 min-w-[80px]" : "flex-1 min-w-[80px] bg-accent text-accent-foreground"}
                   >
                     <Sparkles className="h-4 w-4 mr-1" />
-                    Indexar
+                    {driver.total_animes && driver.total_animes > 0 ? 'Re-indexar' : 'Indexar'}
                   </Button>
                   <Button
                     size="sm"
