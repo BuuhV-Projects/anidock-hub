@@ -17,6 +17,7 @@ interface AnimeForm {
   synopsis: string;
   coverUrl: string;
   sourceUrl: string;
+  isExtracting: boolean;
 }
 
 interface EpisodeForm {
@@ -37,7 +38,8 @@ const IndexManual = () => {
     title: '',
     synopsis: '',
     coverUrl: '',
-    sourceUrl: ''
+    sourceUrl: '',
+    isExtracting: false
   }]);
   const [episodes, setEpisodes] = useState<EpisodeForm[]>([{
     id: crypto.randomUUID(),
@@ -83,7 +85,8 @@ const IndexManual = () => {
           title: anime.title || '',
           synopsis: anime.synopsis || '',
           coverUrl: anime.coverUrl || '',
-          sourceUrl: anime.sourceUrl || ''
+          sourceUrl: anime.sourceUrl || '',
+          isExtracting: false
         })));
       }
     } catch (error: any) {
@@ -101,7 +104,8 @@ const IndexManual = () => {
       title: '',
       synopsis: '',
       coverUrl: '',
-      sourceUrl: ''
+      sourceUrl: '',
+      isExtracting: false
     }]);
   };
 
@@ -113,10 +117,42 @@ const IndexManual = () => {
     setAnimes(animes.filter(a => a.id !== id));
   };
 
-  const updateAnime = (id: string, field: keyof AnimeForm, value: string) => {
+  const updateAnime = (id: string, field: keyof AnimeForm, value: any) => {
     setAnimes(animes.map(a => 
       a.id === id ? { ...a, [field]: value } : a
     ));
+  };
+
+  const extractAnimeData = async (id: string) => {
+    const anime = animes.find(a => a.id === id);
+    if (!anime?.sourceUrl) {
+      toast.error('Insira a URL do anime primeiro');
+      return;
+    }
+
+    updateAnime(id, 'isExtracting', true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('extract-anime-data', {
+        body: { url: anime.sourceUrl, driver }
+      });
+
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      const extracted = data.data;
+      
+      updateAnime(id, 'title', extracted.title || '');
+      updateAnime(id, 'synopsis', extracted.synopsis || '');
+      updateAnime(id, 'coverUrl', extracted.coverUrl || '');
+
+      toast.success('Dados extraídos com sucesso!');
+    } catch (error: any) {
+      console.error('Error extracting anime data:', error);
+      toast.error('Erro ao extrair dados: ' + error.message);
+    } finally {
+      updateAnime(id, 'isExtracting', false);
+    }
   };
 
   const addEpisode = () => {
@@ -313,7 +349,7 @@ const IndexManual = () => {
                 </div>
               </Card>
 
-            {animes.map((anime, index) => (
+              {animes.map((anime, index) => (
               <Card key={anime.id} className="glass p-6 border-border/50">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-display font-bold">
@@ -332,6 +368,40 @@ const IndexManual = () => {
                 </div>
 
                 <div className="space-y-4">
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <Label htmlFor={`url-${anime.id}`}>
+                        URL da Página <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        id={`url-${anime.id}`}
+                        value={anime.sourceUrl}
+                        onChange={(e) => updateAnime(anime.id, 'sourceUrl', e.target.value)}
+                        placeholder="https://exemplo.com/anime/nome-do-anime"
+                        className="bg-input border-border"
+                      />
+                    </div>
+                    <div className="flex items-end">
+                      <Button
+                        onClick={() => extractAnimeData(anime.id)}
+                        disabled={anime.isExtracting || !anime.sourceUrl}
+                        className="gap-2"
+                      >
+                        {anime.isExtracting ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Extraindo...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-4 w-4" />
+                            Extrair com IA
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+
                   <div>
                     <Label htmlFor={`title-${anime.id}`}>
                       Título <span className="text-destructive">*</span>
@@ -341,19 +411,6 @@ const IndexManual = () => {
                       value={anime.title}
                       onChange={(e) => updateAnime(anime.id, 'title', e.target.value)}
                       placeholder="Nome do anime"
-                      className="bg-input border-border"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor={`url-${anime.id}`}>
-                      URL da Página <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id={`url-${anime.id}`}
-                      value={anime.sourceUrl}
-                      onChange={(e) => updateAnime(anime.id, 'sourceUrl', e.target.value)}
-                      placeholder="https://exemplo.com/anime/nome-do-anime"
                       className="bg-input border-border"
                     />
                   </div>
