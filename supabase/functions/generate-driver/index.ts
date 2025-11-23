@@ -220,6 +220,27 @@ HTML:\n\n${html.slice(0, 30000)}`
       );
     }
 
+    // Domain-specific correction for anroll.net where a lista de animes usa ".itemlistanime a"
+    try {
+      const parsedCatalogUrl = new URL(targetUrl);
+      const catalogDomain = parsedCatalogUrl.hostname.replace(/^www\./, '');
+      if (catalogDomain === 'anroll.net') {
+        catalogConfig = catalogConfig || {};
+        catalogConfig.name = catalogConfig.name || 'AnimesROLL';
+        catalogConfig.domain = 'anroll.net';
+        catalogConfig.selectors = {
+          ...(catalogConfig.selectors || {}),
+          // Cada anime é um <a> dentro de .itemlistanime
+          animeList: '.itemlistanime a',
+          // Quando o próprio animeList já é o link, deixamos animeUrl vazio
+          animeUrl: '',
+        };
+        console.log('Applied domain-specific selector override for anroll.net:', catalogConfig.selectors);
+      }
+    } catch (e) {
+      console.warn('Could not apply domain-specific override:', e);
+    }
+
     // STEP 2: Fetch an anime page to analyze episodes
     console.log('Fetching anime page to analyze episodes...');
     
