@@ -9,7 +9,6 @@ import { Cpu, Search, User, Upload, Play, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getLocalDrivers, type LocalAnime } from '@/lib/localStorage';
 import { toast } from 'sonner';
-import { AnimeImage } from '@/components/AnimeImage';
 
 const Browse = () => {
   const { user } = useAuth();
@@ -223,9 +222,10 @@ const Browse = () => {
                 >
                   <div className="aspect-[2/3] relative overflow-hidden">
                     {anime.coverUrl ? (
-                      <AnimeImage
+                      <img
                         src={anime.coverUrl}
                         alt={anime.title}
+                        referrerPolicy="no-referrer"
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
                     ) : (
