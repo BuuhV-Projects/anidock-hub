@@ -195,10 +195,6 @@ const AnimeDetails = () => {
   const handleWatchEpisode = async (episode: LocalEpisode) => {
     // Check if driver requires external link extraction
     if (driver?.config?.requiresExternalLink) {
-      console.log('Episode data:', episode);
-      console.log('Episode sourceUrl:', episode.sourceUrl);
-      console.log('Driver config:', driver.config);
-      
       toast.loading('Extraindo link do vídeo...');
       
       try {
@@ -214,30 +210,25 @@ const AnimeDetails = () => {
         if (error) {
           console.error('Error extracting video link:', error);
           toast.error('Erro ao extrair link do vídeo');
+          window.open(episode.sourceUrl, '_blank');
           return;
         }
 
         if (!data?.success || !data?.videoUrl) {
-          console.error('No video URL found:', data);
-          toast.error(data?.error || 'Não foi possível extrair o link do vídeo');
-          
-          // Oferecer abrir a URL original como fallback
-          toast.info('Abrindo página do episódio...', {
-            action: {
-              label: 'Abrir',
-              onClick: () => window.open(episode.sourceUrl, '_blank')
-            }
-          });
+          console.log('No video URL found, opening episode page directly');
+          toast.info('Abrindo página do episódio...');
+          window.open(episode.sourceUrl, '_blank');
           return;
         }
 
         // Open extracted URL in new tab
         window.open(data.videoUrl, '_blank');
-        toast.success('Link extraído com sucesso!');
+        toast.success('Abrindo vídeo...');
       } catch (error) {
         console.error('Error calling extract-video-data:', error);
         toast.dismiss();
         toast.error('Erro ao processar episódio');
+        window.open(episode.sourceUrl, '_blank');
       }
     } else {
       // Navigate to embedded player page

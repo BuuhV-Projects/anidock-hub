@@ -39,45 +39,41 @@ serve(async (req) => {
     const html = await htmlResponse.text();
     console.log('HTML fetched, length:', html.length);
 
-    // Strategy 1: Use the provided selector directly
+    const { DOMParser } = await import('https://deno.land/x/deno_dom/deno-dom-wasm.ts');
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    if (!doc) {
+      throw new Error('Failed to parse HTML');
+    }
+
+    // If driver provided a specific selector, use it first
     if (external_link_selector) {
-      try {
-        const { DOMParser } = await import('https://deno.land/x/deno_dom/deno-dom-wasm.ts');
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
+      console.log('Searching for selector:', external_link_selector);
+      const linkEl = doc.querySelector(external_link_selector);
+      
+      if (linkEl) {
+        const href = linkEl.getAttribute('href') || linkEl.getAttribute('data-href') || '';
+        console.log('Found link with selector:', href);
 
-        if (!doc) {
-          throw new Error('Failed to parse HTML');
+        if (href) {
+          const finalUrl = href.startsWith('http')
+            ? href
+            : new URL(href, episode_url).href;
+
+          console.log('Final URL:', finalUrl);
+
+          return new Response(
+            JSON.stringify({ success: true, videoUrl: finalUrl }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
         }
-
-        console.log('Searching for selector:', external_link_selector);
-        const linkEl = doc.querySelector(external_link_selector);
-        
-        if (linkEl) {
-          const href = linkEl.getAttribute('href') || linkEl.getAttribute('data-href') || '';
-          console.log('Found link with selector:', href);
-
-          if (href) {
-            const finalUrl = href.startsWith('http')
-              ? href
-              : new URL(href, episode_url).href;
-
-            console.log('Final URL:', finalUrl);
-
-            return new Response(
-              JSON.stringify({ success: true, videoUrl: finalUrl }),
-              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-          }
-        } else {
-          console.log('No element found with selector:', external_link_selector);
-        }
-      } catch (e) {
-        console.error('Error using selector:', e);
+      } else {
+        console.log('No element found with selector:', external_link_selector);
       }
     }
 
-    // Strategy 2: Try common selectors for external links
+    // Try common selectors for external links
     const commonSelectors = [
       'a[href*="assistir"]',
       'a[href*="watch"]',
@@ -89,60 +85,30 @@ serve(async (req) => {
     ];
 
     for (const selector of commonSelectors) {
-      try {
-        const { DOMParser } = await import('https://deno.land/x/deno_dom/deno-dom-wasm.ts');
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        
-        const linkEl = doc.querySelector(selector);
-        if (linkEl) {
-          const href = linkEl.getAttribute('href') || '';
-          if (href && (href.startsWith('http') || href.startsWith('/'))) {
-            const finalUrl = href.startsWith('http')
-              ? href
-              : new URL(href, episode_url).href;
-            
-            console.log('Found link with common selector', selector, ':', finalUrl);
-            
-            return new Response(
-              JSON.stringify({ success: true, videoUrl: finalUrl }),
-              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-          }
-        }
-      } catch (e) {
-        console.error('Error trying selector', selector, ':', e);
-      }
-    }
-
-    // Strategy 3: Check for embedded player (iframe, video)
-    try {
-      const { DOMParser } = await import('https://deno.land/x/deno_dom/deno-dom-wasm.ts');
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      
-      const iframe = doc.querySelector('iframe[src]');
-      if (iframe) {
-        const src = iframe.getAttribute('src') || '';
-        if (src) {
-          const finalUrl = src.startsWith('http') ? src : new URL(src, episode_url).href;
-          console.log('Found iframe:', finalUrl);
+      const linkEl = doc.querySelector(selector);
+      if (linkEl) {
+        const href = linkEl.getAttribute('href') || '';
+        if (href && (href.startsWith('http') || href.startsWith('/'))) {
+          const finalUrl = href.startsWith('http')
+            ? href
+            : new URL(href, episode_url).href;
+          
+          console.log('Found link with common selector', selector, ':', finalUrl);
           
           return new Response(
-            JSON.stringify({ success: true, videoUrl: finalUrl, hasEmbeddedPlayer: true }),
+            JSON.stringify({ success: true, videoUrl: finalUrl }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
       }
-    } catch (e) {
-      console.error('Error checking for iframe:', e);
     }
 
-    // No link found with any strategy
+    // No external link found - return error so frontend can open episode page directly
+    console.log('No external link found');
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: 'Não foi possível encontrar o link do vídeo. Tente abrir manualmente a URL do episódio.' 
+        error: 'Nenhum link externo encontrado. Abrindo página do episódio...' 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
