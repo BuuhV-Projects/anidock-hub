@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Browse from "./pages/Browse";
 import ImportDriver from "./pages/ImportDriver";
+import CreateDriver from "./pages/CreateDriver";
 import VerifyOtp from "./pages/VerifyOtp";
 import ResetPassword from "./pages/ResetPassword";
 import UpdatePassword from "./pages/UpdatePassword";
@@ -29,6 +30,11 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/browse" element={<Browse />} />
             <Route path="/drivers/import" element={<ImportDriver />} />
+            <Route path="/drivers/create" element={
+              <ProtectedRoute>
+                <CreateDriver />
+              </ProtectedRoute>
+            } />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
