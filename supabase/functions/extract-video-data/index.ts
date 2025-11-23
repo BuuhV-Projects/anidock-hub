@@ -47,7 +47,37 @@ serve(async (req) => {
       throw new Error('Failed to parse HTML');
     }
 
-    // If driver provided a specific selector, use it first
+    // Strategy 1: Check for embedded iframe player
+    const iframe = doc.querySelector('iframe[src]');
+    if (iframe) {
+      const src = iframe.getAttribute('src') || '';
+      if (src && (src.includes('player') || src.includes('embed') || src.includes('video'))) {
+        const finalUrl = src.startsWith('http') ? src : new URL(src, episode_url).href;
+        console.log('Found iframe player:', finalUrl);
+        
+        return new Response(
+          JSON.stringify({ success: true, videoUrl: finalUrl, type: 'iframe' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Strategy 2: Check for HTML5 video tag
+    const video = doc.querySelector('video source[src]') || doc.querySelector('video[src]');
+    if (video) {
+      const src = video.getAttribute('src') || '';
+      if (src) {
+        const finalUrl = src.startsWith('http') ? src : new URL(src, episode_url).href;
+        console.log('Found video tag:', finalUrl);
+        
+        return new Response(
+          JSON.stringify({ success: true, videoUrl: finalUrl, type: 'video' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Strategy 3: If driver provided a specific selector for external link, use it
     if (external_link_selector) {
       console.log('Searching for selector:', external_link_selector);
       const linkEl = doc.querySelector(external_link_selector);
@@ -64,7 +94,7 @@ serve(async (req) => {
           console.log('Final URL:', finalUrl);
 
           return new Response(
-            JSON.stringify({ success: true, videoUrl: finalUrl }),
+            JSON.stringify({ success: true, videoUrl: finalUrl, type: 'external' }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
@@ -73,7 +103,7 @@ serve(async (req) => {
       }
     }
 
-    // Try common selectors for external links
+    // Strategy 4: Try common selectors for external links
     const commonSelectors = [
       'a[href*="assistir"]',
       'a[href*="watch"]',
@@ -96,7 +126,7 @@ serve(async (req) => {
           console.log('Found link with common selector', selector, ':', finalUrl);
           
           return new Response(
-            JSON.stringify({ success: true, videoUrl: finalUrl }),
+            JSON.stringify({ success: true, videoUrl: finalUrl, type: 'external' }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }

@@ -9,6 +9,7 @@ import { getLocalDrivers, type LocalAnime, type LocalEpisode, type Driver } from
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { VideoPlayerModal } from '@/components/VideoPlayerModal';
 
 const AnimeDetails = () => {
   const navigate = useNavigate();
@@ -23,6 +24,12 @@ const AnimeDetails = () => {
   const [episodes, setEpisodes] = useState<LocalEpisode[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCrawling, setIsCrawling] = useState(false);
+  const [isPlayerModalOpen, setIsPlayerModalOpen] = useState(false);
+  const [currentVideoData, setCurrentVideoData] = useState<{
+    type: 'iframe' | 'video' | null;
+    url: string | null;
+  } | null>(null);
+  const [currentEpisodeTitle, setCurrentEpisodeTitle] = useState('');
 
   useEffect(() => {
     loadAnimeAndEpisodes();
@@ -193,56 +200,59 @@ const AnimeDetails = () => {
   };
 
   const handleWatchEpisode = async (episode: LocalEpisode) => {
-    // Check if driver requires external link extraction
-    if (driver?.config?.requiresExternalLink) {
-      toast.loading('Extraindo link do vídeo...');
-      
-      try {
-        const { data, error } = await supabase.functions.invoke('extract-video-data', {
-          body: {
-            episode_url: episode.sourceUrl,
-            external_link_selector: driver.config.selectors?.externalLinkSelector
-          }
-        });
-
-        toast.dismiss();
-
-        if (error) {
-          console.error('Error extracting video link:', error);
-          toast.error('Erro ao extrair link do vídeo');
-          window.open(episode.sourceUrl, '_blank');
-          return;
+    const episodeTitle = `${anime?.title} - Episódio ${episode.episodeNumber}`;
+    setCurrentEpisodeTitle(episodeTitle);
+    setCurrentVideoData(null);
+    setIsPlayerModalOpen(true);
+    
+    toast.loading('Carregando player...');
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('extract-video-data', {
+        body: {
+          episode_url: episode.sourceUrl,
+          external_link_selector: driver?.config?.selectors?.externalLinkSelector
         }
-
-        if (!data?.success || !data?.videoUrl) {
-          console.log('No video URL found, opening episode page directly');
-          toast.info('Abrindo página do episódio...');
-          window.open(episode.sourceUrl, '_blank');
-          return;
-        }
-
-        // Open extracted URL in new tab
-        window.open(data.videoUrl, '_blank');
-        toast.success('Abrindo vídeo...');
-      } catch (error) {
-        console.error('Error calling extract-video-data:', error);
-        toast.dismiss();
-        toast.error('Erro ao processar episódio');
-        window.open(episode.sourceUrl, '_blank');
-      }
-    } else {
-      // Navigate to embedded player page
-      const params = new URLSearchParams({
-        url: episode.sourceUrl,
-        title: anime?.title || '',
-        ep: String(episode.episodeNumber),
       });
 
-      if (animeId) params.append('anime', animeId);
-      if (driverId) params.append('driver', driverId);
-      if (indexId) params.append('index', indexId);
+      toast.dismiss();
 
-      navigate(`/player?${params.toString()}`);
+      if (error) {
+        console.error('Error extracting video:', error);
+        toast.error('Erro ao carregar vídeo');
+        setIsPlayerModalOpen(false);
+        window.open(episode.sourceUrl, '_blank');
+        return;
+      }
+
+      if (!data?.success || !data?.videoUrl) {
+        console.log('No video found, opening episode page directly');
+        toast.info('Abrindo página do episódio...');
+        setIsPlayerModalOpen(false);
+        window.open(episode.sourceUrl, '_blank');
+        return;
+      }
+
+      // Check if it's an external link (not iframe/video)
+      if (data.type === 'external') {
+        toast.info('Abrindo vídeo em nova aba...');
+        setIsPlayerModalOpen(false);
+        window.open(data.videoUrl, '_blank');
+        return;
+      }
+
+      // Set video data for modal player
+      setCurrentVideoData({
+        type: data.type || 'iframe',
+        url: data.videoUrl
+      });
+      toast.success('Player carregado!');
+    } catch (error) {
+      console.error('Error calling extract-video-data:', error);
+      toast.dismiss();
+      toast.error('Erro ao processar episódio');
+      setIsPlayerModalOpen(false);
+      window.open(episode.sourceUrl, '_blank');
     }
   };
 
@@ -374,6 +384,13 @@ const AnimeDetails = () => {
           </div>
         </div>
       </main>
+
+      <VideoPlayerModal
+        isOpen={isPlayerModalOpen}
+        onClose={() => setIsPlayerModalOpen(false)}
+        videoData={currentVideoData}
+        episodeTitle={currentEpisodeTitle}
+      />
     </div>
   );
 };
