@@ -14,6 +14,7 @@ const Dashboard = () => {
   const [animesCount, setAnimesCount] = useState(0);
   const [userRole, setUserRole] = useState<string>('Free');
   const [isLoading, setIsLoading] = useState(true);
+  const [canCreateMoreDrivers, setCanCreateMoreDrivers] = useState(true);
 
   useEffect(() => {
     if (!user) {
@@ -50,7 +51,15 @@ const Dashboard = () => {
             premium: 'Premium',
             premium_plus: 'Premium+'
           };
-          setUserRole(roleMap[roleData as keyof typeof roleMap] || 'Free');
+          const role = roleData as keyof typeof roleMap;
+          setUserRole(roleMap[role] || 'Free');
+          
+          // Check if user can create more drivers (free users limited to 3)
+          if (role === 'free' && driversData) {
+            setCanCreateMoreDrivers(driversData.length < 3);
+          } else {
+            setCanCreateMoreDrivers(true);
+          }
         }
       } catch (error) {
         console.error('Error fetching stats:', error);
@@ -174,10 +183,16 @@ const Dashboard = () => {
             <p className="text-muted-foreground mb-6">
               Use nossa IA para criar um driver customizado a partir de qualquer site de anime.
             </p>
+            {!canCreateMoreDrivers && (
+              <p className="text-sm text-destructive mb-4">
+                Limite de 3 drivers atingido. Faça upgrade para Premium!
+              </p>
+            )}
             <Button
               size="lg"
               className="bg-primary text-primary-foreground hover:bg-primary/90 glow-cyan w-full gap-2"
               onClick={() => navigate('/drivers/create')}
+              disabled={!canCreateMoreDrivers}
             >
               <Plus className="h-5 w-5" />
               Criar Driver
@@ -191,11 +206,17 @@ const Dashboard = () => {
             <p className="text-muted-foreground mb-6">
               Importe drivers compartilhados pela comunidade ou amigos.
             </p>
+            {!canCreateMoreDrivers && (
+              <p className="text-sm text-destructive mb-4">
+                Limite de 3 drivers atingido. Faça upgrade para Premium!
+              </p>
+            )}
             <Button
               size="lg"
               variant="outline"
               className="border-primary/50 hover:bg-primary/10 w-full gap-2"
               onClick={() => navigate('/drivers/import')}
+              disabled={!canCreateMoreDrivers}
             >
               <Database className="h-5 w-5" />
               Importar Driver
