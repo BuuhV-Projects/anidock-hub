@@ -234,17 +234,26 @@ export const importDriver = (driverJson: string): Driver => {
     // Check if driver has indexed_data (from export format)
     const indexedData = (driver as any).indexed_data || driver.indexedData || [];
     
+    // Generate new ID for the imported driver
+    const newDriverId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Update driverId in all animes to match the new driver ID
+    const updatedIndexedData = indexedData.map((anime: LocalAnime) => ({
+      ...anime,
+      driverId: newDriverId
+    }));
+    
     // Generate new ID if importing
     const newDriver: Driver = {
       ...driver,
-      id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: newDriverId,
       isLocal: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       // Preserve indexed data if it exists (already processed, no need to reprocess)
-      indexedData: indexedData.length > 0 ? indexedData : undefined,
+      indexedData: updatedIndexedData.length > 0 ? updatedIndexedData : undefined,
       sourceUrl: (driver as any).source_url || driver.sourceUrl,
-      totalAnimes: (driver as any).total_animes || driver.totalAnimes || indexedData.length,
+      totalAnimes: (driver as any).total_animes || driver.totalAnimes || updatedIndexedData.length,
       lastIndexedAt: (driver as any).last_indexed_at || driver.lastIndexedAt
     };
     
