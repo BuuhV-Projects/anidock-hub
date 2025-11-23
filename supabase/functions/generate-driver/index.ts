@@ -23,6 +23,13 @@ serve(async (req) => {
       );
     }
 
+    if (!catalog_url) {
+      return new Response(
+        JSON.stringify({ error: 'URL do catálogo é obrigatória' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Get authorization header and extract JWT
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
@@ -477,7 +484,7 @@ IMPORTANTE:
     };
 
     // Save driver to database using admin client
-    // Use catalog_url as source_url if provided, otherwise use main url
+    // Save driver with catalog_url (now required)
     const { data: driver, error: insertError } = await supabaseAdmin
       .from('drivers')
       .insert({
@@ -487,7 +494,7 @@ IMPORTANTE:
         user_id: user.id,
         is_public: is_public,
         source_url: url,
-        catalog_url: catalog_url || null,
+        catalog_url: catalog_url,
       })
       .select()
       .single();
