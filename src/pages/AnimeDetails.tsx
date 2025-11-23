@@ -5,7 +5,14 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Play, Loader2, ExternalLink } from 'lucide-react';
 import { crawlEpisodes } from '@/lib/crawler';
-import { getLocalDrivers, type LocalAnime, type LocalEpisode, type Driver } from '@/lib/localStorage';
+import { 
+  getLocalDrivers, 
+  getLocalAnime, 
+  saveLocalAnime, 
+  type LocalAnime, 
+  type LocalEpisode, 
+  type Driver 
+} from '@/lib/localStorage';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -44,7 +51,24 @@ const AnimeDetails = () => {
 
     setIsLoading(true);
     try {
-      // Find anime from local drivers or cloud indexes
+      // STEP 1: Check local cache first (fastest)
+      const cachedAnime = getLocalAnime(animeId);
+      if (cachedAnime && cachedAnime.episodes && cachedAnime.episodes.length > 0) {
+        console.log('Loading from local cache:', animeId);
+        setAnime(cachedAnime);
+        setEpisodes(cachedAnime.episodes);
+        
+        // Still need to get driver info
+        const localDriver = getLocalDrivers().find(d => d.id === driverId);
+        if (localDriver) {
+          setDriver(localDriver);
+        }
+        
+        setIsLoading(false);
+        return;
+      }
+
+      // STEP 2: Find anime from local drivers or cloud indexes
       let foundAnime: LocalAnime | null = null;
       let foundDriver: Driver | null = null;
 
@@ -58,7 +82,7 @@ const AnimeDetails = () => {
         }
       }
 
-      // Check cloud indexes if logged in and not found locally
+      // STEP 3: Check cloud indexes if logged in and not found locally
       if (!foundAnime && user && indexId) {
         const { data: index, error: indexError } = await supabase
           .from('indexes')
@@ -104,7 +128,7 @@ const AnimeDetails = () => {
         setEpisodes(foundAnime.episodes);
         setIsLoading(false);
       } else {
-        // Crawl episodes if not already crawled
+        // STEP 4: Crawl episodes if not already crawled
         await crawlAnimeEpisodes(foundAnime, foundDriver);
       }
     } catch (error) {
@@ -135,6 +159,15 @@ const AnimeDetails = () => {
           toast.error('Nenhum episódio encontrado nesta página');
         } else {
           toast.success(`${crawledEpisodes.length} episódios encontrados`);
+          
+          // Save to local cache
+          const updatedAnime = {
+            ...animeData,
+            episodes: crawledEpisodes,
+            updatedAt: new Date().toISOString()
+          };
+          saveLocalAnime(updatedAnime);
+          console.log('Saved anime to local cache:', updatedAnime.id);
         }
 
         setEpisodes(crawledEpisodes);
@@ -186,6 +219,15 @@ const AnimeDetails = () => {
           } else {
             toast.success(`${crawledEpisodes.length} episódios indexados e salvos`);
           }
+          
+          // Save to local cache
+          const updatedAnime = {
+            ...animeData,
+            episodes: crawledEpisodes,
+            updatedAt: new Date().toISOString()
+          };
+          saveLocalAnime(updatedAnime);
+          console.log('Saved anime to local cache:', updatedAnime.id);
         }
 
         setEpisodes(crawledEpisodes);
