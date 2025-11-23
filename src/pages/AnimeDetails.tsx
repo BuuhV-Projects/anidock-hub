@@ -108,27 +108,81 @@ const AnimeDetails = () => {
   };
 
   const crawlAnimeEpisodes = async (animeData: LocalAnime, driverData: Driver) => {
+    if (!user) {
+      // If not logged in, fallback to client-side crawl
+      setIsCrawling(true);
+      try {
+        const { episodes: crawledEpisodes, errors } = await crawlEpisodes(
+          animeData.sourceUrl,
+          driverData,
+          animeData.id,
+          indexId ? parseInt(indexId) : undefined,
+          animeData.episodes
+        );
+
+        if (errors.length > 0) {
+          console.warn('Errors during crawl:', errors);
+        }
+
+        if (crawledEpisodes.length === 0) {
+          toast.error('Nenhum episódio encontrado nesta página');
+        } else {
+          toast.success(`${crawledEpisodes.length} episódios encontrados`);
+        }
+
+        setEpisodes(crawledEpisodes);
+      } catch (error) {
+        console.error('Error crawling episodes:', error);
+        toast.error('Erro ao buscar episódios');
+      } finally {
+        setIsCrawling(false);
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // If logged in, use backend crawl
     setIsCrawling(true);
     try {
-      const { episodes: crawledEpisodes, errors } = await crawlEpisodes(
-        animeData.sourceUrl,
-        driverData,
-        animeData.id,
-        indexId ? parseInt(indexId) : undefined,
-        animeData.episodes // Pass existing episodes to avoid re-crawling
-      );
+      const { data, error } = await supabase.functions.invoke('crawl-episodes', {
+        body: {
+          anime_id: animeData.id,
+          index_id: indexId ? parseInt(indexId) : null,
+          anime_url: animeData.sourceUrl,
+          driver_id: driverData.id
+        }
+      });
 
-      if (errors.length > 0) {
-        console.warn('Errors during crawl:', errors);
+      if (error) {
+        console.error('Edge function error:', error);
+        toast.error('Erro ao buscar episódios via backend');
+        return;
       }
 
-      if (crawledEpisodes.length === 0) {
-        toast.error('Nenhum episódio encontrado nesta página');
-      } else {
-        toast.success(`${crawledEpisodes.length} episódios encontrados`);
+      if (data?.error) {
+        toast.error(data.error);
+        return;
       }
 
-      setEpisodes(crawledEpisodes);
+      if (data?.success) {
+        const { episodes: crawledEpisodes, cached, errors } = data;
+
+        if (errors && errors.length > 0) {
+          console.warn('Errors during crawl:', errors);
+        }
+
+        if (crawledEpisodes.length === 0) {
+          toast.error('Nenhum episódio encontrado nesta página');
+        } else {
+          if (cached) {
+            toast.success(`${crawledEpisodes.length} episódios carregados (cache)`);
+          } else {
+            toast.success(`${crawledEpisodes.length} episódios indexados e salvos`);
+          }
+        }
+
+        setEpisodes(crawledEpisodes);
+      }
     } catch (error) {
       console.error('Error crawling episodes:', error);
       toast.error('Erro ao buscar episódios');
