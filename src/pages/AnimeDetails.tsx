@@ -195,6 +195,10 @@ const AnimeDetails = () => {
   const handleWatchEpisode = async (episode: LocalEpisode) => {
     // Check if driver requires external link extraction
     if (driver?.config?.requiresExternalLink) {
+      console.log('Episode data:', episode);
+      console.log('Episode sourceUrl:', episode.sourceUrl);
+      console.log('Driver config:', driver.config);
+      
       toast.loading('Extraindo link do vídeo...');
       
       try {
