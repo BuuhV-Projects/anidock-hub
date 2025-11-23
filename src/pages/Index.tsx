@@ -38,9 +38,9 @@ const Index = () => {
             </p>
             
             <p className="mb-12 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Software desktop que roda 100% localmente no seu PC Windows. 
-              Conecte qualquer site de anime, nossa IA aprende e indexa tudo offline. 
-              Sem dependência de servidor.
+              Software desktop que roda localmente no seu PC Windows. 
+              Conecte qualquer site de anime, nossa IA aprende e indexa tudo localmente. 
+              Seus dados ficam no seu computador.
             </p>
 
             {/* CTA Buttons */}
@@ -72,7 +72,7 @@ const Index = () => {
             <div className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto">
               <div className="text-center">
                 <div className="text-3xl font-display font-bold text-primary mb-2">100%</div>
-                <div className="text-sm text-muted-foreground">Offline</div>
+                <div className="text-sm text-muted-foreground">Local</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-display font-bold text-secondary mb-2">0</div>
@@ -173,7 +173,7 @@ const Index = () => {
                     <div>
                       <h4 className="font-semibold mb-1">Sem Dependências</h4>
                       <p className="text-sm text-muted-foreground">
-                        Não precisa de servidor online. Funciona mesmo sem internet após a instalação.
+                        Não precisa de servidor próprio. Tudo roda no seu computador.
                       </p>
                     </div>
                   </div>
@@ -186,7 +186,7 @@ const Index = () => {
                     <HardDrive className="h-8 w-8 text-primary" />
                     <div>
                       <h4 className="font-semibold">Armazenamento Local</h4>
-                      <p className="text-sm text-muted-foreground">IndexedDB + LocalStorage</p>
+                      <p className="text-sm text-muted-foreground">Tudo salvo no seu PC</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
