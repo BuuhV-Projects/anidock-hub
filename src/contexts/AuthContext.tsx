@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useEmailService } from '@/hooks/useEmailService';
 
 interface AuthContextType {
   user: User | null;
@@ -19,6 +20,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const { sendWelcomeEmail } = useEmailService();
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -55,6 +57,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       toast.error(error.message);
     } else {
       toast.success('Conta criada com sucesso!');
+      
+      // Enviar email de boas-vindas
+      setTimeout(() => {
+        sendWelcomeEmail(email).catch(console.error);
+      }, 0);
     }
     
     return { error };
