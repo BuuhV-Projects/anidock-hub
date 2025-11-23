@@ -108,28 +108,48 @@ const MyDrivers = () => {
     }
   };
 
-  const handleExport = (driver: Driver) => {
-    const exportData = {
-      name: driver.name,
-      domain: driver.domain,
-      config: driver.config,
-      indexed_data: driver.indexed_data || [],
-      source_url: driver.source_url,
-      total_animes: driver.total_animes || 0,
-      last_indexed_at: driver.last_indexed_at,
-      version: '1.0',
-      exported_at: new Date().toISOString()
-    };
+  const handleExport = async (driver: Driver) => {
+    try {
+      // Fetch index data for this driver
+      let indexData = null;
+      if (user) {
+        const { data, error } = await supabase
+          .from('indexes')
+          .select('index_data')
+          .eq('driver_id', driver.id)
+          .eq('user_id', user.id)
+          .maybeSingle();
+          
+        if (!error && data) {
+          indexData = data.index_data;
+        }
+      }
+      
+      const exportData = {
+        name: driver.name,
+        domain: driver.domain,
+        config: driver.config,
+        indexed_data: indexData || [],
+        source_url: driver.source_url,
+        total_animes: Array.isArray(indexData) ? indexData.length : 0,
+        last_indexed_at: driver.last_indexed_at,
+        version: '1.0',
+        exported_at: new Date().toISOString()
+      };
 
-    const json = JSON.stringify(exportData, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${driver.name.toLowerCase().replace(/\s+/g, '-')}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success('Driver exportado com indexações!');
+      const json = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${driver.name.toLowerCase().replace(/\s+/g, '-')}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('Driver exportado com indexações!');
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Erro ao exportar driver');
+    }
   };
 
   const togglePublic = async (driver: Driver) => {

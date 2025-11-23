@@ -257,18 +257,51 @@ const IndexManual = () => {
         }
       }));
 
-      // Atualizar driver com os animes
-      const { error } = await supabase
+      // Check if index already exists
+      const { data: existingIndex } = await supabase
+        .from('indexes')
+        .select('id')
+        .eq('driver_id', driver.id)
+        .eq('user_id', user?.id)
+        .maybeSingle();
+
+      if (existingIndex) {
+        // Update existing index
+        const { error } = await supabase
+          .from('indexes')
+          .update({
+            index_data: formattedAnimes,
+            total_animes: formattedAnimes.length,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingIndex.id);
+
+        if (error) throw error;
+      } else {
+        // Create new index
+        const { error } = await supabase
+          .from('indexes')
+          .insert({
+            driver_id: driver.id,
+            user_id: user?.id,
+            name: driver.name,
+            source_url: driver.source_url || '',
+            index_data: formattedAnimes,
+            total_animes: formattedAnimes.length,
+            is_public: driver.is_public,
+          });
+
+        if (error) throw error;
+      }
+
+      // Update driver metadata
+      await supabase
         .from('drivers')
         .update({
-          indexed_data: formattedAnimes,
-          source_url: driver.source_url,
           total_animes: formattedAnimes.length,
           last_indexed_at: new Date().toISOString(),
         })
         .eq('id', driver.id);
-
-      if (error) throw error;
 
       toast.success(`${formattedAnimes.length} animes adicionados com sucesso!`);
       

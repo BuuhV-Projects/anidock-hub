@@ -161,17 +161,67 @@ const CreateDriver = () => {
       const hasAnimes = crawlResult.animes && crawlResult.animes.length > 0;
 
       setIndexProgress(85);
-      setIndexStatus(hasAnimes ? 'Salvando indexação no driver...' : 'Salvando driver sem indexação...');
+      setIndexStatus(hasAnimes ? 'Salvando indexação...' : 'Salvando driver sem indexação...');
 
-      // Update driver with indexed data (can be empty)
-      if (user) {
+      // Save indexed data to indexes table
+      if (user && hasAnimes) {
+        // Check if index already exists
+        const { data: existingIndex } = await supabase
+          .from('indexes')
+          .select('id')
+          .eq('driver_id', driver.id)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (existingIndex) {
+          // Update existing index
+          const { error: updateIndexError } = await supabase
+            .from('indexes')
+            .update({
+              index_data: crawlResult.animes as any,
+              total_animes: crawlResult.animes.length,
+              source_url: url,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', existingIndex.id);
+
+          if (updateIndexError) throw updateIndexError;
+        } else {
+          // Create new index
+          const { error: createIndexError } = await supabase
+            .from('indexes')
+            .insert({
+              driver_id: driver.id,
+              user_id: user.id,
+              name: driver.name,
+              source_url: url,
+              index_data: crawlResult.animes as any,
+              total_animes: crawlResult.animes.length,
+              is_public: driver.is_public,
+            });
+
+          if (createIndexError) throw createIndexError;
+        }
+
+        // Update driver metadata
+        const { error: updateDriverError } = await supabase
+          .from('drivers')
+          .update({
+            source_url: url,
+            total_animes: crawlResult.animes.length,
+            last_indexed_at: new Date().toISOString(),
+          })
+          .eq('id', driver.id);
+
+        if (updateDriverError) throw updateDriverError;
+      } else if (user && !hasAnimes) {
+        // Just update driver metadata without index
         const { error: updateError } = await supabase
           .from('drivers')
           .update({
-            indexed_data: hasAnimes ? (crawlResult.animes as any) : null,
             source_url: url,
-            total_animes: hasAnimes ? crawlResult.animes.length : 0,
-            last_indexed_at: hasAnimes ? new Date().toISOString() : null,
+            total_animes: 0,
+            last_indexed_at: null,
           })
           .eq('id', driver.id);
 
