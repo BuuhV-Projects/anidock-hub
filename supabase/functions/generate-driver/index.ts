@@ -200,15 +200,34 @@ IMPORTANTE:
     const urlObj = new URL(url);
     const domain = urlObj.hostname;
 
+    // Normalize driver config to match crawler expectations
+    const rawSelectors = (driverConfig as any).selectors || driverConfig;
+    const normalizedConfig = {
+      baseUrl: urlObj.origin,
+      selectors: {
+        animeList: rawSelectors.animeList,
+        animeTitle: rawSelectors.animeTitle,
+        animeImage: rawSelectors.animeImage || rawSelectors.animeCover,
+        animeSynopsis: rawSelectors.animeSynopsis,
+        animeUrl: rawSelectors.animeUrl,
+        episodeList: rawSelectors.episodeList,
+        episodeNumber: rawSelectors.episodeNumber,
+        episodeTitle: rawSelectors.episodeTitle,
+        episodeUrl: rawSelectors.episodeUrl,
+        videoPlayer: rawSelectors.videoPlayer,
+      },
+    };
+
     // Save driver to database using admin client
     const { data: driver, error: insertError } = await supabaseAdmin
       .from('drivers')
       .insert({
         name: driverConfig.name || `Driver ${domain}`,
         domain: driverConfig.domain || domain,
-        config: driverConfig.selectors || driverConfig,
+        config: normalizedConfig,
         user_id: user.id,
         is_public: is_public,
+        source_url: url,
       })
       .select()
       .single();
