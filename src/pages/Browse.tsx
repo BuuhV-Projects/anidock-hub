@@ -34,20 +34,19 @@ const Browse = () => {
         }
       });
 
-      // Load cloud drivers if logged in
+      // Load cloud indexes if logged in
       if (user) {
-        const { data: cloudDrivers, error } = await supabase
-          .from('drivers')
+        const { data: cloudIndexes, error } = await supabase
+          .from('indexes')
           .select('*')
-          .eq('user_id', user.id)
-          .not('indexed_data', 'is', null);
+          .eq('user_id', user.id);
 
         if (error) {
-          console.error('Error fetching cloud drivers:', error);
-        } else if (cloudDrivers) {
-          cloudDrivers.forEach(driver => {
-            const driverAnimes = (driver.indexed_data as any[]) || [];
-            animes = [...animes, ...driverAnimes];
+          console.error('Error fetching cloud indexes:', error);
+        } else if (cloudIndexes) {
+          cloudIndexes.forEach(index => {
+            const indexAnimes = (index.index_data as any[]) || [];
+            animes = [...animes, ...indexAnimes];
           });
         }
       }

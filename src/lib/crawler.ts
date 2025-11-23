@@ -128,9 +128,14 @@ const parseWithDriver = (html: string, driver: Driver): { animes: any[], errors:
 };
 
 /**
- * Crawls episodes for a specific anime
+ * Crawls episodes for a specific anime and automatically saves to cloud if logged in
  */
-export const crawlEpisodes = async (animeUrl: string, driver: Driver): Promise<{ episodes: LocalEpisode[], errors: string[] }> => {
+export const crawlEpisodes = async (
+  animeUrl: string, 
+  driver: Driver, 
+  animeId?: string,
+  indexId?: number
+): Promise<{ episodes: LocalEpisode[], errors: string[] }> => {
   const errors: string[] = [];
   const episodes: LocalEpisode[] = [];
   
@@ -179,6 +184,48 @@ export const crawlEpisodes = async (animeUrl: string, driver: Driver): Promise<{
         errors.push(`Erro ao processar episódio ${index + 1}: ${err instanceof Error ? err.message : 'erro desconhecido'}`);
       }
     });
+    
+    // Auto-save to cloud if user is logged in and we have anime/index info
+    if (animeId && indexId && episodes.length > 0) {
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          // Fetch current index data
+          const { data: indexData, error: fetchError } = await supabase
+            .from('indexes')
+            .select('index_data')
+            .eq('id', indexId)
+            .single();
+            
+          if (!fetchError && indexData) {
+            // Update anime with episodes in index_data
+            const currentIndexData = (indexData.index_data as any[]) || [];
+            const updatedIndexData = currentIndexData.map((anime: any) => {
+              if (anime.id === animeId) {
+                return { ...anime, episodes };
+              }
+              return anime;
+            });
+            
+            // Save back to database
+            await supabase
+              .from('indexes')
+              .update({ 
+                index_data: updatedIndexData,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', indexId);
+              
+            console.log('Episodes auto-saved to cloud');
+          }
+        }
+      } catch (cloudError) {
+        console.error('Failed to auto-save episodes to cloud:', cloudError);
+        // Don't fail the whole operation if cloud save fails
+      }
+    }
     
     return { episodes, errors };
   } catch (error) {
