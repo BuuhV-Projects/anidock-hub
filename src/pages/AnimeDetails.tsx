@@ -201,11 +201,8 @@ const AnimeDetails = () => {
 
   const handleWatchEpisode = async (episode: LocalEpisode) => {
     const episodeTitle = `${anime?.title} - Episódio ${episode.episodeNumber}`;
-    setCurrentEpisodeTitle(episodeTitle);
-    setCurrentVideoData(null);
-    setIsPlayerModalOpen(true);
     
-    toast.loading('Carregando player...');
+    toast.loading('Carregando vídeo...');
     
     try {
       const { data, error } = await supabase.functions.invoke('extract-video-data', {
@@ -220,7 +217,6 @@ const AnimeDetails = () => {
       if (error) {
         console.error('Error extracting video:', error);
         toast.error('Erro ao carregar vídeo');
-        setIsPlayerModalOpen(false);
         window.open(episode.sourceUrl, '_blank');
         return;
       }
@@ -228,30 +224,38 @@ const AnimeDetails = () => {
       if (!data?.success || !data?.videoUrl) {
         console.log('No video found, opening episode page directly');
         toast.info('Abrindo página do episódio...');
-        setIsPlayerModalOpen(false);
         window.open(episode.sourceUrl, '_blank');
         return;
       }
 
-      // Check if it's an external link (not iframe/video)
+      // Check video type and handle accordingly
       if (data.type === 'external') {
+        // External link - open in new tab
         toast.info('Abrindo vídeo em nova aba...');
-        setIsPlayerModalOpen(false);
         window.open(data.videoUrl, '_blank');
         return;
       }
 
-      // Set video data for modal player
-      setCurrentVideoData({
-        type: data.type || 'iframe',
-        url: data.videoUrl
-      });
-      toast.success('Player carregado!');
+      if (data.type === 'iframe' || data.type === 'video') {
+        // Embedded player - open in modal
+        setCurrentEpisodeTitle(episodeTitle);
+        setCurrentVideoData({
+          type: data.type,
+          url: data.videoUrl
+        });
+        setIsPlayerModalOpen(true);
+        toast.success('Player carregado!');
+        return;
+      }
+
+      // Fallback - open episode page
+      toast.info('Abrindo página do episódio...');
+      window.open(episode.sourceUrl, '_blank');
+      
     } catch (error) {
       console.error('Error calling extract-video-data:', error);
       toast.dismiss();
       toast.error('Erro ao processar episódio');
-      setIsPlayerModalOpen(false);
       window.open(episode.sourceUrl, '_blank');
     }
   };
