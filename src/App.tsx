@@ -15,6 +15,7 @@ import CreateDriver from "./pages/CreateDriver";
 import EditDriver from "./pages/EditDriver";
 import MyDrivers from "./pages/MyDrivers";
 import IndexManual from "./pages/IndexManual";
+import EditIndexedAnime from "./pages/EditIndexedAnime";
 import VerifyOtp from "./pages/VerifyOtp";
 import ResetPassword from "./pages/ResetPassword";
 import UpdatePassword from "./pages/UpdatePassword";
@@ -55,6 +56,11 @@ const App = () => (
             <Route path="/drivers/:driverId/index-manual" element={
               <ProtectedRoute>
                 <IndexManual />
+              </ProtectedRoute>
+            } />
+            <Route path="/drivers/:driverId/edit-anime" element={
+              <ProtectedRoute>
+                <EditIndexedAnime />
               </ProtectedRoute>
             } />
             <Route path="/dashboard" element={

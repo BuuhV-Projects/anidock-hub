@@ -323,6 +323,12 @@ const MyDrivers = () => {
                         <FileEdit className="h-4 w-4 mr-2" />
                         Adicionar Manualmente
                       </DropdownMenuItem>
+                      {driver.total_animes && driver.total_animes > 0 && (
+                        <DropdownMenuItem onClick={() => navigate(`/drivers/${driver.public_id}/edit-anime`)}>
+                          <FileEdit className="h-4 w-4 mr-2" />
+                          Editar Animes Indexados
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                   <Button
