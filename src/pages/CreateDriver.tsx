@@ -65,6 +65,25 @@ const CreateDriver = () => {
       return;
     }
 
+    // Atualizar catalog_url do driver se foi alterado
+    if (catalogUrl !== existingDriver.catalog_url) {
+      try {
+        const { error } = await supabase
+          .from('drivers')
+          .update({ catalog_url: catalogUrl || null })
+          .eq('id', existingDriver.id);
+
+        if (error) throw error;
+        
+        // Atualizar o objeto local
+        existingDriver.catalog_url = catalogUrl || null;
+      } catch (error: any) {
+        console.error('Error updating catalog_url:', error);
+        toast.error('Erro ao atualizar URL do catálogo');
+        return;
+      }
+    }
+
     setIsIndexing(true);
     await generateIndexFromDriver(existingDriver);
   };
@@ -386,11 +405,11 @@ const CreateDriver = () => {
                 onChange={(e) => setCatalogUrl(e.target.value)}
                 placeholder="https://exemplo-anime.com/animes"
                 className="bg-input border-border"
-                disabled={isGenerating || isIndexing || !!existingDriver}
+                disabled={isGenerating || isIndexing}
               />
               <p className="text-xs text-muted-foreground mt-1">
                 {existingDriver 
-                  ? 'Deixe vazio se não houver página de catálogo'
+                  ? 'Informe a URL específica da página de catálogo de animes (será usada na re-indexação)'
                   : 'Se a home não lista animes, informe a URL do catálogo. A IA tentará encontrar automaticamente.'
                 }
               </p>
