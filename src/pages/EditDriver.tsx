@@ -52,8 +52,9 @@ const EditDriver = () => {
       setDriver(data);
       
       const config = data.config as any;
-      if (config.selectors) {
-        setSelectors({
+      if (config?.selectors) {
+        setSelectors(prev => ({
+          ...prev,
           animeList: config.selectors.animeList || '',
           animeTitle: config.selectors.animeTitle || '',
           animeImage: config.selectors.animeImage || '',
@@ -64,7 +65,7 @@ const EditDriver = () => {
           episodeNumber: config.selectors.episodeNumber || '',
           episodeTitle: config.selectors.episodeTitle || '',
           episodeUrl: config.selectors.episodeUrl || '',
-        });
+        }));
       }
     } catch (error: any) {
       console.error('Error loading driver:', error);
@@ -181,8 +182,9 @@ const EditDriver = () => {
                 <Input
                   id="animeList"
                   value={selectors.animeList}
-                  onChange={(e) => setSelectors({ ...selectors, animeList: e.target.value })}
+                  onChange={(e) => setSelectors(prev => ({ ...prev, animeList: e.target.value }))}
                   placeholder=".anime-item"
+                  autoComplete="off"
                 />
                 <p className="text-xs text-muted-foreground">
                   Seletor para cada item de anime na lista (ex: .anime-card, .itemlistanime a)
@@ -194,9 +196,10 @@ const EditDriver = () => {
                 <Input
                   id="animeTitle"
                   value={selectors.animeTitle}
-                  onChange={(e) => setSelectors({ ...selectors, animeTitle: e.target.value })}
+                  onChange={(e) => setSelectors(prev => ({ ...prev, animeTitle: e.target.value }))}
                   placeholder="h2, .title, .nome-anime"
                   className="border-primary/50"
+                  autoComplete="off"
                 />
                 <p className="text-xs text-muted-foreground">
                   Procure por tags h1-h6 ou classes com "title", "titulo", "name", "nome"
@@ -208,8 +211,9 @@ const EditDriver = () => {
                 <Input
                   id="animeImage"
                   value={selectors.animeImage}
-                  onChange={(e) => setSelectors({ ...selectors, animeImage: e.target.value })}
+                  onChange={(e) => setSelectors(prev => ({ ...prev, animeImage: e.target.value }))}
                   placeholder="img, img.cover"
+                  autoComplete="off"
                 />
                 <p className="text-xs text-muted-foreground">
                   Tag img dentro de cada item da lista
@@ -221,8 +225,9 @@ const EditDriver = () => {
                 <Input
                   id="animeSynopsis"
                   value={selectors.animeSynopsis}
-                  onChange={(e) => setSelectors({ ...selectors, animeSynopsis: e.target.value })}
+                  onChange={(e) => setSelectors(prev => ({ ...prev, animeSynopsis: e.target.value }))}
                   placeholder=".synopsis, .sinopse, .description"
+                  autoComplete="off"
                 />
                 <p className="text-xs text-muted-foreground">
                   Texto descritivo do anime (opcional)
@@ -234,8 +239,9 @@ const EditDriver = () => {
                 <Input
                   id="animeUrl"
                   value={selectors.animeUrl}
-                  onChange={(e) => setSelectors({ ...selectors, animeUrl: e.target.value })}
+                  onChange={(e) => setSelectors(prev => ({ ...prev, animeUrl: e.target.value }))}
                   placeholder="a, a.link"
+                  autoComplete="off"
                 />
                 <p className="text-xs text-muted-foreground">
                   Deixe vazio se animeList já for o próprio link (&lt;a&gt;)
@@ -247,9 +253,10 @@ const EditDriver = () => {
                 <Input
                   id="animePageTitle"
                   value={selectors.animePageTitle}
-                  onChange={(e) => setSelectors({ ...selectors, animePageTitle: e.target.value })}
+                  onChange={(e) => setSelectors(prev => ({ ...prev, animePageTitle: e.target.value }))}
                   placeholder="h1.title, .anime-title, .nome-anime"
                   className="border-primary/50"
+                  autoComplete="off"
                 />
                 <p className="text-xs text-muted-foreground">
                   Título do anime na página individual (não na lista)
@@ -261,9 +268,10 @@ const EditDriver = () => {
                 <Input
                   id="episodeList"
                   value={selectors.episodeList}
-                  onChange={(e) => setSelectors({ ...selectors, episodeList: e.target.value })}
+                  onChange={(e) => setSelectors(prev => ({ ...prev, episodeList: e.target.value }))}
                   placeholder=".episode-item, .animepag_episodios_item"
                   className="border-accent/50"
+                  autoComplete="off"
                 />
                 <p className="text-xs text-muted-foreground">
                   Seletor para cada episódio na página do anime
@@ -275,8 +283,9 @@ const EditDriver = () => {
                 <Input
                   id="episodeNumber"
                   value={selectors.episodeNumber}
-                  onChange={(e) => setSelectors({ ...selectors, episodeNumber: e.target.value })}
+                  onChange={(e) => setSelectors(prev => ({ ...prev, episodeNumber: e.target.value }))}
                   placeholder=".episode-number, .ep-numero"
+                  autoComplete="off"
                 />
                 <p className="text-xs text-muted-foreground">
                   Tag com o número do episódio
@@ -288,8 +297,9 @@ const EditDriver = () => {
                 <Input
                   id="episodeTitle"
                   value={selectors.episodeTitle}
-                  onChange={(e) => setSelectors({ ...selectors, episodeTitle: e.target.value })}
+                  onChange={(e) => setSelectors(prev => ({ ...prev, episodeTitle: e.target.value }))}
                   placeholder=".episode-title, .ep-titulo"
+                  autoComplete="off"
                 />
                 <p className="text-xs text-muted-foreground">
                   Nome do episódio (se disponível)
@@ -301,8 +311,9 @@ const EditDriver = () => {
                 <Input
                   id="episodeUrl"
                   value={selectors.episodeUrl}
-                  onChange={(e) => setSelectors({ ...selectors, episodeUrl: e.target.value })}
+                  onChange={(e) => setSelectors(prev => ({ ...prev, episodeUrl: e.target.value }))}
                   placeholder="a, a.episode-link"
+                  autoComplete="off"
                 />
                 <p className="text-xs text-muted-foreground">
                   Link para a página de player do episódio
