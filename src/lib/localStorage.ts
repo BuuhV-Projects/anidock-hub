@@ -228,13 +228,21 @@ export const importDriver = (driverJson: string): Driver => {
       throw new Error('Invalid driver structure');
     }
     
+    // Check if driver has indexed_data (from export format)
+    const indexedData = (driver as any).indexed_data || driver.indexedData || [];
+    
     // Generate new ID if importing
     const newDriver: Driver = {
       ...driver,
       id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       isLocal: true,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      // Preserve indexed data if it exists (already processed, no need to reprocess)
+      indexedData: indexedData.length > 0 ? indexedData : undefined,
+      sourceUrl: (driver as any).source_url || driver.sourceUrl,
+      totalAnimes: (driver as any).total_animes || driver.totalAnimes || indexedData.length,
+      lastIndexedAt: (driver as any).last_indexed_at || driver.lastIndexedAt
     };
     
     saveLocalDriver(newDriver);
