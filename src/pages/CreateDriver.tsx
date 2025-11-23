@@ -3,13 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Sparkles, ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Sparkles, ArrowLeft, Loader2, CheckCircle2, Globe, Lock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
 const CreateDriver = () => {
   const [url, setUrl] = useState('');
+  const [isPublic, setIsPublic] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedDriver, setGeneratedDriver] = useState<any>(null);
   const navigate = useNavigate();
@@ -32,7 +35,7 @@ const CreateDriver = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-driver', {
-        body: { url }
+        body: { url, is_public: isPublic }
       });
 
       if (error) throw error;
@@ -105,6 +108,32 @@ const CreateDriver = () => {
               />
             </div>
 
+            <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 bg-muted/20">
+              <div className="flex items-center gap-3">
+                {isPublic ? (
+                  <Globe className="h-5 w-5 text-accent" />
+                ) : (
+                  <Lock className="h-5 w-5 text-muted-foreground" />
+                )}
+                <div>
+                  <Label htmlFor="public-toggle" className="font-medium cursor-pointer">
+                    Driver Público
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {isPublic 
+                      ? 'Outros usuários poderão ver e usar este driver'
+                      : 'Apenas você poderá usar este driver'}
+                  </p>
+                </div>
+              </div>
+              <Switch
+                id="public-toggle"
+                checked={isPublic}
+                onCheckedChange={setIsPublic}
+                disabled={isGenerating}
+              />
+            </div>
+
             <Button
               onClick={handleGenerate}
               disabled={isGenerating || !url.trim()}
@@ -144,6 +173,23 @@ const CreateDriver = () => {
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Domínio:</p>
                 <p className="font-medium">{generatedDriver.domain}</p>
+              </div>
+
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Visibilidade:</p>
+                <div className="flex items-center gap-2">
+                  {generatedDriver.is_public ? (
+                    <>
+                      <Globe className="h-4 w-4 text-accent" />
+                      <span className="font-medium text-accent">Público</span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">Privado</span>
+                    </>
+                  )}
+                </div>
               </div>
 
               <div>
