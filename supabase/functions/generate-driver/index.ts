@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { DOMParser } from 'https://esm.sh/linkedom@0.14.26';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -131,7 +132,9 @@ serve(async (req) => {
     }
 
     console.log('Analyzing HTML with OpenAI...');
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    
+    // STEP 1: Analyze catalog page to get anime list selectors
+    const catalogAnalysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
@@ -142,49 +145,38 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `Você é um especialista em web scraping de sites de anime. Analise o HTML e crie um driver JSON.
+            content: `Você é um especialista em web scraping. Analise o HTML da página de CATÁLOGO de animes.
 
-REGRAS CRÍTICAS:
-1. Identifique se a página mostra uma LISTA DE ANIMES ou LISTA DE EPISÓDIOS
-2. Se for lista de EPISÓDIOS (não animes), retorne: {"error": "Esta página lista episódios, não animes. Forneça a URL do catálogo de animes."}
-3. Se for lista de ANIMES, extraia os seletores corretos
+TAREFA: Extrair seletores para LISTAR ANIMES (não episódios ainda).
 
 Formato esperado:
 {
   "name": "Nome do Site",
   "domain": "exemplo.com",
-  "pageType": "anime_catalog",
   "selectors": {
     "animeList": ".anime-item",
     "animeTitle": ".title",
     "animeCover": "img.cover",
     "animeUrl": "a.link",
-    "animeSynopsis": ".synopsis",
-    "episodeList": ".episode",
-    "episodeNumber": ".ep-number",
-    "episodeUrl": "a.episode-link"
-  },
-  "catalogUrl": "url_do_catalogo_se_encontrada"
+    "animeSynopsis": ".synopsis"
+  }
 }
 
-DICAS PARA IDENTIFICAÇÃO:
-- Lista de ANIMES: múltiplos títulos diferentes, capas, sinopses
-- Lista de EPISÓDIOS: mesmo anime, múltiplos episódios numerados
-- Se a página tem "Episódio X", "EP X", é lista de episódios
-
-Retorne APENAS o JSON, sem explicações.`
+IMPORTANTE: 
+- animeUrl deve apontar para a página INDIVIDUAL do anime
+- Retorne APENAS o JSON, sem explicações`
           },
           {
             role: 'user',
-            content: `Analise este HTML e determine se é um catálogo de animes ou lista de episódios:\n\n${html.slice(0, 15000)}`
+            content: `Analise este HTML de catálogo e extraia seletores para listar animes:\n\n${html.slice(0, 15000)}`
           }
         ],
         temperature: 0.3,
       }),
     });
 
-    if (!openAIResponse.ok) {
-      const errorText = await openAIResponse.text();
+    if (!catalogAnalysisResponse.ok) {
+      const errorText = await catalogAnalysisResponse.text();
       console.error('OpenAI API error:', errorText);
       return new Response(
         JSON.stringify({ error: 'Erro ao gerar driver com IA' }),
@@ -192,37 +184,122 @@ Retorne APENAS o JSON, sem explicações.`
       );
     }
 
-    const openAIData = await openAIResponse.json();
-    const generatedText = openAIData.choices[0].message.content;
+    const catalogData = await catalogAnalysisResponse.json();
+    const catalogText = catalogData.choices[0].message.content;
     
-    console.log('Generated driver text:', generatedText);
+    console.log('Catalog analysis:', catalogText);
 
-    // Parse the JSON from the response
-    let driverConfig;
+    // Parse catalog selectors
+    let catalogConfig;
     try {
-      // Try to extract JSON from code blocks if present
-      const jsonMatch = generatedText.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || 
-                       [null, generatedText];
-      driverConfig = JSON.parse(jsonMatch[1].trim());
-      
-      // Check if AI detected episode list instead of anime catalog
-      if (driverConfig.error) {
-        return new Response(
-          JSON.stringify({ 
-            success: false,
-            error: driverConfig.error,
-            suggestion: driverConfig.catalogUrl || 'Forneça a URL da página que lista os animes, não episódios.'
-          }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+      const jsonMatch = catalogText.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || [null, catalogText];
+      catalogConfig = JSON.parse(jsonMatch[1].trim());
     } catch (e) {
-      console.error('Error parsing driver JSON:', e);
+      console.error('Error parsing catalog JSON:', e);
       return new Response(
-        JSON.stringify({ error: 'Erro ao processar driver gerado. Tente novamente.' }),
+        JSON.stringify({ error: 'Erro ao processar seletores do catálogo' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // STEP 2: Fetch an anime page to analyze episodes
+    console.log('Fetching anime page to analyze episodes...');
+    
+    // Parse catalog HTML to get first anime URL
+    const parser = new DOMParser();
+    const catalogDoc = parser.parseFromString(html, 'text/html');
+    const animeElements = catalogDoc.querySelectorAll(catalogConfig.selectors.animeList);
+    
+    let animePageUrl = '';
+    if (animeElements.length > 0) {
+      const firstAnime = animeElements[0];
+      const urlElement = firstAnime.querySelector(catalogConfig.selectors.animeUrl);
+      animePageUrl = urlElement?.getAttribute('href') || '';
+      
+      if (animePageUrl && !animePageUrl.startsWith('http')) {
+        animePageUrl = new URL(animePageUrl, targetUrl).href;
+      }
+    }
+
+    console.log('First anime URL found:', animePageUrl);
+
+    let episodeSelectors = {
+      episodeList: '',
+      episodeNumber: '',
+      episodeTitle: '',
+      episodeUrl: ''
+    };
+
+    if (animePageUrl) {
+      try {
+        const animePageResponse = await fetch(animePageUrl);
+        const animePageHtml = await animePageResponse.text();
+
+        // STEP 3: Analyze anime page with AI to get episode selectors
+        const episodeAnalysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openAIApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              {
+                role: 'system',
+                content: `Você é um especialista em web scraping. Analise o HTML da página de UM ANIME ESPECÍFICO.
+
+TAREFA: Extrair seletores para LISTAR EPISÓDIOS deste anime.
+
+Formato esperado:
+{
+  "episodeList": ".episode-item",
+  "episodeNumber": ".ep-number",
+  "episodeTitle": ".ep-title",
+  "episodeUrl": "a.ep-link"
+}
+
+IMPORTANTE:
+- episodeList é o container de cada episódio
+- episodeUrl deve apontar para a página do player/vídeo
+- Retorne APENAS o JSON, sem explicações`
+              },
+              {
+                role: 'user',
+                content: `Analise este HTML de página de anime e extraia seletores para listar episódios:\n\n${animePageHtml.slice(0, 15000)}`
+              }
+            ],
+            temperature: 0.3,
+          }),
+        });
+
+        if (episodeAnalysisResponse.ok) {
+          const episodeData = await episodeAnalysisResponse.json();
+          const episodeText = episodeData.choices[0].message.content;
+          console.log('Episode analysis:', episodeText);
+
+          try {
+            const epJsonMatch = episodeText.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || [null, episodeText];
+            const episodeConfig = JSON.parse(epJsonMatch[1].trim());
+            episodeSelectors = episodeConfig;
+          } catch (e) {
+            console.warn('Could not parse episode selectors, using defaults');
+          }
+        }
+      } catch (error) {
+        console.warn('Could not analyze anime page for episodes:', error);
+      }
+    }
+
+    // Merge catalog and episode selectors
+    const driverConfig = {
+      name: catalogConfig.name,
+      domain: catalogConfig.domain,
+      selectors: {
+        ...catalogConfig.selectors,
+        ...episodeSelectors
+      }
+    };
 
     // Extract domain from URL (use catalog_url if provided)
     const targetUrlObj = new URL(catalog_url || url);
