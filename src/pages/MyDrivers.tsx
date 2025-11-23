@@ -113,6 +113,10 @@ const MyDrivers = () => {
       name: driver.name,
       domain: driver.domain,
       config: driver.config,
+      indexed_data: driver.indexed_data || [],
+      source_url: driver.source_url,
+      total_animes: driver.total_animes || 0,
+      last_indexed_at: driver.last_indexed_at,
       version: '1.0',
       exported_at: new Date().toISOString()
     };
@@ -125,7 +129,7 @@ const MyDrivers = () => {
     a.download = `${driver.name.toLowerCase().replace(/\s+/g, '-')}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success('Driver exportado!');
+    toast.success('Driver exportado com indexações!');
   };
 
   const togglePublic = async (driver: Driver) => {
