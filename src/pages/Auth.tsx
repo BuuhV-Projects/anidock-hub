@@ -59,12 +59,12 @@ const Auth = () => {
     }
 
     setIsLoading(true);
-    const { error } = await signUp(nickname, email, password);
+    const { error, email: userEmail } = await signUp(nickname, email, password);
     setIsLoading(false);
     
-    if (!error) {
-      // Não redireciona automaticamente, pois precisa verificar email
-      toast.success('Verifique seu email para confirmar o cadastro!');
+    if (!error && userEmail) {
+      // Redireciona para a página de verificação OTP
+      navigate(`/verify-otp?email=${encodeURIComponent(userEmail)}`);
     }
   };
 
