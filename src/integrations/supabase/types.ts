@@ -153,6 +153,59 @@ export type Database = {
           },
         ]
       }
+      indexes: {
+        Row: {
+          created_at: string
+          driver_id: number | null
+          id: number
+          index_data: Json
+          is_public: boolean
+          metadata: Json | null
+          name: string
+          public_id: string
+          source_url: string
+          total_animes: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          driver_id?: number | null
+          id?: number
+          index_data: Json
+          is_public?: boolean
+          metadata?: Json | null
+          name: string
+          public_id?: string
+          source_url: string
+          total_animes?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          driver_id?: number | null
+          id?: number
+          index_data?: Json
+          is_public?: boolean
+          metadata?: Json | null
+          name?: string
+          public_id?: string
+          source_url?: string
+          total_animes?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "indexes_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

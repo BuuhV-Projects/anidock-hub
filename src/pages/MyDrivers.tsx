@@ -12,7 +12,8 @@ import {
   Trash2, 
   Plus,
   Eye,
-  Loader2 
+  Loader2,
+  Sparkles
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -243,6 +244,15 @@ const MyDrivers = () => {
                   >
                     <Eye className="h-4 w-4 mr-1" />
                     Ver
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    onClick={() => navigate(`/indexes/generate?driver=${driver.public_id}`)}
+                    className="flex-1 bg-accent text-accent-foreground"
+                  >
+                    <Sparkles className="h-4 w-4 mr-1" />
+                    Indexar
                   </Button>
                   <Button
                     size="sm"

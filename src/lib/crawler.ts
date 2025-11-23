@@ -179,9 +179,13 @@ export const crawlEpisodes = async (animeUrl: string, driver: Driver): Promise<{
 };
 
 /**
- * Crawls a URL using the provided driver
+ * Crawls a URL using the provided driver with progress callback
  */
-export const crawlWithDriver = async (url: string, driver: Driver): Promise<CrawlResult> => {
+export const crawlWithDriver = async (
+  url: string,
+  driver: Driver,
+  onProgress?: (status: string, progress: number) => void
+): Promise<CrawlResult> => {
   const result: CrawlResult = {
     animes: [],
     errors: []
@@ -191,12 +195,16 @@ export const crawlWithDriver = async (url: string, driver: Driver): Promise<Craw
     console.log('Crawling:', url);
     console.log('Using driver:', driver.name);
     
+    onProgress?.('Buscando HTML...', 0.1);
     const html = await fetchHTML(url);
+    
+    onProgress?.('Extraindo animes...', 0.3);
     const { animes, errors } = parseWithDriver(html, driver);
     
     result.animes = animes;
     result.errors = errors;
     
+    onProgress?.('Concluído!', 1.0);
     console.log(`Crawl complete: ${animes.length} animes found, ${errors.length} errors`);
     
     return result;
