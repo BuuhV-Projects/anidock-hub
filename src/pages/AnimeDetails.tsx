@@ -192,19 +192,53 @@ const AnimeDetails = () => {
     }
   };
 
-  const handleWatchEpisode = (episode: LocalEpisode) => {
-    // Navigate to player page with episode info
-    const params = new URLSearchParams({
-      url: episode.sourceUrl,
-      title: anime?.title || '',
-      ep: String(episode.episodeNumber),
-    });
+  const handleWatchEpisode = async (episode: LocalEpisode) => {
+    // Check if driver requires external link extraction
+    if (driver?.config?.requiresExternalLink) {
+      toast.loading('Extraindo link do vídeo...');
+      
+      try {
+        const { data, error } = await supabase.functions.invoke('extract-video-data', {
+          body: {
+            episode_url: episode.sourceUrl,
+            external_link_selector: driver.config.selectors?.externalLinkSelector
+          }
+        });
 
-    if (animeId) params.append('anime', animeId);
-    if (driverId) params.append('driver', driverId);
-    if (indexId) params.append('index', indexId);
+        toast.dismiss();
 
-    navigate(`/player?${params.toString()}`);
+        if (error) {
+          console.error('Error extracting video link:', error);
+          toast.error('Erro ao extrair link do vídeo');
+          return;
+        }
+
+        if (!data?.success || !data?.videoUrl) {
+          toast.error(data?.error || 'Não foi possível extrair o link do vídeo');
+          return;
+        }
+
+        // Open extracted URL in new tab
+        window.open(data.videoUrl, '_blank');
+        toast.success('Link extraído com sucesso!');
+      } catch (error) {
+        console.error('Error calling extract-video-data:', error);
+        toast.error('Erro ao processar episódio');
+      }
+    } else {
+      // Navigate to embedded player page
+      const params = new URLSearchParams({
+        url: episode.sourceUrl,
+        title: anime?.title || '',
+        ep: String(episode.episodeNumber),
+      });
+
+      if (animeId) params.append('anime', animeId);
+      if (driverId) params.append('driver', driverId);
+      if (indexId) params.append('index', indexId);
+
+      navigate(`/player?${params.toString()}`);
+    }
   };
 
   if (isLoading || isCrawling) {
