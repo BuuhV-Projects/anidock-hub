@@ -10,13 +10,16 @@
   "scripts": {
     "dev:landingpage": "yarn workspace @anidock/landingpage dev",
     "dev:desktop": "yarn workspace @anidock/desktop dev",
-    "dev": "yarn dev:desktop",
     "build:landingpage": "yarn workspace @anidock/landingpage build",
     "build:desktop": "yarn workspace @anidock/desktop build",
-    "build": "yarn build:landingpage && yarn build:desktop",
+    "build:all": "yarn build:landingpage && yarn build:desktop",
     "lint": "eslint .",
     "preview:landingpage": "yarn workspace @anidock/landingpage preview",
-    "preview:desktop": "yarn workspace @anidock/desktop preview"
+    "preview:desktop": "yarn workspace @anidock/desktop preview",
+    "dev": "vite",
+    "build": "vite build",
+    "build:dev": "vite build --mode development",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
