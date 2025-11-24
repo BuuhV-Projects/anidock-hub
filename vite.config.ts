@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src/apps/web"),
+      "@anidock/app-core": path.resolve(__dirname, "src/packages/app-core/src"),
       "@anidock/anime-core": path.resolve(__dirname, "src/packages/anime-core/src"),
       "@anidock/anime-drivers": path.resolve(__dirname, "src/packages/anime-drivers/src"),
       "@anidock/shared-ui": path.resolve(__dirname, "src/packages/shared-ui/src"),
