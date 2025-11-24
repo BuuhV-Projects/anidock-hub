@@ -4,7 +4,7 @@ import { supabase } from '@anidock/shared-utils';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-// Note: useEmailService will need to be moved or recreated in desktop app
+// Note: useEmailService will need to be moved or recreated in web app
 // For now, we'll create a simple version here
 const useEmailService = () => {
   const sendEmail = async ({ to, subject, type, data }: any) => {

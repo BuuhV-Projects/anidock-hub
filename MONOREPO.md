@@ -46,7 +46,7 @@ yarn install
 # 2. Rodar o app diretamente
 yarn dev:landingpage
 # ou
-yarn dev:desktop
+yarn dev:web
 ```
 
 **Não precisa:**
@@ -95,7 +95,7 @@ Quando você faz build dos apps:
 
 ```bash
 yarn build:landingpage
-yarn build:desktop
+yarn build:web
 ```
 
 O Vite:

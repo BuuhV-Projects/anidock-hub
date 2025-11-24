@@ -37,7 +37,7 @@ const Index = () => {
             </p>
             
             <p className="mb-12 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Software desktop que roda localmente no seu PC Windows. 
+              Software web que roda localmente no seu PC Windows. 
               Conecte qualquer site de anime, nossa IA aprende e indexa tudo localmente. 
               Seus dados ficam no seu computador.
             </p>
@@ -218,7 +218,7 @@ const Index = () => {
               Baixe AniDock Agora
             </h2>
             <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Software desktop gratuito e de código aberto. 
+              Software web gratuito e de código aberto. 
               Instale em segundos e comece a organizar seus animes offline.
             </p>
             <div className="flex justify-center">

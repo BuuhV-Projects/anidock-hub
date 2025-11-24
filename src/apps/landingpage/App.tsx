@@ -4,7 +4,7 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import LGPD from "./pages/LGPD";
 import Copyright from "./pages/Copyright";
-import NotFound from "../desktop/pages/NotFound";
+import NotFound from "../web/pages/NotFound";
 
 const App = () => (
   <BrowserRouter>

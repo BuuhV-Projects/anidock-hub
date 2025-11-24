@@ -1,6 +1,6 @@
 # AniDock Hub
 
-Sistema de indexação de animes com arquitetura monorepo, separando o site institucional da aplicação desktop.
+Sistema de indexação de animes com arquitetura monorepo, separando o site institucional da aplicação web.
 
 ## 📁 Estrutura do Projeto
 
@@ -12,10 +12,10 @@ src/
 │   ├─ landingpage/                  # Site institucional (Vite)
 │   │   └─ pages/            # Páginas: Index, Termos, Privacidade, LGPD, Copyright
 │   │
-│   └─ desktop/              # Aplicação desktop (Vite)
+│   └─ web/              # Aplicação web (Vite)
 │       ├─ pages/            # Todas as páginas da aplicação
 │       ├─ contexts/         # Contextos React (AuthContext)
-│       └─ lib/              # Wrappers específicos do desktop (localStorage, crawler)
+│       └─ lib/              # Wrappers específicos do web (localStorage, crawler)
 │
 └─ packages/
     ├─ anime-core/           # Núcleo do sistema
@@ -70,10 +70,10 @@ npm install
 # Site institucional (porta 8080)
 yarn dev:landingpage
 
-# Aplicação desktop (porta 8081)
-yarn dev:desktop
+# Aplicação web (porta 8081)
+yarn dev:web
 
-# Aplicação desktop (padrão)
+# Aplicação web (padrão)
 yarn dev
 ```
 
@@ -83,8 +83,8 @@ yarn dev
 # Build do site institucional
 yarn build:landingpage
 
-# Build da aplicação desktop
-yarn build:desktop
+# Build da aplicação web
+yarn build:web
 
 # Build de ambos
 yarn build
@@ -96,8 +96,8 @@ yarn build
 # Preview do site institucional
 yarn preview:landingpage
 
-# Preview da aplicação desktop
-yarn preview:desktop
+# Preview da aplicação web
+yarn preview:web
 ```
 
 ## 📦 Packages
@@ -156,7 +156,7 @@ Site institucional que roda na rota `/`. Contém:
 - Landing page
 - Páginas legais (Termos, Privacidade, LGPD, Copyright)
 
-#### `@anidock/desktop`
+#### `@anidock/web`
 Aplicação principal com todas as funcionalidades:
 - Autenticação
 - Dashboard
@@ -190,15 +190,15 @@ Os packages são organizados por responsabilidade:
 
 | Script | Descrição |
 |--------|-----------|
-| `yarn dev` | Inicia o app desktop (padrão) |
+| `yarn dev` | Inicia o app web (padrão) |
 | `yarn dev:landingpage` | Inicia o site institucional |
-| `yarn dev:desktop` | Inicia a aplicação desktop |
+| `yarn dev:web` | Inicia a aplicação web |
 | `yarn build` | Build de ambos os apps |
 | `yarn build:landingpage` | Build do site institucional |
-| `yarn build:desktop` | Build da aplicação desktop |
+| `yarn build:web` | Build da aplicação web |
 | `yarn lint` | Executa o linter |
 | `yarn preview:landingpage` | Preview do build do site |
-| `yarn preview:desktop` | Preview do build do desktop |
+| `yarn preview:web` | Preview do build do web |
 
 ## 🔧 Configuração
 
@@ -217,8 +217,8 @@ cp .env.example .env
 # Para o app landingpage
 cp src/apps/landingpage/.env.example src/apps/landingpage/.env
 
-# Para o app desktop
-cp src/apps/desktop/.env.example src/apps/desktop/.env
+# Para o app web
+cp src/apps/web/.env.example src/apps/web/.env
 ```
 
 Edite o(s) `.env` e adicione suas credenciais do Supabase:

@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
-// Bridge configuration pointing to desktop app
+// Bridge configuration pointing to web app
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "src/apps/desktop"),
+      "@": path.resolve(__dirname, "src/apps/web"),
       "@anidock/anime-core": path.resolve(__dirname, "src/packages/anime-core/src"),
       "@anidock/anime-drivers": path.resolve(__dirname, "src/packages/anime-drivers/src"),
       "@anidock/shared-ui": path.resolve(__dirname, "src/packages/shared-ui/src"),
