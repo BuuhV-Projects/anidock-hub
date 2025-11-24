@@ -19,7 +19,7 @@ export { default as PrivacyPolicy } from './pages/PrivacyPolicy';
 export { default as LGPD } from './pages/LGPD';
 export { default as Copyright } from './pages/Copyright';
 export { default as Index } from './pages/Index';
-
+export { default as RouterAppCore } from './router/RouterAppCore';
 // Export contexts
 export { AuthProvider, useAuth } from './contexts/AuthContext';
 

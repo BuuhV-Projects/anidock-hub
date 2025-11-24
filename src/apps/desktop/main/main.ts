@@ -9,6 +9,7 @@ function createWindow(): void {
     height: 800,
     show: false,
     autoHideMenuBar: true,
+    fullscreen: true,
     ...(process.platform === 'linux' ? { icon: join(__dirname, '../../resources/icon.png') } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.cjs'),
@@ -41,7 +42,7 @@ function createWindow(): void {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   // Set app user model id for windows
-  electronApp.setAppUserModelId('com.anidock.desktop');
+  electronApp.setAppUserModelId('com.buuhvprojects.anidock-hub');
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
