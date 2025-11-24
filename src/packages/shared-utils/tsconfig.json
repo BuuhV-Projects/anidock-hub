@@ -17,13 +17,8 @@
     "noImplicitAny": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@/*": ["./*"],
-      "@anidock/anime-core": ["../../packages/anime-core/src"],
-      "@anidock/anime-drivers": ["../../packages/anime-drivers/src"],
-      "@anidock/shared-ui": ["../../packages/shared-ui/src"],
-      "@anidock/shared-utils": ["../../packages/shared-utils/src"]
+      "@/*": ["./src/*"]
     }
   },
-  "include": [".", "vite-env.d.ts"]
+  "include": ["src"]
 }
-

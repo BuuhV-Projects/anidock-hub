@@ -3,6 +3,9 @@
 
 import { Driver, LocalAnime, AnimeIndex } from '@anidock/anime-core';
 
+// Re-export types for convenience
+export type { Driver, LocalAnime, LocalEpisode, AnimeIndex } from '@anidock/anime-core';
+
 const DRIVERS_KEY = 'anidock_drivers';
 const ANIMES_KEY = 'anidock_animes';
 const SETTINGS_KEY = 'anidock_settings';

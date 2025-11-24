@@ -43,9 +43,9 @@ export * from './components/table';
 export * from './components/tabs';
 export * from './components/textarea';
 export * from './components/toast';
-// toaster.tsx is not exported to avoid conflict with sonner's Toaster
+// toaster.tsx and use-toast are not exported to avoid conflict with sonner's toast
 // If needed, import directly: import { Toaster } from '@anidock/shared-ui/src/components/toaster'
-export * from './components/use-toast';
+// or import { useToast } from '@anidock/shared-ui/src/components/use-toast'
 export * from './components/toggle';
 export * from './components/toggle-group';
 export * from './components/tooltip';
