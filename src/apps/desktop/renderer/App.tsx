@@ -1,28 +1,25 @@
-import React from "react";
-import { Toaster } from "@anidock/shared-ui";
-import { TooltipProvider } from "@anidock/shared-ui";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 import {
-  AuthProvider,
-  useAuth,
-  Auth,
-  Dashboard,
-  Browse,
   AnimeDetails,
-  Player,
-  ImportDriver,
+  Auth,
+  AuthProvider,
+  Browse,
   CreateDriver,
+  Dashboard,
   EditDriver,
-  MyDrivers,
-  IndexManual,
   EditIndexedAnime,
-  VerifyOtp,
+  ImportDriver,
+  IndexManual,
+  MyDrivers,
+  NotFound,
+  Player,
   ResetPassword,
   UpdatePassword,
-  NotFound
+  useAuth,
+  VerifyOtp
 } from "@anidock/app-core";
-import { ProtectedRoute } from "@anidock/shared-ui";
+import { ProtectedRoute, Toaster, TooltipProvider } from "@anidock/shared-ui";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 const queryClient = new QueryClient();
 
