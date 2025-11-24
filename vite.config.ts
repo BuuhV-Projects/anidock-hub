@@ -5,8 +5,6 @@ import { componentTagger } from "lovable-tagger";
 
 // Bridge configuration pointing to desktop app
 export default defineConfig(({ mode }) => ({
-  root: path.resolve(__dirname, "src/apps/desktop"),
-  publicDir: path.resolve(__dirname, "src/apps/desktop/public"),
   server: {
     host: "::",
     port: 8080,
