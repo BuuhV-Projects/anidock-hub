@@ -4,7 +4,7 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import LGPD from "./pages/LGPD";
 import Copyright from "./pages/Copyright";
-import { NotFound } from "@anidock/app-core";
+import NotFound from "./pages/NotFound";
 
 const App = () => (
   <BrowserRouter>
