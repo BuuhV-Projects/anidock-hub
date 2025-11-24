@@ -1,0 +1,22 @@
+    appId: com.buuhvprojects.anidock-hub
+    productName: AniDock Hub
+    directories:
+      output: dist
+      buildResources: resources
+    files:
+      # Bundle the compiled Electron main + preload code (dist-electron)
+      - from: dist-electron
+        to: .
+        filter:
+          - "**/*"
+      # Bundle the renderer build output produced by electron-vite
+      - from: out/renderer
+        to: renderer
+        filter:
+          - "**/*"
+    win:
+      target:
+        - target: nsis
+          arch:
+            - x64
+      icon: resources/icon.ico
