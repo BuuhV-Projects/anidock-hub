@@ -20,8 +20,12 @@ export { default as LGPD } from './pages/LGPD';
 export { default as Copyright } from './pages/Copyright';
 export { default as Index } from './pages/Index';
 export { default as RouterAppCore } from './router/RouterAppCore';
+
 // Export contexts
-export { AuthProvider, useAuth } from './contexts/AuthContext';
+export { AuthProvider } from './contexts/auth/AuthProvider';
+export { useAuth } from './contexts/auth/useAuth';
+export { PlataformProvider } from './contexts/plataform/PlataformProvider';
+export { usePlataform } from './contexts/plataform/usePlataform';
 
 // Export lib functions
 export * from './lib/crawler';

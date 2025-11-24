@@ -1,12 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button, Card, Textarea } from '@anidock/shared-ui';
-import { Cpu, Upload, FileCode, Download, ArrowLeft } from 'lucide-react';
-import { importDriver, Driver, exportDriver, getLocalDrivers } from '../lib/localStorage';
-import { createExampleDriver } from '../lib/crawler';
-import { toast } from 'sonner';
-import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '@anidock/shared-utils';
+import { ArrowLeft, Cpu, Download, FileCode, Upload } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { useAuth } from '../contexts/auth/useAuth';
+import { createExampleDriver } from '../lib/crawler';
+import { exportDriver, getLocalDrivers, importDriver } from '../lib/localStorage';
 
 const ImportDriver = () => {
   const [driverJson, setDriverJson] = useState('');

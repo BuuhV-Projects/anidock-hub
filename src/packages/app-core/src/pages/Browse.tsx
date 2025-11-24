@@ -1,19 +1,25 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/auth/useAuth';
 import { Button, Input, Card, Badge } from '@anidock/shared-ui';
-import { Cpu, Search, User, Upload, Play, Loader2 } from 'lucide-react';
+import { Cpu, Search, User, Upload, Play, Loader2, LogOut } from 'lucide-react';
 import { supabase } from '@anidock/shared-utils';
 import { getLocalDrivers } from '../lib/localStorage';
 import { LocalAnime } from '@anidock/anime-core';
 import { toast } from 'sonner';
+import { usePlataform } from '../contexts/plataform/usePlataform';
+import { useElectronApi } from '../hooks/useElectronApi';
 
 const Browse = () => {
   const { user } = useAuth();
+  const { closeWindow } = useElectronApi();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [allAnimes, setAllAnimes] = useState<LocalAnime[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { isDesktop } = usePlataform();
 
   useEffect(() => {
     fetchAnimes();
@@ -119,6 +125,16 @@ const Browse = () => {
                 >
                   <User className="h-4 w-4" />
                   Entrar
+                </Button>
+              )}
+              {isDesktop && (
+                <Button
+                  variant="outline"
+                  onClick={closeWindow}
+                  className="text-muted-foreground hover:text-foreground gap-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Fechar
                 </Button>
               )}
             </div>

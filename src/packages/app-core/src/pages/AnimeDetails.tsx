@@ -12,7 +12,7 @@ import {
   type Driver 
 } from '../lib/localStorage';
 import { supabase } from '@anidock/shared-utils';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/auth/useAuth';
 import { toast } from 'sonner';
 import { VideoPlayerModal } from '@anidock/shared-ui';
 

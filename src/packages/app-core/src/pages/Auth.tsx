@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button, Input, Label, Card, Tabs, TabsContent, TabsList, TabsTrigger } from '@anidock/shared-ui';
 import { Cpu, Mail, Lock } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/auth/useAuth';
 import { signInSchema, signUpSchema } from '@anidock/shared-utils';
 import { toast } from 'sonner';
 

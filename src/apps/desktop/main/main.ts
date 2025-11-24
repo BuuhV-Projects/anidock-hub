@@ -1,6 +1,7 @@
-import { app, shell, BrowserWindow } from 'electron';
+import { app, shell, BrowserWindow, ipcMain } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
+import config from './config';
 
 function createWindow(): void {
   // Create the browser window.
@@ -8,12 +9,12 @@ function createWindow(): void {
     width: 1200,
     height: 800,
     show: false,
-    autoHideMenuBar: true,
+    autoHideMenuBar: config.getBoolEnv('ELECTRON_AUTO_HIDE_MENU_BAR'),
     fullscreen: true,
     ...(process.platform === 'linux' ? { icon: join(__dirname, '../../resources/icon.png') } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.cjs'),
-      sandbox: false,
+      sandbox: config.getBoolEnv('ELECTRON_SANDBOX'),
       contextIsolation: true,
       nodeIntegration: false
     }
@@ -21,6 +22,10 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
+  });
+
+  ipcMain.on('close-window', () => {
+    mainWindow.close();
   });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {

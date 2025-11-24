@@ -19,16 +19,8 @@ import {
 import { ProtectedRoute } from "@anidock/shared-ui";
 import { Route, Routes } from "react-router-dom";
 
-interface Props {
-    isDesktop?: boolean;
-}
-
-const RouterAppCore = ({
-    isDesktop = false
-}: Props) => {
+const RouterAppCore = () => {
     const { user, loading } = useAuth();
-
-    console.log('isDesktop', isDesktop);
 
     return (
         <Routes>
