@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button } from '@anidock/shared-ui'button';
-import { Card } from '@anidock/shared-ui'card';
-import { Input } from '@anidock/shared-ui'input';
-import { Label } from '@anidock/shared-ui'label';
-import { Textarea } from '@anidock/shared-ui'textarea';
+import { Button, Card, Input, Label, Textarea } from '@anidock/shared-ui';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { supabase } from '@anidock/shared-utils';
 import { useAuth } from '@/contexts/AuthContext';

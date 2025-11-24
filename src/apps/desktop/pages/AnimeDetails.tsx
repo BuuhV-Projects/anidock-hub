@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button } from '@anidock/shared-ui'button';
-import { Card } from '@anidock/shared-ui'card';
-import { Badge } from '@anidock/shared-ui'badge';
+import { Button, Card, Badge } from '@anidock/shared-ui';
 import { ArrowLeft, Play, Loader2, ExternalLink } from 'lucide-react';
 import { crawlEpisodes } from '@/lib/crawler';
 import { 

@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from '@anidock/shared-ui';
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 

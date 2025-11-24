@@ -1,5 +1,4 @@
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Button, Card } from '@anidock/shared-ui';
 import { Database, Zap, Shield, Cpu, Download, HardDrive, MonitorPlay } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 

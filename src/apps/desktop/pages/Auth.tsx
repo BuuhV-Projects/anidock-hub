@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Button } from '@anidock/shared-ui'button';
-import { Input } from '@anidock/shared-ui'input';
-import { Label } from '@anidock/shared-ui'label';
-import { Card } from '@anidock/shared-ui'card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@anidock/shared-ui'tabs';
+import { Button, Input, Label, Card, Tabs, TabsContent, TabsList, TabsTrigger } from '@anidock/shared-ui';
 import { Cpu, Mail, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { signInSchema, signUpSchema } from '@anidock/shared-utils';

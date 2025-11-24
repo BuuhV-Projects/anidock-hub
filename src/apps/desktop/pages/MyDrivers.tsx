@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@anidock/shared-ui'button';
-import { Card } from '@anidock/shared-ui'card';
-import { Badge } from '@anidock/shared-ui'badge';
+import { Button, Card, Badge } from '@anidock/shared-ui';
 import { 
   ArrowLeft, 
   Cpu, 
@@ -30,13 +28,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@anidock/shared-ui';
 
 interface Driver {
   id: number;

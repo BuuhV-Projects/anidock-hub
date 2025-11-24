@@ -1,5 +1,4 @@
 import { Toaster } from "@anidock/shared-ui";
-import { Toaster as Sonner } from "@anidock/shared-ui";
 import { TooltipProvider } from "@anidock/shared-ui";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -29,6 +28,7 @@ const AppRoutes = () => {
   
   return (
     <Routes>
+      <Route path="/" element={<Browse />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/browse" element={<Browse />} />
       <Route path="/anime" element={<AnimeDetails />} />
@@ -76,7 +76,6 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
-      <Sonner />
       <BrowserRouter>
         <AuthProvider>
           <AppRoutes />

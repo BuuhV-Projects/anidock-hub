@@ -1,5 +1,5 @@
 // Wrapper for anime-core crawler with browser-specific fetchHTML implementation
-import { crawlWithDriver, crawlEpisodes, createExampleDriver, FetchHTMLFunction } from '@anidock/anime-core';
+import { crawlWithDriver as crawlWithDriverCore, crawlEpisodes as crawlEpisodesCore, createExampleDriver, FetchHTMLFunction } from '@anidock/anime-core';
 import { Driver, LocalAnime, LocalEpisode, CrawlResult } from '@anidock/anime-core';
 import { supabase } from '@anidock/shared-utils';
 
@@ -34,10 +34,10 @@ const fetchHTML: FetchHTMLFunction = async (url: string): Promise<string> => {
 };
 
 /**
- * Crawls episodes for a specific anime and automatically saves to cloud if logged in
- * Only crawls if episodes don't already exist in the anime data
+ * Wrapper for crawlEpisodes that uses the configured fetchHTML
+ * Accepts the signature expected by the app code
  */
-export const crawlEpisodesWithCloudSave = async (
+export const crawlEpisodes = async (
   animeUrl: string, 
   driver: Driver, 
   animeId?: string,
@@ -49,7 +49,7 @@ export const crawlEpisodesWithCloudSave = async (
     return { episodes: existingEpisodes, errors: [] };
   }
 
-  const { episodes, errors } = await crawlEpisodes(animeUrl, driver, fetchHTML, existingEpisodes);
+  const { episodes, errors } = await crawlEpisodesCore(animeUrl, driver, fetchHTML, existingEpisodes);
   
   // Auto-save to cloud only if we actually crawled new episodes
   if (animeId && indexId && episodes.length > 0) {
@@ -96,6 +96,13 @@ export const crawlEpisodesWithCloudSave = async (
 };
 
 /**
+ * Crawls episodes for a specific anime and automatically saves to cloud if logged in
+ * Only crawls if episodes don't already exist in the anime data
+ * @deprecated Use crawlEpisodes instead
+ */
+export const crawlEpisodesWithCloudSave = crawlEpisodes;
+
+/**
  * Crawls a URL using the provided driver with progress callback
  */
 export const crawl = async (
@@ -103,7 +110,19 @@ export const crawl = async (
   driver: Driver,
   onProgress?: (status: string, progress: number) => void
 ): Promise<CrawlResult> => {
-  return crawlWithDriver(url, driver, fetchHTML, onProgress);
+  return crawlWithDriverCore(url, driver, fetchHTML, onProgress);
+};
+
+/**
+ * Wrapper for crawlWithDriver that uses the configured fetchHTML
+ * Accepts the signature expected by the app code (without fetchHTML parameter)
+ */
+export const crawlWithDriver = async (
+  url: string,
+  driver: Driver,
+  onProgress?: (status: string, progress: number) => void
+): Promise<CrawlResult> => {
+  return crawlWithDriverCore(url, driver, fetchHTML, onProgress);
 };
 
 // Re-export types and utilities

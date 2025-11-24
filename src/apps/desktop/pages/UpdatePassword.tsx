@@ -1,9 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@anidock/shared-ui'button';
-import { Input } from '@anidock/shared-ui'input';
-import { Label } from '@anidock/shared-ui'label';
-import { Card } from '@anidock/shared-ui'card';
+import { Button, Input, Label, Card } from '@anidock/shared-ui';
 import { Cpu, Lock } from 'lucide-react';
 import { supabase } from '@anidock/shared-utils';
 import { toast } from 'sonner';

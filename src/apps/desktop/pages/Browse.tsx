@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@anidock/shared-ui'button';
-import { Input } from '@anidock/shared-ui'input';
-import { Card } from '@anidock/shared-ui'card';
-import { Badge } from '@anidock/shared-ui'badge';
+import { Button, Input, Card, Badge } from '@anidock/shared-ui';
 import { Cpu, Search, User, Upload, Play, Loader2 } from 'lucide-react';
 import { supabase } from '@anidock/shared-utils';
-import { getLocalDrivers, type LocalAnime } from '@/lib/localStorage';
+import { getLocalDrivers } from '@/lib/localStorage';
+import { LocalAnime } from '@anidock/anime-core';
 import { toast } from 'sonner';
 
 const Browse = () => {

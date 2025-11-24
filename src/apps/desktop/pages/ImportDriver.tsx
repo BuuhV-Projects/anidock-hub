@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@anidock/shared-ui'button';
-import { Card } from '@anidock/shared-ui'card';
-import { Textarea } from '@anidock/shared-ui'textarea';
+import { Button, Card, Textarea } from '@anidock/shared-ui';
 import { Cpu, Upload, FileCode, Download, ArrowLeft } from 'lucide-react';
 import { importDriver, Driver, exportDriver, getLocalDrivers } from '@/lib/localStorage';
 import { createExampleDriver } from '@/lib/crawler';

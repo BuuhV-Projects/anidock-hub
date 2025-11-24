@@ -1,7 +1,7 @@
 // Local storage utilities for offline-first functionality
 // This wraps the core types with browser localStorage implementation
 
-import { Driver, LocalAnime, LocalEpisode, AnimeIndex } from '@anidock/anime-core';
+import { Driver, LocalAnime, AnimeIndex } from '@anidock/anime-core';
 
 const DRIVERS_KEY = 'anidock_drivers';
 const ANIMES_KEY = 'anidock_animes';

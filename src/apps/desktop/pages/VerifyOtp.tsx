@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button } from '@anidock/shared-ui'button';
-import { Label } from '@anidock/shared-ui'label';
-import { Card } from '@anidock/shared-ui'card';
+import { Button, Label, Card } from '@anidock/shared-ui';
 import { Cpu, Mail } from 'lucide-react';
 import { supabase } from '@anidock/shared-utils';
 import { toast } from 'sonner';
@@ -10,7 +8,7 @@ import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-} from "@/components/ui/input-otp";
+} from '@anidock/shared-ui';
 
 const VerifyOtp = () => {
   const [otp, setOtp] = useState('');

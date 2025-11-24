@@ -1,11 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button } from '@anidock/shared-ui'button';
-import { Card } from '@anidock/shared-ui'card';
-import { Input } from '@anidock/shared-ui'input';
-import { Switch } from '@anidock/shared-ui'switch';
-import { Label } from '@anidock/shared-ui'label';
-import { Progress } from '@anidock/shared-ui'progress';
+import { Button, Card, Input, Switch, Label, Progress } from '@anidock/shared-ui';
 import { Sparkles, ArrowLeft, Loader2, CheckCircle2, Globe, Lock } from 'lucide-react';
 import { supabase } from '@anidock/shared-utils';
 import { toast } from 'sonner';

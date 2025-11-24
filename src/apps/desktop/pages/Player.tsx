@@ -1,10 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button } from '@anidock/shared-ui'button';
-import { Card } from '@anidock/shared-ui'card';
-import { Badge } from '@anidock/shared-ui'badge';
+import { Button, Card, Badge, Alert, AlertDescription } from '@anidock/shared-ui';
 import { ArrowLeft, ExternalLink, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Alert, AlertDescription } from '@anidock/shared-ui'alert';
 
 const Player = () => {
   const navigate = useNavigate();
