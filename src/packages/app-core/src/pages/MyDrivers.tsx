@@ -4,8 +4,6 @@ import { Button, Card, Badge } from '@anidock/shared-ui';
 import { 
   ArrowLeft, 
   Cpu, 
-  Globe, 
-  Lock, 
   Download, 
   Trash2, 
   Plus,
@@ -164,31 +162,6 @@ const MyDrivers = () => {
     }
   };
 
-  const togglePublic = async (driver: Driver) => {
-    try {
-      const { error } = await supabase
-        .from('drivers')
-        .update({ is_public: !driver.is_public })
-        .eq('id', driver.id);
-
-      if (error) throw error;
-
-      toast.success(
-        driver.is_public 
-          ? 'Driver agora é privado' 
-          : 'Driver agora é público'
-      );
-      
-      setDrivers(drivers.map(d => 
-        d.id === driver.id 
-          ? { ...d, is_public: !d.is_public } 
-          : d
-      ));
-    } catch (error: any) {
-      console.error('Error updating driver:', error);
-      toast.error('Erro ao atualizar driver');
-    }
-  };
 
   if (!user) return null;
 
@@ -276,22 +249,6 @@ const MyDrivers = () => {
                       </p>
                     )}
                   </div>
-                  <Badge
-                    variant={driver.is_public ? "default" : "secondary"}
-                    className="gap-1"
-                  >
-                    {driver.is_public ? (
-                      <>
-                        <Globe className="h-3 w-3" />
-                        Público
-                      </>
-                    ) : (
-                      <>
-                        <Lock className="h-3 w-3" />
-                        Privado
-                      </>
-                    )}
-                  </Badge>
                 </div>
 
                 <div className="text-xs text-muted-foreground mb-4">
@@ -362,13 +319,6 @@ const MyDrivers = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => togglePublic(driver)}
-                  >
-                    {driver.is_public ? <Lock className="h-4 w-4" /> : <Globe className="h-4 w-4" />}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
                     onClick={() => setDeleteDriver(driver)}
                     className="text-destructive hover:bg-destructive/10"
                   >
@@ -413,22 +363,6 @@ const MyDrivers = () => {
                 <div>
                   <p className="text-sm font-medium text-foreground mb-1">Domínio:</p>
                   <p className="text-sm">{selectedDriver?.domain}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground mb-1">Visibilidade:</p>
-                  <div className="flex items-center gap-2">
-                    {selectedDriver?.is_public ? (
-                      <>
-                        <Globe className="h-4 w-4 text-accent" />
-                        <span className="text-sm text-accent">Público</span>
-                      </>
-                    ) : (
-                      <>
-                        <Lock className="h-4 w-4" />
-                        <span className="text-sm">Privado</span>
-                      </>
-                    )}
-                  </div>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground mb-2">Configuração:</p>
