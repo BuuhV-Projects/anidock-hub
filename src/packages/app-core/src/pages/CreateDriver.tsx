@@ -4,9 +4,9 @@ import { Button, Card, Input, Switch, Label, Progress } from '@anidock/shared-ui
 import { Sparkles, ArrowLeft, Loader2, CheckCircle2, Globe, Lock } from 'lucide-react';
 import { supabase } from '@anidock/shared-utils';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
-import { crawlWithDriver } from '@/lib/crawler';
-import { saveLocalDriver, type Driver } from '@/lib/localStorage';
+import { useAuth } from '../contexts/auth/useAuth';
+import { crawlWithDriver } from '../lib/crawler';
+import { saveLocalDriver, type Driver } from '../lib/localStorage';
 
 const CreateDriver = () => {
   const [searchParams] = useSearchParams();

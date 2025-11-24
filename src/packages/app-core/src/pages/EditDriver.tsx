@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, Input, Label, Textarea } from '@anidock/shared-ui';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { supabase } from '@anidock/shared-utils';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '../contexts/auth/useAuth';
 import { toast } from 'sonner';
 
 const EditDriver = () => {

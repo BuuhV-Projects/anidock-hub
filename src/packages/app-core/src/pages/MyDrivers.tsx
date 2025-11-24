@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@anidock/shared-utils';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '../contexts/auth/useAuth';
 import {
   AlertDialog,
   AlertDialogAction,

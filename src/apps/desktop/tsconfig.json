@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitAny": false,
+    "noFallthroughCasesInSwitch": false,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./renderer/*"],
+      "@anidock/anime-core": ["../../packages/anime-core/src"],
+      "@anidock/anime-drivers": ["../../packages/anime-drivers/src"],
+      "@anidock/app-core": ["../../packages/app-core/src"],
+      "@anidock/shared-ui": ["../../packages/shared-ui/src"],
+      "@anidock/shared-utils": ["../../packages/shared-utils/src"]
+    }
+  },
+  "include": ["renderer/**/*", "preload/**/*", "main/**/*"],
+  "exclude": ["node_modules", "dist-electron"]
+}
+

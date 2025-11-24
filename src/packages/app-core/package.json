@@ -1,18 +1,14 @@
 {
-  "name": "@anidock/web",
+  "name": "@anidock/app-core",
   "version": "0.0.0",
   "type": "module",
-  "private": true,
-  "scripts": {
-    "dev": "vite --config vite.config.ts",
-    "build": "vite build --config vite.config.ts",
-    "build:dev": "vite build --mode development --config vite.config.ts",
-    "preview": "vite preview --config vite.config.ts"
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
   },
   "dependencies": {
     "@anidock/anime-core": "*",
-    "@anidock/anime-drivers": "*",
-    "@anidock/app-core": "*",
     "@anidock/shared-ui": "*",
     "@anidock/shared-utils": "*",
     "@hookform/resolvers": "^3.10.0",
@@ -27,10 +23,7 @@
   "devDependencies": {
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
-    "@vitejs/plugin-react-swc": "^3.11.0",
-    "lovable-tagger": "^1.1.11",
-    "typescript": "^5.8.3",
-    "vite": "^5.4.19"
+    "typescript": "^5.8.3"
   }
 }
 

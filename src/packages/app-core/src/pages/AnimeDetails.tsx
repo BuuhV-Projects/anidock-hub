@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Card, Badge } from '@anidock/shared-ui';
 import { ArrowLeft, Play, Loader2, ExternalLink } from 'lucide-react';
-import { crawlEpisodes } from '@/lib/crawler';
+import { crawlEpisodes } from '../lib/crawler';
 import { 
   getLocalDrivers, 
   getLocalAnime, 
@@ -10,9 +10,9 @@ import {
   type LocalAnime, 
   type LocalEpisode, 
   type Driver 
-} from '@/lib/localStorage';
+} from '../lib/localStorage';
 import { supabase } from '@anidock/shared-utils';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '../contexts/auth/useAuth';
 import { toast } from 'sonner';
 import { VideoPlayerModal } from '@anidock/shared-ui';
 

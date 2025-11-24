@@ -1,12 +1,15 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '../contexts/auth/useAuth';
 import { Button, Input, Card, Badge } from '@anidock/shared-ui';
-import { Cpu, Search, User, Upload, Play, Loader2 } from 'lucide-react';
+import { Cpu, Search, Upload, Play, Loader2 } from 'lucide-react';
 import { supabase } from '@anidock/shared-utils';
-import { getLocalDrivers } from '@/lib/localStorage';
+import { getLocalDrivers } from '../lib/localStorage';
 import { LocalAnime } from '@anidock/anime-core';
 import { toast } from 'sonner';
+import { usePlataform } from '../contexts/plataform/usePlataform';
+import { BrowseHeader } from './components/BrowseHeader';
 
 const Browse = () => {
   const { user } = useAuth();
@@ -14,6 +17,8 @@ const Browse = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [allAnimes, setAllAnimes] = useState<LocalAnime[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { isDesktop } = usePlataform();
 
   useEffect(() => {
     fetchAnimes();
@@ -71,60 +76,7 @@ const Browse = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border/50 sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div
-              className="flex items-center gap-3 cursor-pointer"
-              onClick={() => navigate('/')}
-            >
-              <Cpu className="h-8 w-8 text-primary animate-pulse-glow" />
-              <h1 className="font-display text-2xl font-bold text-gradient-primary">
-                AniDock
-              </h1>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/drivers/import')}
-                className="text-muted-foreground hover:text-foreground gap-2"
-              >
-                <Upload className="h-4 w-4" />
-                Importar Driver
-              </Button>
-              {user ? (
-                <>
-                  <Button
-                    variant="ghost"
-                    onClick={() => navigate('/dashboard')}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    Dashboard
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate('/dashboard')}
-                    className="border-primary/50 hover:bg-primary/10 gap-2"
-                  >
-                    <User className="h-4 w-4" />
-                    Perfil
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant="outline"
-                  onClick={() => navigate('/auth')}
-                  className="border-primary/50 hover:bg-primary/10 gap-2"
-                >
-                  <User className="h-4 w-4" />
-                  Entrar
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <BrowseHeader user={user} navigate={navigate} isDesktop={isDesktop} />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">

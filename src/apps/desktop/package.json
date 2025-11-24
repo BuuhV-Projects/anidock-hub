@@ -1,13 +1,16 @@
 {
-  "name": "@anidock/web",
+  "name": "@anidock/desktop",
   "version": "0.0.0",
   "type": "module",
   "private": true,
+  "main": "./dist-electron/main/main.cjs",
   "scripts": {
-    "dev": "vite --config vite.config.ts",
-    "build": "vite build --config vite.config.ts",
-    "build:dev": "vite build --mode development --config vite.config.ts",
-    "preview": "vite preview --config vite.config.ts"
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "build:win": "electron-vite build --win",
+    "build:mac": "electron-vite build --mac",
+    "build:linux": "electron-vite build --linux",
+    "preview": "electron-vite preview"
   },
   "dependencies": {
     "@anidock/anime-core": "*",
@@ -17,6 +20,7 @@
     "@anidock/shared-utils": "*",
     "@hookform/resolvers": "^3.10.0",
     "@tanstack/react-query": "^5.83.0",
+    "electron": "^33.0.0",
     "lucide-react": "^0.462.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -28,7 +32,7 @@
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react-swc": "^3.11.0",
-    "lovable-tagger": "^1.1.11",
+    "electron-vite": "^4.0.1",
     "typescript": "^5.8.3",
     "vite": "^5.4.19"
   }
