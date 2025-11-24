@@ -28,7 +28,7 @@
       "@anidock/shared-utils": ["../../packages/shared-utils/src"]
     }
   },
-  "include": ["renderer/**/*", "preload/**/*", "main/**/*"],
+  "include": ["renderer/**/*", "preload/**/*", "main/**/*", "common/**/*"],
   "exclude": ["node_modules", "dist-electron"]
 }
 

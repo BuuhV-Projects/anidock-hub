@@ -1,6 +1,9 @@
 class Config {
-    getBoolEnv(key: string): boolean {
-        return process.env[key] === 'true';
+    getBoolEnv(key: string, defaultValue: boolean = false): boolean {
+        if (Object.prototype.hasOwnProperty.call(process.env, key)) {
+            return process.env[key] === 'true';
+        }
+        return defaultValue;
     }
 
     getStringEnv(key: string): string {

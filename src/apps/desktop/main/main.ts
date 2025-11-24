@@ -1,45 +1,12 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron';
-import { join } from 'path';
-import { electronApp, optimizer, is } from '@electron-toolkit/utils';
-import config from './config';
+import { app, BrowserWindow } from 'electron';
+import { electronApp, optimizer } from '@electron-toolkit/utils';
+import { WindowManager } from './windowManager';
+import { registerIpcHandlers } from './ipc';
+
+const windowManager = new WindowManager();
 
 function createWindow(): void {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    show: false,
-    autoHideMenuBar: config.getBoolEnv('ELECTRON_AUTO_HIDE_MENU_BAR'),
-    fullscreen: true,
-    ...(process.platform === 'linux' ? { icon: join(__dirname, '../../resources/icon.png') } : {}),
-    webPreferences: {
-      preload: join(__dirname, '../preload/index.cjs'),
-      sandbox: config.getBoolEnv('ELECTRON_SANDBOX'),
-      contextIsolation: true,
-      nodeIntegration: false
-    }
-  });
-
-  mainWindow.on('ready-to-show', () => {
-    mainWindow.show();
-  });
-
-  ipcMain.on('close-window', () => {
-    mainWindow.close();
-  });
-
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url);
-    return { action: 'deny' };
-  });
-
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
-  } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
-  }
+  windowManager.createMainWindow();
 }
 
 // This method will be called when Electron has finished
@@ -56,6 +23,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window);
   });
 
+  registerIpcHandlers(windowManager);
   createWindow();
 
   app.on('activate', function () {
