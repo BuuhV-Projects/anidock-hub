@@ -9,7 +9,7 @@ Este projeto utiliza **Yarn Workspaces** para gerenciar um monorepo com a seguin
 ```
 src/
 ├─ apps/
-│   ├─ web/                  # Site institucional (Vite)
+│   ├─ landingpage/                  # Site institucional (Vite)
 │   │   └─ pages/            # Páginas: Index, Termos, Privacidade, LGPD, Copyright
 │   │
 │   └─ desktop/              # Aplicação desktop (Vite)
@@ -68,7 +68,7 @@ npm install
 
 ```sh
 # Site institucional (porta 8080)
-yarn dev:web
+yarn dev:landingpage
 
 # Aplicação desktop (porta 8081)
 yarn dev:desktop
@@ -81,7 +81,7 @@ yarn dev
 
 ```sh
 # Build do site institucional
-yarn build:web
+yarn build:landingpage
 
 # Build da aplicação desktop
 yarn build:desktop
@@ -94,7 +94,7 @@ yarn build
 
 ```sh
 # Preview do site institucional
-yarn preview:web
+yarn preview:landingpage
 
 # Preview da aplicação desktop
 yarn preview:desktop
@@ -151,7 +151,7 @@ import { cn, useIsMobile, supabase, signInSchema } from '@anidock/shared-utils';
 
 ### Apps
 
-#### `@anidock/web`
+#### `@anidock/landingpage`
 Site institucional que roda na rota `/`. Contém:
 - Landing page
 - Páginas legais (Termos, Privacidade, LGPD, Copyright)
@@ -191,13 +191,13 @@ Os packages são organizados por responsabilidade:
 | Script | Descrição |
 |--------|-----------|
 | `yarn dev` | Inicia o app desktop (padrão) |
-| `yarn dev:web` | Inicia o site institucional |
+| `yarn dev:landingpage` | Inicia o site institucional |
 | `yarn dev:desktop` | Inicia a aplicação desktop |
 | `yarn build` | Build de ambos os apps |
-| `yarn build:web` | Build do site institucional |
+| `yarn build:landingpage` | Build do site institucional |
 | `yarn build:desktop` | Build da aplicação desktop |
 | `yarn lint` | Executa o linter |
-| `yarn preview:web` | Preview do build do site |
+| `yarn preview:landingpage` | Preview do build do site |
 | `yarn preview:desktop` | Preview do build do desktop |
 
 ## 🔧 Configuração
@@ -214,8 +214,8 @@ cp .env.example .env
 
 **Opção 2: .env em cada app (específico por app)**
 ```bash
-# Para o app web
-cp src/apps/web/.env.example src/apps/web/.env
+# Para o app landingpage
+cp src/apps/landingpage/.env.example src/apps/landingpage/.env
 
 # Para o app desktop
 cp src/apps/desktop/.env.example src/apps/desktop/.env

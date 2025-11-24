@@ -8,14 +8,14 @@
     "src/packages/*"
   ],
   "scripts": {
-    "dev:web": "yarn workspace @anidock/web dev",
+    "dev:landingpage": "yarn workspace @anidock/landingpage dev",
     "dev:desktop": "yarn workspace @anidock/desktop dev",
     "dev": "yarn dev:desktop",
-    "build:web": "yarn workspace @anidock/web build",
+    "build:landingpage": "yarn workspace @anidock/landingpage build",
     "build:desktop": "yarn workspace @anidock/desktop build",
-    "build": "yarn build:web && yarn build:desktop",
+    "build": "yarn build:landingpage && yarn build:desktop",
     "lint": "eslint .",
-    "preview:web": "yarn workspace @anidock/web preview",
+    "preview:landingpage": "yarn workspace @anidock/landingpage preview",
     "preview:desktop": "yarn workspace @anidock/desktop preview"
   },
   "dependencies": {

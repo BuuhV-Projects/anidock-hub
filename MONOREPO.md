@@ -20,7 +20,7 @@ yarn install
 Quando um app referencia um package com `*` (Yarn v1) ou `workspace:*` (Yarn Berry):
 
 ```json
-// src/apps/web/package.json
+// src/apps/landingpage/package.json
 {
   "dependencies": {
     "@anidock/shared-ui": "*"  // ← Yarn v1: usa "*"
@@ -44,7 +44,7 @@ O Yarn cria um link simbólico que aponta diretamente para o diretório do packa
 yarn install
 
 # 2. Rodar o app diretamente
-yarn dev:web
+yarn dev:landingpage
 # ou
 yarn dev:desktop
 ```
@@ -94,7 +94,7 @@ O que acontece:
 Quando você faz build dos apps:
 
 ```bash
-yarn build:web
+yarn build:landingpage
 yarn build:desktop
 ```
 
@@ -124,7 +124,7 @@ Você só precisa rodar `yarn install` novamente quando:
 └─────────────────────────────────────────┘
               ↓
 ┌─────────────────────────────────────────┐
-│  yarn dev:web                            │
+│  yarn dev:landingpage                            │
 │  ↓                                       │
 │  Vite resolve imports:                   │
 │  @anidock/shared-ui →                    │
@@ -147,7 +147,7 @@ Se você receber erros de módulo não encontrado:
 ### Mudanças não aparecem
 
 - Os symlinks são automáticos, mas às vezes o cache do Vite pode causar problemas
-- Tente: `yarn dev:web --force` ou limpe o cache do Vite
+- Tente: `yarn dev:landingpage --force` ou limpe o cache do Vite
 
 ### TypeScript não encontra tipos
 
@@ -159,7 +159,7 @@ Se você receber erros de módulo não encontrado:
 **Para começar:**
 ```bash
 yarn install    # Uma vez
-yarn dev:web    # Rodar app
+yarn dev:landingpage    # Rodar app
 ```
 
 **Não precisa:**
