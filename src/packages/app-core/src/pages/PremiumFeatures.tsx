@@ -18,7 +18,7 @@ export default function PremiumFeatures() {
     if (!user) return;
     
     const { data } = await supabase
-      .from('user_roles')
+      .from('user_subscriptions')
       .select('role')
       .eq('user_id', user.id)
       .single();

@@ -38,7 +38,7 @@ serve(async (req) => {
 
     // Verificar se é premium
     const { data: roleData } = await supabase
-      .from('user_roles')
+      .from('user_subscriptions')
       .select('role')
       .eq('user_id', user.id)
       .single();
