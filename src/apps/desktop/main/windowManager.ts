@@ -1,4 +1,4 @@
-import { BrowserWindow, shell } from 'electron';
+import { BrowserWindow, shell, app } from 'electron';
 import { join } from 'path';
 import { is } from '@electron-toolkit/utils';
 import config from './config';
@@ -15,7 +15,7 @@ export class WindowManager {
       width: 1200,
       height: 800,
       show: false,
-      autoHideMenuBar: config.getBoolEnv('ELECTRON_AUTO_HIDE_MENU_BAR', true),
+      autoHideMenuBar: config.getBoolEnv('ELECTRON_AUTO_HIDE_MENU_BAR', false),
       fullscreen: true,
       ...(process.platform === 'linux' ? { icon: join(__dirname, '../../resources/icon.png') } : {}),
       webPreferences: {
@@ -58,8 +58,12 @@ export class WindowManager {
   private loadRenderer(window: BrowserWindow): void {
     if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
       window.loadURL(process.env['ELECTRON_RENDERER_URL']);
-    } else {
+    } else if (is.dev) {
+      // In development without renderer URL, load from dist-electron
       window.loadFile(join(__dirname, '../renderer/index.html'));
+    } else {
+      // In production, the renderer is in out/renderer/
+      window.loadFile(join(app.getAppPath(), 'out/renderer/index.html'));
     }
   }
 }
