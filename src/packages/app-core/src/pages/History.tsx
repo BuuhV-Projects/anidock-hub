@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Badge, Separator } from '@anidock/shared-ui';
 import { Clock, Trash2, ExternalLink, Play, Film } from 'lucide-react';
-import { getHistory, clearHistory, deleteHistoryItem, type HistoryItem } from '../lib/localStorage';
+import { getHistory, clearHistory, deleteHistoryItem, getLocalDrivers, type HistoryItem } from '../lib/localStorage';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale/pt-BR';
+import { supabase } from '@anidock/shared-utils';
+import { toast } from 'sonner';
 
 const History = () => {
   const navigate = useNavigate();
@@ -41,19 +43,74 @@ const History = () => {
     navigate(`/anime?${params.toString()}`);
   };
 
-  const handleNavigateToPlayer = (item: HistoryItem) => {
+  const handleNavigateToPlayer = async (item: HistoryItem) => {
     if (item.type === 'episode' && item.episodeUrl) {
-      const params = new URLSearchParams({
-        url: item.episodeUrl,
-        title: item.animeTitle,
-        ep: String(item.episodeNumber),
-        anime: item.animeId,
-        driver: item.driverId,
-      });
-      if (item.indexId) {
-        params.append('index', item.indexId);
+      // Extrair vídeo novamente usando a URL original do episódio
+      toast.loading('Carregando vídeo...');
+      
+      try {
+        // Buscar o driver para obter o seletor de link externo
+        const drivers = getLocalDrivers();
+        const driver = drivers.find(d => d.id === item.driverId);
+        
+        const { data, error } = await supabase.functions.invoke('extract-video-data', {
+          body: {
+            episode_url: item.episodeUrl,
+            external_link_selector: driver?.config?.selectors?.externalLinkSelector
+          }
+        });
+
+        toast.dismiss();
+
+        if (error) {
+          console.error('Error extracting video:', error);
+          toast.error('Erro ao carregar vídeo');
+          window.open(item.episodeUrl, '_blank');
+          return;
+        }
+
+        if (!data?.success || !data?.videoUrl) {
+          console.log('No video found, opening episode page directly');
+          toast.info('Abrindo página do episódio...');
+          window.open(item.episodeUrl, '_blank');
+          return;
+        }
+
+        const finalVideoUrl = data.videoUrl as string;
+
+        // Check video type and handle accordingly
+        if (data.type === 'external') {
+          toast.info('Abrindo vídeo em nova aba...');
+          window.open(finalVideoUrl, '_blank');
+          return;
+        }
+
+        if (data.type === 'iframe' || data.type === 'video') {
+          // Navegar para o player com o vídeo extraído
+          const params = new URLSearchParams({
+            url: finalVideoUrl,
+            title: item.animeTitle,
+            ep: String(item.episodeNumber),
+            anime: item.animeId,
+            driver: item.driverId,
+          });
+          if (item.indexId) {
+            params.append('index', item.indexId);
+          }
+          navigate(`/player?${params.toString()}`);
+          return;
+        }
+
+        // Fallback - open episode page
+        toast.info('Abrindo página do episódio...');
+        window.open(item.episodeUrl, '_blank');
+        
+      } catch (error) {
+        console.error('Error calling extract-video-data:', error);
+        toast.dismiss();
+        toast.error('Erro ao processar episódio');
+        window.open(item.episodeUrl, '_blank');
       }
-      navigate(`/player?${params.toString()}`);
     }
   };
 
