@@ -8,6 +8,7 @@ import {
   getLocalAnime, 
   saveLocalAnime,
   addToHistory,
+  syncHistoryToCloud,
   type LocalAnime, 
   type LocalEpisode, 
   type Driver 
@@ -278,6 +279,42 @@ const AnimeDetails = () => {
       if (anime) {
         addToHistory({
           type: 'episode',
+          animeId: anime.id,
+          animeTitle: anime.title,
+          animeCover: anime.coverUrl,
+          driverId: anime.driverId,
+          indexId: indexId || undefined,
+          episodeNumber: episode.episodeNumber,
+          episodeUrl: episode.sourceUrl // URL original do episódio no site
+        });
+        
+        // Se usuário estiver logado e for premium, sincronizar com a nuvem
+        if (user) {
+          // Check user role
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id)
+            .single();
+          
+          const isPremium = roleData && (roleData.role === 'premium' || roleData.role === 'premium_plus');
+          
+          if (isPremium) {
+            await syncHistoryToCloud(supabase, user.id, {
+              animeTitle: anime.title,
+              animeCover: anime.coverUrl,
+              animeSourceUrl: anime.sourceUrl,
+              episodeTitle: episode.title,
+              episodeNumber: episode.episodeNumber,
+              episodeUrl: episode.sourceUrl,
+              driverId: driver?.id
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error adding to history:', error);
+    }
           animeId: anime.id,
           animeTitle: anime.title,
           animeCover: anime.coverUrl,

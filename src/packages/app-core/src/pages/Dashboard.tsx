@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/auth/useAuth';
 import { Button, Card } from '@anidock/shared-ui';
-import { Cpu, Plus, Database, Zap, LogOut } from 'lucide-react';
+import { Cpu, Plus, Database, Zap, LogOut, Crown } from 'lucide-react';
 import { supabase } from '@anidock/shared-utils';
 import { toast } from 'sonner';
 
@@ -158,17 +158,25 @@ const Dashboard = () => {
             </div>
           </Card>
 
-          <Card className="glass p-6 border-border/50 hover:border-accent/50 transition-all">
+          <Card 
+            className="glass p-6 border-border/50 hover:border-accent/50 transition-all cursor-pointer"
+            onClick={() => navigate('/premium')}
+          >
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-lg bg-accent/20 flex items-center justify-center">
-                <Cpu className="h-6 w-6 text-accent" />
+                {userRole === 'Free' ? <Crown className="h-6 w-6 text-accent" /> : <Cpu className="h-6 w-6 text-accent" />}
               </div>
-              <div>
+              <div className="flex-1">
                 <p className="text-2xl font-display font-bold">
                   {isLoading ? '...' : userRole}
                 </p>
-                <p className="text-sm text-muted-foreground">Plano Atual</p>
+                <p className="text-sm text-muted-foreground">
+                  {userRole === 'Free' ? 'Fazer upgrade' : 'Plano Atual'}
+                </p>
               </div>
+              {userRole === 'Free' && (
+                <Crown className="h-5 w-5 text-primary opacity-50" />
+              )}
             </div>
           </Card>
         </div>
