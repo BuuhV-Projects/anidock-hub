@@ -63,17 +63,22 @@ const AnimeDetails = () => {
           setDriver(localDriver);
         }
         
-        // Add to history
-        addToHistory({
-          type: 'anime',
-          animeId,
-          animeTitle: cachedAnime.title,
-          animeCover: cachedAnime.coverUrl,
-          driverId,
-          indexId
-        });
-        
         setIsLoading(false);
+        
+        // Add to history (non-blocking)
+        try {
+          addToHistory({
+            type: 'anime',
+            animeId,
+            animeTitle: cachedAnime.title,
+            animeCover: cachedAnime.coverUrl,
+            driverId,
+            indexId: indexId || undefined
+          });
+        } catch (error) {
+          console.error('Error adding to history:', error);
+        }
+        
         return;
       }
 
@@ -124,6 +129,7 @@ const AnimeDetails = () => {
       }
 
       if (!foundAnime || !foundDriver) {
+        console.error('Anime not found:', { animeId, driverId, indexId, foundAnime: !!foundAnime, foundDriver: !!foundDriver });
         toast.error('Anime não encontrado');
         navigate('/browse');
         return;
@@ -131,6 +137,20 @@ const AnimeDetails = () => {
 
       setAnime(foundAnime);
       setDriver(foundDriver);
+      
+      // Add to history (non-blocking)
+      try {
+        addToHistory({
+          type: 'anime',
+          animeId,
+          animeTitle: foundAnime.title,
+          animeCover: foundAnime.coverUrl,
+          driverId,
+          indexId: indexId || undefined
+        });
+      } catch (error) {
+        console.error('Error adding to history:', error);
+      }
 
       // Check if episodes already exist
       if (foundAnime.episodes && foundAnime.episodes.length > 0) {
