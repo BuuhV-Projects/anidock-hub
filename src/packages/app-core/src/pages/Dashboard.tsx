@@ -86,6 +86,29 @@ const Dashboard = () => {
     const fetchRecommendations = async () => {
       setIsLoadingRecommendations(true);
       try {
+        // Verificar cache de recomendações
+        const cachedData = localStorage.getItem('ai-recommendations-cache');
+        if (cachedData) {
+          const { recommendations: cachedRecs, timestamp } = JSON.parse(cachedData);
+          const cacheDate = new Date(timestamp);
+          const now = new Date();
+          
+          // Verificar se ainda é o mesmo dia (virada de dia = meia-noite)
+          const isSameDay = 
+            cacheDate.getDate() === now.getDate() &&
+            cacheDate.getMonth() === now.getMonth() &&
+            cacheDate.getFullYear() === now.getFullYear();
+          
+          if (isSameDay && cachedRecs && cachedRecs.length > 0) {
+            console.log('Usando recomendações em cache');
+            setRecommendations(cachedRecs);
+            setIsLoadingRecommendations(false);
+            return;
+          }
+        }
+        
+        console.log('Buscando novas recomendações da IA');
+        
         // Get local history
         const localHistory = getHistory()
           .filter(item => item.type === 'episode')
@@ -123,8 +146,15 @@ const Dashboard = () => {
           return;
         }
         
-        if (data?.recommendations) {
+        if (data?.recommendations && data.recommendations.length > 0) {
           setRecommendations(data.recommendations);
+          
+          // Salvar no cache com timestamp atual
+          localStorage.setItem('ai-recommendations-cache', JSON.stringify({
+            recommendations: data.recommendations,
+            timestamp: new Date().toISOString()
+          }));
+          console.log('Recomendações salvas em cache');
         }
       } catch (error) {
         console.error('Error:', error);
