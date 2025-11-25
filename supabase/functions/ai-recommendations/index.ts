@@ -31,6 +31,15 @@ serve(async (req) => {
     if (!user) throw new Error("User not authenticated");
     logStep("User authenticated", { userId: user.id });
 
+    // Parse request body to get client-side data
+    const body = await req.json();
+    const { watchHistory, availableAnimes } = body;
+    
+    logStep("Received client data", { 
+      watchHistoryCount: watchHistory?.length,
+      availableAnimesCount: availableAnimes?.length 
+    });
+
     // Check if user is premium
     const { data: roleData } = await supabaseClient
       .rpc('get_user_role', { _user_id: user.id });
@@ -42,33 +51,46 @@ serve(async (req) => {
       });
     }
 
-    // Get user's watch history
-    const { data: history } = await supabaseClient
-      .from('watch_history')
-      .select('anime_title, anime_source_url, episode_number')
-      .eq('user_id', user.id)
-      .order('watched_at', { ascending: false })
-      .limit(20);
+    // Use client-provided data if available, fallback to database
+    let history = watchHistory;
+    let allAnimes = availableAnimes;
 
-    logStep("Fetched watch history", { count: history?.length });
+    // If no client data, try to get from database
+    if (!history || history.length === 0) {
+      const { data: dbHistory, error: historyError } = await supabaseClient
+        .from('watch_history')
+        .select('anime_title, anime_source_url, episode_number')
+        .eq('user_id', user.id)
+        .order('watched_at', { ascending: false })
+        .limit(20);
 
-    // Get all indexed animes (from user's drivers)
-    const { data: indexes } = await supabaseClient
-      .from('indexes')
-      .select('index_data, name')
-      .eq('user_id', user.id);
-
-    // Extract anime titles from indexes
-    const allAnimes: string[] = [];
-    indexes?.forEach((index: any) => {
-      if (index.index_data && Array.isArray(index.index_data)) {
-        index.index_data.forEach((anime: any) => {
-          if (anime.title) allAnimes.push(anime.title);
-        });
+      if (historyError) {
+        logStep("Error fetching watch history", { error: historyError });
       }
-    });
+      
+      history = dbHistory || [];
+      logStep("Fetched watch history from DB", { count: history?.length });
+    }
 
-    logStep("Extracted indexed animes", { count: allAnimes.length });
+    if (!allAnimes || allAnimes.length === 0) {
+      // Get all indexed animes (from user's drivers)
+      const { data: indexes } = await supabaseClient
+        .from('indexes')
+        .select('index_data, name')
+        .eq('user_id', user.id);
+
+      // Extract anime titles from indexes
+      allAnimes = [];
+      indexes?.forEach((index: any) => {
+        if (index.index_data && Array.isArray(index.index_data)) {
+          index.index_data.forEach((anime: any) => {
+            if (anime.title) allAnimes.push(anime.title);
+          });
+        }
+      });
+
+      logStep("Extracted indexed animes from DB", { count: allAnimes.length });
+    }
 
     if (!history || history.length === 0) {
       return new Response(JSON.stringify({ 
@@ -80,9 +102,19 @@ serve(async (req) => {
       });
     }
 
+    if (!allAnimes || allAnimes.length === 0) {
+      return new Response(JSON.stringify({ 
+        recommendations: [],
+        message: "Importe ou crie drivers para começar a receber recomendações!"
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     // Build AI prompt
-    const watchedAnimes = history.map(h => h.anime_title).slice(0, 10);
-    const availableAnimes = allAnimes.slice(0, 50);
+    const watchedAnimes = history.map((h: any) => h.anime_title || h.animeTitle).slice(0, 10);
+    const availableAnimesList = allAnimes.slice(0, 50);
 
     const systemPrompt = `Você é um especialista em recomendações de animes. 
 Baseado no histórico de visualização do usuário, sugira animes similares da lista disponível.
@@ -93,7 +125,7 @@ Considere gêneros, temas, estilos e narrativas similares.`;
 ${watchedAnimes.join('\n')}
 
 Animes disponíveis para recomendar:
-${availableAnimes.join('\n')}
+${availableAnimesList.join('\n')}
 
 Recomende 5 animes da lista disponível que o usuário provavelmente vai gostar baseado no histórico.
 Para cada recomendação, explique brevemente (1 linha) por que é uma boa escolha.`;

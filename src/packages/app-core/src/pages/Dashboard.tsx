@@ -5,6 +5,7 @@ import { Button, Card, DropdownMenu, DropdownMenuContent, DropdownMenuItem, Drop
 import { Cpu, Plus, Database, Zap, LogOut, Crown, User, Settings, Sparkles } from 'lucide-react';
 import { supabase } from '@anidock/shared-utils';
 import { toast } from 'sonner';
+import { getHistory, getLocalDrivers } from '../lib/localStorage';
 
 interface Recommendation {
   title: string;
@@ -85,7 +86,37 @@ const Dashboard = () => {
     const fetchRecommendations = async () => {
       setIsLoadingRecommendations(true);
       try {
-        const { data, error } = await supabase.functions.invoke('ai-recommendations');
+        // Get local history
+        const localHistory = getHistory()
+          .filter(item => item.type === 'episode')
+          .map(item => ({
+            animeTitle: item.animeTitle,
+            episodeNumber: item.episodeNumber
+          }))
+          .slice(0, 20);
+
+        // Get all available animes from local drivers
+        const localDrivers = getLocalDrivers();
+        const availableAnimes: string[] = [];
+        localDrivers.forEach(driver => {
+          if (driver.indexedData && Array.isArray(driver.indexedData)) {
+            driver.indexedData.forEach(anime => {
+              if (anime.title) availableAnimes.push(anime.title);
+            });
+          }
+        });
+
+        console.log('Sending to AI:', { 
+          historyCount: localHistory.length, 
+          animesCount: availableAnimes.length 
+        });
+
+        const { data, error } = await supabase.functions.invoke('ai-recommendations', {
+          body: {
+            watchHistory: localHistory,
+            availableAnimes: availableAnimes
+          }
+        });
         
         if (error) {
           console.error('Error fetching recommendations:', error);
