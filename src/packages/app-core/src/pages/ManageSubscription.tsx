@@ -7,80 +7,42 @@ import { supabase } from '@anidock/shared-utils';
 import { toast } from 'sonner';
 
 export default function ManageSubscription() {
-  const { user } = useAuth();
+  const { user, subscriptionStatus, checkSubscription } = useAuth();
   const navigate = useNavigate();
-  const [userRole, setUserRole] = useState<string>('free');
   const [isLoading, setIsLoading] = useState(true);
-  const [subscriptionDate, setSubscriptionDate] = useState<string>('');
 
   useEffect(() => {
     if (!user) {
       navigate('/auth');
       return;
     }
-    getUserSubscription();
+    loadSubscription();
   }, [user]);
 
-  const getUserSubscription = async () => {
-    if (!user) return;
-    
+  const loadSubscription = async () => {
     setIsLoading(true);
+    await checkSubscription();
+    setIsLoading(false);
+  };
+
+  const handleManageSubscription = async () => {
     try {
-      const { data, error } = await supabase
-        .from('user_subscriptions')
-        .select('role, created_at')
-        .eq('user_id', user.id)
-        .single();
+      const { data, error } = await supabase.functions.invoke('customer-portal');
       
       if (error) throw error;
-      
-      if (data) {
-        setUserRole(data.role);
-        setSubscriptionDate(data.created_at);
+      if (data?.url) {
+        window.open(data.url, '_blank');
       }
     } catch (error) {
-      console.error('Error fetching subscription:', error);
-      toast.error('Erro ao carregar dados da assinatura');
-    } finally {
-      setIsLoading(false);
+      console.error('Error opening customer portal:', error);
+      toast.error('Erro ao abrir portal de gerenciamento');
     }
   };
 
-  const handleCancelSubscription = async () => {
-    if (!user) return;
-
-    try {
-      // Update user role to free
-      const { error } = await supabase
-        .from('user_subscriptions')
-        .update({ role: 'free' })
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      toast.success('Assinatura cancelada com sucesso');
-      setUserRole('free');
-    } catch (error) {
-      console.error('Error canceling subscription:', error);
-      toast.error('Erro ao cancelar assinatura');
-    }
-  };
-
-  const isPremium = userRole === 'premium' || userRole === 'premium_plus';
+  const isPremium = subscriptionStatus.role === 'premium';
   
-  // Calculate next renewal date (30 days from subscription date)
-  const getNextRenewalDate = () => {
-    if (!subscriptionDate) return 'N/A';
-    const date = new Date(subscriptionDate);
-    date.setDate(date.getMonth() + 1);
-    return date.toLocaleDateString('pt-BR', { 
-      day: '2-digit', 
-      month: 'long', 
-      year: 'numeric' 
-    });
-  };
-
-  const formatDate = (dateString: string) => {
+  
+  const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('pt-BR', { 
       day: '2-digit', 
@@ -143,18 +105,12 @@ export default function ManageSubscription() {
           {isPremium && (
             <div className="space-y-4 border-t pt-4">
               <div className="flex items-center gap-3">
-                <Calendar className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">Data de início</p>
-                  <p className="text-sm text-muted-foreground">{formatDate(subscriptionDate)}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
                 <CreditCard className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Próxima renovação</p>
-                  <p className="text-sm text-muted-foreground">{getNextRenewalDate()}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatDate(subscriptionStatus.subscriptionEnd)}
+                  </p>
                 </div>
               </div>
 
@@ -162,9 +118,7 @@ export default function ManageSubscription() {
                 <CheckCircle className="h-5 w-5 text-green-500" />
                 <div>
                   <p className="text-sm font-medium">Valor</p>
-                  <p className="text-sm text-muted-foreground">
-                    R$ {userRole === 'premium_plus' ? '24,90' : '14,90'}/mês
-                  </p>
+                  <p className="text-sm text-muted-foreground">R$ 14,90/mês</p>
                 </div>
               </div>
             </div>
@@ -229,49 +183,18 @@ export default function ManageSubscription() {
 
         {/* Cancel Subscription */}
         {isPremium && (
-          <Card className="p-6 border-destructive/50">
+          <Card className="p-6 border-primary/50">
             <div className="flex items-start gap-4">
-              <AlertTriangle className="h-6 w-6 text-destructive mt-1" />
+              <CreditCard className="h-6 w-6 text-primary mt-1" />
               <div className="flex-1">
-                <h3 className="font-semibold mb-2">Cancelar Assinatura</h3>
+                <h3 className="font-semibold mb-2">Gerenciar Assinatura</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Ao cancelar sua assinatura, você perderá acesso aos recursos Premium ao final do período atual.
-                  Seus drivers e histórico permanecerão salvos caso você decida reativar no futuro.
+                  Gerencie sua forma de pagamento, visualize faturas ou cancele sua assinatura diretamente no portal do Stripe.
                 </p>
                 
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive">
-                      Cancelar Assinatura
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Você perderá acesso a:
-                        <ul className="list-disc list-inside mt-2 space-y-1">
-                          <li>Drivers ilimitados (limite voltará para 3)</li>
-                          <li>Sincronização na nuvem</li>
-                          <li>Histórico sincronizado</li>
-                          <li>Recomendações com IA</li>
-                        </ul>
-                        <p className="mt-4 font-semibold">
-                          Esta ação não pode ser desfeita automaticamente. Você precisará fazer uma nova assinatura para recuperar o acesso Premium.
-                        </p>
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Manter Assinatura</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleCancelSubscription}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Confirmar Cancelamento
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <Button onClick={handleManageSubscription}>
+                  Abrir Portal de Gerenciamento
+                </Button>
               </div>
             </div>
           </Card>

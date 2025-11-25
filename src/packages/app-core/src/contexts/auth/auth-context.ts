@@ -8,6 +8,13 @@ export interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   loading: boolean;
+  subscriptionStatus: {
+    subscribed: boolean;
+    role: 'free' | 'premium';
+    productId: string | null;
+    subscriptionEnd: string | null;
+  };
+  checkSubscription: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
