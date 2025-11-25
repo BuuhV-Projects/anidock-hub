@@ -78,19 +78,26 @@ serve(async (req) => {
       
       logStep("Raw subscription data", { 
         id: subscription.id, 
+        current_period_start: subscription.current_period_start,
         current_period_end: subscription.current_period_end,
         status: subscription.status 
       });
       
-      // Convert timestamp to ISO string
-      if (subscription.current_period_end) {
-        subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-        logStep("Converted subscription end date", { 
-          timestamp: subscription.current_period_end, 
+      // Try to determine next renewal date
+      const BILLING_INTERVAL_SECONDS = 30 * 24 * 60 * 60; // approx 30 days
+      const periodEndTimestamp = subscription.current_period_end
+        ?? (subscription.current_period_start
+          ? subscription.current_period_start + BILLING_INTERVAL_SECONDS
+          : null);
+
+      if (periodEndTimestamp) {
+        subscriptionEnd = new Date(periodEndTimestamp * 1000).toISOString();
+        logStep("Computed subscription end date", { 
+          timestamp: periodEndTimestamp, 
           isoString: subscriptionEnd 
         });
       } else {
-        logStep("WARNING: subscription.current_period_end is missing or null");
+        logStep("WARNING: Could not determine subscription end timestamp");
       }
       
       logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
