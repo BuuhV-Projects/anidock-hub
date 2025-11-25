@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@anidock/shared-ui';
 import { useAuth } from '../../contexts/auth/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { Cpu, Upload, User, LogOut, Clock, Crown, Settings } from 'lucide-react';
 import { useElectronApi } from '../../hooks/useElectronApi';
+import { supabase } from '@anidock/shared-utils';
 
 type BrowseHeaderProps = {
   user: ReturnType<typeof useAuth>['user'];
@@ -28,6 +29,25 @@ const DesktopCloseButton = () => {
 
 export const BrowseHeader = ({ user, navigate, isDesktop }: BrowseHeaderProps) => {
   const { signOut } = useAuth();
+  const [isPremium, setIsPremium] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      checkUserRole();
+    }
+  }, [user]);
+
+  const checkUserRole = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('user_subscriptions')
+      .select('role')
+      .eq('user_id', user.id)
+      .single();
+    
+    setIsPremium(data && (data.role === 'premium' || data.role === 'premium_plus'));
+  };
 
   return (
     <header className="border-b border-border/50 sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
@@ -75,19 +95,22 @@ export const BrowseHeader = ({ user, navigate, isDesktop }: BrowseHeaderProps) =
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-                      <Settings className="h-4 w-4 mr-2" />
-                      Dashboard
-                    </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </DropdownMenuItem>
+                  {isPremium ? (
                     <DropdownMenuItem onClick={() => navigate('/subscription')}>
                       <Crown className="h-4 w-4 mr-2" />
                       Gerenciar Assinatura
                     </DropdownMenuItem>
+                  ) : (
                     <DropdownMenuItem onClick={() => navigate('/premium')}>
                       <Crown className="h-4 w-4 mr-2" />
                       Planos Premium
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                  )}
+                  <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={signOut} className="text-destructive">
                       <LogOut className="h-4 w-4 mr-2" />
                       Sair
