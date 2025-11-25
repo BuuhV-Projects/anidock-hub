@@ -1,21 +1,59 @@
-import { Crown, Cloud, Sparkles, History, Infinity } from "lucide-react";
-import { Button } from "@anidock/shared-ui";
+import { Crown, Cloud, Sparkles, History, Infinity, CheckCircle, XCircle } from "lucide-react";
+import { Button, Alert, AlertDescription, AlertTitle } from "@anidock/shared-ui";
 import { useAuth } from "@anidock/app-core";
 import { useState, useEffect } from "react";
 import { supabase } from "@anidock/shared-utils";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function PremiumFeatures() {
   const { user, subscriptionStatus } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const isPremium = subscriptionStatus.role === 'premium';
   
   const PREMIUM_PRICE_ID = "price_1SXLgQ5O2lRcfH35ckLj4j6j"; // R$ 14,90/month
 
+  const success = searchParams.get('success');
+  const canceled = searchParams.get('canceled');
+
+  // Limpar os params após 5 segundos
+  useEffect(() => {
+    if (success || canceled) {
+      const timer = setTimeout(() => {
+        searchParams.delete('success');
+        searchParams.delete('canceled');
+        setSearchParams(searchParams, { replace: true });
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, canceled, searchParams, setSearchParams]);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
+        {/* Mensagem de Sucesso */}
+        {success && (
+          <Alert className="mb-6 border-green-500 bg-green-50 dark:bg-green-950">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertTitle className="text-green-600">Pagamento realizado com sucesso!</AlertTitle>
+            <AlertDescription className="text-green-700 dark:text-green-400">
+              Sua assinatura Premium foi ativada. Aproveite todos os recursos ilimitados do AniDock!
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Mensagem de Cancelamento */}
+        {canceled && (
+          <Alert className="mb-6 border-orange-500 bg-orange-50 dark:bg-orange-950">
+            <XCircle className="h-4 w-4 text-orange-600" />
+            <AlertTitle className="text-orange-600">Checkout cancelado</AlertTitle>
+            <AlertDescription className="text-orange-700 dark:text-orange-400">
+              Você cancelou o processo de pagamento. Se precisar de ajuda, entre em contato conosco.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 mb-4">
             <Crown className="w-8 h-8 text-primary" />
