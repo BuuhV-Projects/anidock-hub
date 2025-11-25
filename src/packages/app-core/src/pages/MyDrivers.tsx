@@ -1,22 +1,3 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button, Card, Badge } from '@anidock/shared-ui';
-import { 
-  ArrowLeft, 
-  Cpu, 
-  Download, 
-  Trash2, 
-  Plus,
-  Eye,
-  Loader2,
-  Sparkles,
-  FileEdit,
-  ChevronDown,
-  Settings
-} from 'lucide-react';
-import { supabase } from '@anidock/shared-utils';
-import { toast } from 'sonner';
-import { useAuth } from '../contexts/auth/useAuth';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,12 +6,29 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
-  DropdownMenu,
+  AlertDialogTitle, Button, Card, DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from '@anidock/shared-ui';
+import { supabase } from '@anidock/shared-utils';
+import {
+  ArrowLeft,
+  ChevronDown,
+  Cpu,
+  Download,
+  Eye,
+  FileEdit,
+  Loader2,
+  Plus,
+  Settings,
+  Sparkles,
+  Trash2
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { useAuth } from '../contexts/auth/useAuth';
 
 interface Driver {
   id: number;

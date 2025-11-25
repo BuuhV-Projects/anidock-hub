@@ -4,16 +4,10 @@
       output: dist
       buildResources: resources
     files:
-      # Bundle the compiled Electron main + preload code (dist-electron)
-      - from: dist-electron
-        to: .
-        filter:
-          - "**/*"
-      # Bundle the renderer build output produced by electron-vite
-      - from: out/renderer
-        to: renderer
-        filter:
-          - "**/*"
+      - filter:
+          - ./package.json
+          - ./dist-electron/**
+          - ./out/renderer/**
     win:
       target:
         - target: nsis

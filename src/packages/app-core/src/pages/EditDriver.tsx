@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Card, Input, Label, Textarea } from '@anidock/shared-ui';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { Button, Card, Input, Label } from '@anidock/shared-ui';
 import { supabase } from '@anidock/shared-utils';
-import { useAuth } from '../contexts/auth/useAuth';
+import { ArrowLeft, Loader2, Save } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useAuth } from '../contexts/auth/useAuth';
 
 const EditDriver = () => {
   const navigate = useNavigate();

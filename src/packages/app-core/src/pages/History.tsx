@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button, Card, Badge, Separator } from '@anidock/shared-ui';
-import { Clock, Trash2, ExternalLink, Play, Film } from 'lucide-react';
-import { getHistory, clearHistory, deleteHistoryItem, getLocalDrivers, type HistoryItem } from '../lib/localStorage';
+import { Badge, Button, Card, Separator } from '@anidock/shared-ui';
+import { supabase } from '@anidock/shared-utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale/pt-BR';
-import { supabase } from '@anidock/shared-utils';
+import { Clock, ExternalLink, Film, Play, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { clearHistory, deleteHistoryItem, getHistory, getLocalDrivers, type HistoryItem } from '../lib/localStorage';
 
 const History = () => {
   const navigate = useNavigate();
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [groupByDate, setGroupByDate] = useState(true);
+  const [groupByDate, _] = useState(true);
 
   useEffect(() => {
     loadHistory();

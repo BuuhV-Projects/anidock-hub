@@ -1,4 +1,4 @@
-import { Driver, LocalAnime, LocalEpisode, CrawlResult } from './types';
+import { CrawlResult, Driver, LocalEpisode } from './types';
 
 /**
  * Browser-based crawler that uses drivers to extract anime data
