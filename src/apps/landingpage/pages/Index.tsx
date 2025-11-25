@@ -1,7 +1,7 @@
 import { Button, Card } from "@anidock/shared-ui";
 import { Database, Zap, Shield, Cpu, Download, HardDrive, MonitorPlay, Sparkles, Lock, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import screenshotBrowse from "../assets/screenshot-browse.png";
+import heroImage from "../assets/hero.png";
 import screenshotDashboard from "../assets/screenshot-dashboard.png";
 import screenshotAiDriver from "../assets/screenshot-ai-driver.png";
 
@@ -97,7 +97,7 @@ const Index = () => {
             <div className="relative max-w-xl mx-auto lg:mx-0">
               <div className="relative rounded-xl overflow-hidden border border-primary/20 glow-cyan shadow-2xl">
                 <img 
-                  src={screenshotBrowse} 
+                  src={heroImage} 
                   alt="AniDock Interface"
                   className="w-full h-auto scale-90"
                 />
