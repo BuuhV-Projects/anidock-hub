@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/auth/useAuth';
 import { Button, Card, Badge, AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@anidock/shared-ui';
-import { Crown, Calendar, CreditCard, AlertTriangle, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Crown, CreditCard, AlertTriangle, ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
 import { supabase } from '@anidock/shared-utils';
 import { toast } from 'sonner';
 
@@ -10,6 +10,7 @@ export default function ManageSubscription() {
   const { user, subscriptionStatus, checkSubscription } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const [isCanceling, setIsCanceling] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -25,17 +26,25 @@ export default function ManageSubscription() {
     setIsLoading(false);
   };
 
-  const handleManageSubscription = async () => {
+  const handleCancelSubscription = async () => {
+    setIsCanceling(true);
     try {
-      const { data, error } = await supabase.functions.invoke('customer-portal');
+      const { data, error } = await supabase.functions.invoke('cancel-subscription');
       
       if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, '_blank');
+      
+      if (data?.success) {
+        toast.success('Assinatura cancelada com sucesso');
+        await checkSubscription();
+        setTimeout(() => navigate('/dashboard'), 2000);
+      } else {
+        throw new Error(data?.error || 'Erro ao cancelar assinatura');
       }
-    } catch (error) {
-      console.error('Error opening customer portal:', error);
-      toast.error('Erro ao abrir portal de gerenciamento');
+    } catch (error: any) {
+      console.error('Error canceling subscription:', error);
+      toast.error(error.message || 'Erro ao cancelar assinatura');
+    } finally {
+      setIsCanceling(false);
     }
   };
 
@@ -168,6 +177,54 @@ export default function ManageSubscription() {
               <Crown className="h-5 w-5" />
               Ver Planos Premium
             </Button>
+          </Card>
+        )}
+
+        {/* Cancel Subscription */}
+        {isPremium && (
+          <Card className="p-6 border-destructive/50 bg-destructive/5">
+            <div className="flex items-start gap-4">
+              <AlertTriangle className="h-6 w-6 text-destructive mt-1" />
+              <div className="flex-1">
+                <h3 className="font-semibold mb-2">Cancelar Assinatura</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Ao cancelar, você perderá acesso aos benefícios Premium quando o período atual terminar.
+                  Seus dados serão mantidos, mas limitados ao plano gratuito.
+                </p>
+                
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" disabled={isCanceling}>
+                      <XCircle className="h-4 w-4 mr-2" />
+                      {isCanceling ? 'Cancelando...' : 'Cancelar Assinatura'}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta ação cancelará sua assinatura Premium. Você manterá acesso até o fim do período pago,
+                        mas depois voltará ao plano gratuito com as seguintes limitações:
+                        <ul className="list-disc list-inside mt-2 space-y-1">
+                          <li>Máximo de 3 drivers na nuvem</li>
+                          <li>Histórico apenas local (sem sincronização)</li>
+                          <li>Sem recomendações com IA</li>
+                        </ul>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Manter Premium</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleCancelSubscription}
+                        className="bg-destructive hover:bg-destructive/90"
+                      >
+                        Sim, Cancelar
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
           </Card>
         )}
 
