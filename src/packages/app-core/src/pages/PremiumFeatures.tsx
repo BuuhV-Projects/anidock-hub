@@ -32,7 +32,7 @@ export default function PremiumFeatures() {
 
   const isPremium = userRole === 'premium';
   
-  const PREMIUM_PRICE_ID = "price_1QhuEJP6HFXE8TuXdhfqy9qO"; // R$ 14,90/month
+  const PREMIUM_PRICE_ID = "price_1SXLgQ5O2lRcfH35ckLj4j6j"; // R$ 14,90/month
 
   return (
     <div className="min-h-screen bg-background">
