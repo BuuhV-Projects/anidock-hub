@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Card, Badge, Alert, AlertDescription } from '@anidock/shared-ui';
 import { ArrowLeft, ExternalLink, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
-import { addToHistory } from '../lib/localStorage';
 
 const Player = () => {
   const navigate = useNavigate();
@@ -22,20 +21,7 @@ const Player = () => {
     // Reset states when URL changes
     setIframeError(false);
     setIsLoading(true);
-    
-    // Add to history when episode loads
-    if (episodeUrl && animeId && animeTitle && episodeNumber && driverId) {
-      addToHistory({
-        type: 'episode',
-        animeId,
-        animeTitle,
-        driverId,
-        indexId: indexId || undefined,
-        episodeNumber: parseInt(episodeNumber),
-        episodeUrl
-      });
-    }
-  }, [episodeUrl, animeId, animeTitle, episodeNumber, driverId, indexId]);
+  }, [episodeUrl]);
 
   const handleIframeLoad = () => {
     setIsLoading(false);
