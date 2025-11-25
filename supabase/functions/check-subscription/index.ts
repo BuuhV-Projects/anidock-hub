@@ -76,13 +76,21 @@ serve(async (req) => {
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
       
-      // Safely convert timestamp to ISO string
-      try {
-        if (subscription.current_period_end) {
-          subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-        }
-      } catch (dateError) {
-        logStep("Error converting date", { error: dateError, timestamp: subscription.current_period_end });
+      logStep("Raw subscription data", { 
+        id: subscription.id, 
+        current_period_end: subscription.current_period_end,
+        status: subscription.status 
+      });
+      
+      // Convert timestamp to ISO string
+      if (subscription.current_period_end) {
+        subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+        logStep("Converted subscription end date", { 
+          timestamp: subscription.current_period_end, 
+          isoString: subscriptionEnd 
+        });
+      } else {
+        logStep("WARNING: subscription.current_period_end is missing or null");
       }
       
       logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
