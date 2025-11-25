@@ -9,7 +9,7 @@ const corsHeaders = {
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[CANCEL-SUBSCRIPTION] ${step}${detailsStr}`);
+  console.log(`[REACTIVATE-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
 serve(async (req) => {
@@ -51,7 +51,7 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    // Find active subscription
+    // Find subscription (active or scheduled to cancel)
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
@@ -63,35 +63,45 @@ serve(async (req) => {
     }
 
     const subscription = subscriptions.data[0];
-    logStep("Found active subscription", { subscriptionId: subscription.id });
+    
+    if (!subscription.cancel_at_period_end) {
+      throw new Error("Subscription is not scheduled for cancellation");
+    }
+    
+    logStep("Found subscription scheduled for cancellation", { subscriptionId: subscription.id });
 
-    // Cancel subscription at period end (não cancela imediatamente)
-    const canceledSubscription = await stripe.subscriptions.update(subscription.id, {
-      cancel_at_period_end: true,
+    // Reactivate subscription (remove cancel_at_period_end flag)
+    const reactivatedSubscription = await stripe.subscriptions.update(subscription.id, {
+      cancel_at_period_end: false,
     });
     
-    logStep("Subscription set to cancel at period end", { 
-      subscriptionId: canceledSubscription.id,
-      cancelAt: canceledSubscription.cancel_at,
-      currentPeriodEnd: canceledSubscription.current_period_end
+    logStep("Subscription reactivated", { 
+      subscriptionId: reactivatedSubscription.id,
+      status: reactivatedSubscription.status
     });
 
-    // NÃO atualiza o role agora - usuário mantém Premium até o fim do período
-    // O check-subscription vai atualizar automaticamente quando a assinatura expirar
+    // Ensure user role is premium
+    const { error: updateError } = await supabaseClient
+      .from('user_subscriptions')
+      .update({ role: 'premium' })
+      .eq('user_id', user.id);
+
+    if (updateError) {
+      logStep("Error updating role to premium", { error: updateError });
+    } else {
+      logStep("Successfully confirmed role as premium");
+    }
 
     return new Response(JSON.stringify({
       success: true,
-      message: "Assinatura será cancelada no final do período",
-      cancel_at: canceledSubscription.current_period_end 
-        ? new Date(canceledSubscription.current_period_end * 1000).toISOString() 
-        : null
+      message: "Assinatura reativada com sucesso"
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR in cancel-subscription", { message: errorMessage });
+    logStep("ERROR in reactivate-subscription", { message: errorMessage });
     return new Response(JSON.stringify({ 
       success: false,
       error: errorMessage 

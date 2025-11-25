@@ -13,6 +13,7 @@ export interface AuthContextType {
     role: 'free' | 'premium';
     productId: string | null;
     subscriptionEnd: string | null;
+    cancelAtPeriodEnd: boolean;
   };
   checkSubscription: () => Promise<void>;
 }

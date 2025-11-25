@@ -11,6 +11,7 @@ export default function ManageSubscription() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [isCanceling, setIsCanceling] = useState(false);
+  const [isReactivating, setIsReactivating] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -34,9 +35,8 @@ export default function ManageSubscription() {
       if (error) throw error;
       
       if (data?.success) {
-        toast.success('Assinatura cancelada com sucesso');
+        toast.success('Assinatura cancelada! Você terá acesso Premium até o fim do período pago.');
         await checkSubscription();
-        setTimeout(() => navigate('/dashboard'), 2000);
       } else {
         throw new Error(data?.error || 'Erro ao cancelar assinatura');
       }
@@ -45,6 +45,27 @@ export default function ManageSubscription() {
       toast.error(error.message || 'Erro ao cancelar assinatura');
     } finally {
       setIsCanceling(false);
+    }
+  };
+
+  const handleReactivateSubscription = async () => {
+    setIsReactivating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('reactivate-subscription');
+      
+      if (error) throw error;
+      
+      if (data?.success) {
+        toast.success('Assinatura reativada com sucesso!');
+        await checkSubscription();
+      } else {
+        throw new Error(data?.error || 'Erro ao reativar assinatura');
+      }
+    } catch (error: any) {
+      console.error('Error reactivating subscription:', error);
+      toast.error(error.message || 'Erro ao reativar assinatura');
+    } finally {
+      setIsReactivating(false);
     }
   };
 
@@ -124,6 +145,30 @@ export default function ManageSubscription() {
           )}
         </Card>
 
+        {/* Subscription Scheduled for Cancellation Warning */}
+        {isPremium && subscriptionStatus.cancelAtPeriodEnd && (
+          <Card className="p-6 mb-6 border-warning bg-warning/10">
+            <div className="flex items-start gap-4">
+              <AlertTriangle className="h-6 w-6 text-warning mt-1" />
+              <div className="flex-1">
+                <h3 className="font-semibold mb-2">Assinatura Agendada para Cancelamento</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Sua assinatura Premium está agendada para cancelar quando o período atual terminar.
+                  Você ainda tem acesso a todos os benefícios Premium até lá.
+                </p>
+                <Button 
+                  onClick={handleReactivateSubscription} 
+                  disabled={isReactivating}
+                  variant="default"
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  {isReactivating ? 'Reativando...' : 'Reativar Assinatura'}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Premium Benefits */}
         {isPremium && (
           <Card className="p-6 mb-6 bg-primary/5">
@@ -180,8 +225,8 @@ export default function ManageSubscription() {
           </Card>
         )}
 
-        {/* Cancel Subscription */}
-        {isPremium && (
+        {/* Cancel Subscription - Only show if not already scheduled */}
+        {isPremium && !subscriptionStatus.cancelAtPeriodEnd && (
           <Card className="p-6 border-destructive/50 bg-destructive/5">
             <div className="flex items-start gap-4">
               <AlertTriangle className="h-6 w-6 text-destructive mt-1" />
@@ -203,13 +248,14 @@ export default function ManageSubscription() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Esta ação cancelará sua assinatura Premium. Você manterá acesso até o fim do período pago,
-                        mas depois voltará ao plano gratuito com as seguintes limitações:
+                        Esta ação agendará o cancelamento da sua assinatura Premium para o final do período atual.
+                        Você continuará com acesso Premium até lá, e depois voltará ao plano gratuito com as seguintes limitações:
                         <ul className="list-disc list-inside mt-2 space-y-1">
                           <li>Máximo de 3 drivers na nuvem</li>
                           <li>Histórico apenas local (sem sincronização)</li>
                           <li>Sem recomendações com IA</li>
                         </ul>
+                        <p className="mt-2 font-semibold">Você pode reativar sua assinatura a qualquer momento antes do período acabar.</p>
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

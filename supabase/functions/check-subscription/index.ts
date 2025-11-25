@@ -72,6 +72,7 @@ serve(async (req) => {
     const hasActiveSub = subscriptions.data.length > 0;
     let productId = null;
     let subscriptionEnd = null;
+    let cancelAtPeriodEnd = false;
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
@@ -80,8 +81,12 @@ serve(async (req) => {
         id: subscription.id, 
         current_period_start: subscription.current_period_start,
         current_period_end: subscription.current_period_end,
-        status: subscription.status 
+        status: subscription.status,
+        cancel_at_period_end: subscription.cancel_at_period_end
       });
+      
+      // Check if subscription is scheduled for cancellation
+      cancelAtPeriodEnd = subscription.cancel_at_period_end || false;
       
       // Try to determine next renewal date
       const BILLING_INTERVAL_SECONDS = 30 * 24 * 60 * 60; // approx 30 days
@@ -181,7 +186,8 @@ serve(async (req) => {
       subscribed: hasActiveSub,
       role: hasActiveSub ? 'premium' : 'free',
       product_id: productId,
-      subscription_end: subscriptionEnd
+      subscription_end: subscriptionEnd,
+      cancel_at_period_end: cancelAtPeriodEnd
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
