@@ -315,18 +315,6 @@ const AnimeDetails = () => {
     } catch (error) {
       console.error('Error adding to history:', error);
     }
-          animeId: anime.id,
-          animeTitle: anime.title,
-          animeCover: anime.coverUrl,
-          driverId: anime.driverId,
-          indexId: indexId || undefined,
-          episodeNumber: episode.episodeNumber,
-          episodeUrl: episode.sourceUrl // URL do episódio no site, não do vídeo
-        });
-      }
-    } catch (historyError) {
-      console.error('Error adding episode to history:', historyError);
-    }
     
     toast.loading('Carregando vídeo...');
     
