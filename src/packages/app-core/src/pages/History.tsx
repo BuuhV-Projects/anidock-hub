@@ -1,3 +1,4 @@
+import React from 'react';
 import { Badge, Button, Card, Separator, VideoPlayerModal } from '@anidock/shared-ui';
 import { supabase, useIsMobile } from '@anidock/shared-utils';
 import { format } from 'date-fns';
@@ -7,10 +8,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { clearHistory, deleteHistoryItem, getHistory, getLocalDrivers, type HistoryItem } from '../lib/localStorage';
+import { usePlataform } from '../contexts/plataform/usePlataform';
 
 const History = () => {
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
+  const { isDesktop } = usePlataform();
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [groupByDate, _] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -88,7 +90,7 @@ const History = () => {
         // Check video type and handle accordingly
         if (data.type === 'external') {
           // Se for desktop, abrir no modal fullscreen
-          if (!isMobile) {
+          if (isDesktop) {
             setModalVideoData({
               type: 'external',
               url: finalVideoUrl
