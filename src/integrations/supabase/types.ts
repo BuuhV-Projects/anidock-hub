@@ -311,6 +311,62 @@ export type Database = {
         }
         Relationships: []
       }
+      watch_history: {
+        Row: {
+          anime_cover: string | null
+          anime_source_url: string
+          anime_title: string
+          created_at: string
+          driver_id: number | null
+          episode_number: number
+          episode_title: string | null
+          episode_url: string
+          id: number
+          public_id: string
+          updated_at: string
+          user_id: string
+          watched_at: string
+        }
+        Insert: {
+          anime_cover?: string | null
+          anime_source_url: string
+          anime_title: string
+          created_at?: string
+          driver_id?: number | null
+          episode_number: number
+          episode_title?: string | null
+          episode_url: string
+          id?: number
+          public_id?: string
+          updated_at?: string
+          user_id: string
+          watched_at?: string
+        }
+        Update: {
+          anime_cover?: string | null
+          anime_source_url?: string
+          anime_title?: string
+          created_at?: string
+          driver_id?: number | null
+          episode_number?: number
+          episode_title?: string | null
+          episode_url?: string
+          id?: number
+          public_id?: string
+          updated_at?: string
+          user_id?: string
+          watched_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_history_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

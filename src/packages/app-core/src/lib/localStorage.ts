@@ -369,6 +369,78 @@ export const addToHistory = (item: Omit<HistoryItem, 'id' | 'timestamp'>): void 
   }
 };
 
+// Sync history to cloud (for premium users)
+export const syncHistoryToCloud = async (
+  supabase: any, 
+  userId: string, 
+  item: {
+    animeTitle: string;
+    animeCover?: string;
+    animeSourceUrl: string;
+    episodeTitle?: string;
+    episodeNumber: number;
+    episodeUrl: string;
+    driverId?: string;
+  }
+): Promise<void> => {
+  try {
+    // Use upsert with unique constraint (user_id, anime_source_url)
+    const { error } = await supabase
+      .from('watch_history')
+      .upsert({
+        user_id: userId,
+        anime_title: item.animeTitle,
+        anime_cover: item.animeCover,
+        anime_source_url: item.animeSourceUrl,
+        episode_title: item.episodeTitle,
+        episode_number: item.episodeNumber,
+        episode_url: item.episodeUrl,
+        driver_id: item.driverId ? parseInt(item.driverId) : null,
+        watched_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,anime_source_url'
+      });
+
+    if (error) {
+      console.error('Error syncing history to cloud:', error);
+    }
+  } catch (error) {
+    console.error('Failed to sync history:', error);
+  }
+};
+
+// Get cloud history (for premium users)
+export const getCloudHistory = async (supabase: any, userId: string): Promise<HistoryItem[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('watch_history')
+      .select('*')
+      .eq('user_id', userId)
+      .order('watched_at', { ascending: false })
+      .limit(100);
+
+    if (error) {
+      console.error('Error fetching cloud history:', error);
+      return [];
+    }
+
+    return (data || []).map((item: any) => ({
+      id: item.public_id,
+      type: 'episode' as const,
+      animeId: item.anime_source_url,
+      animeTitle: item.anime_title,
+      animeCover: item.anime_cover,
+      driverId: item.driver_id?.toString() || '',
+      episodeNumber: item.episode_number,
+      episodeUrl: item.episode_url,
+      timestamp: item.watched_at
+    }));
+  } catch (error) {
+    console.error('Failed to get cloud history:', error);
+    return [];
+  }
+};
+
 export const clearHistory = (): void => {
   try {
     if (confirm('Tem certeza que deseja limpar todo o histórico? Esta ação não pode ser desfeita.')) {

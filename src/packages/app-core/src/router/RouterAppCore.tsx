@@ -13,6 +13,7 @@ import {
     MyDrivers,
     NotFound,
     Player,
+    PremiumFeatures,
     ResetPassword,
     UpdatePassword,
     useAuth,
@@ -63,6 +64,7 @@ const RouterAppCore = () => {
                     <Dashboard />
                 </ProtectedRoute>
             } />
+            <Route path="/premium" element={<PremiumFeatures />} />
             <Route path="/verify-otp" element={<VerifyOtp />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/update-password" element={<UpdatePassword />} />
