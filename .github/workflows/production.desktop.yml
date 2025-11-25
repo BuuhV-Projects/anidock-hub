@@ -51,6 +51,7 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y \
+            wine \
             wine32 \
             wine64 \
             mono-complete \
@@ -58,10 +59,12 @@ jobs:
             xvfb
 
       - name: Build desktop assets
-        run: yarn build:desktop
+        working-directory: src/apps/desktop
+        run: yarn build
 
       - name: Package desktop for Windows
-        run: yarn build:desktop:win
+        working-directory: src/apps/desktop
+        run: yarn build:win
 
       - name: Upload desktop artifact
         uses: actions/upload-artifact@v4
