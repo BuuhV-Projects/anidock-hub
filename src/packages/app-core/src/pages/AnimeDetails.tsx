@@ -137,7 +137,7 @@ const AnimeDetails = () => {
       }
 
       // Check if episodes already exist
-      if (foundAnime.episodes && foundAnime.episodes.length > 0) {
+      if (foundAnime.episodes && Array.isArray(foundAnime.episodes) && foundAnime.episodes.length > 0) {
         setEpisodes(foundAnime.episodes);
         setIsLoading(false);
       } else {
@@ -183,7 +183,7 @@ const AnimeDetails = () => {
         saveLocalAnime(updatedAnime);
         console.log('✓ Saved anime to local cache:', updatedAnime.id);
 
-        setEpisodes(crawledEpisodes);
+        setEpisodes(Array.isArray(crawledEpisodes) ? crawledEpisodes : []);
       } catch (error) {
         console.error('Error crawling episodes:', error);
         toast.error('Erro ao buscar episódios');
@@ -243,7 +243,7 @@ const AnimeDetails = () => {
           console.log('Saved anime to local cache:', updatedAnime.id);
         }
 
-        setEpisodes(crawledEpisodes);
+        setEpisodes(Array.isArray(crawledEpisodes) ? crawledEpisodes : []);
       }
     } catch (error) {
       console.error('Error crawling episodes:', error);
@@ -439,7 +439,7 @@ const AnimeDetails = () => {
               Episódios
             </h2>
 
-            {episodes.length === 0 ? (
+            {!Array.isArray(episodes) || episodes.length === 0 ? (
               <Card className="p-8 text-center">
                 <p className="text-muted-foreground">
                   Nenhum episódio encontrado. O site pode não ter episódios disponíveis ou os seletores do driver precisam ser ajustados.
