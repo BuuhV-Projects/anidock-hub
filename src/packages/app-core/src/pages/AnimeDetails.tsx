@@ -169,8 +169,11 @@ const AnimeDetails = () => {
   };
 
   const crawlAnimeEpisodes = async (animeData: LocalAnime, driverData: Driver) => {
-    if (!user) {
-      // If not logged in, fallback to client-side crawl
+    // Para animes locais (sem indexId), sempre usar crawling client-side
+    const isLocalAnime = !indexId;
+    
+    if (isLocalAnime || !user) {
+      // If local anime or not logged in, use client-side crawl
       setIsCrawling(true);
       try {
         const { episodes: crawledEpisodes, errors } = await crawlEpisodes(
@@ -178,25 +181,28 @@ const AnimeDetails = () => {
           driverData,
           animeData.id,
           indexId ? parseInt(indexId) : undefined,
-          animeData.episodes
+          driverData.id
         );
 
-        if (errors.length > 0) {
-          console.warn('Errors during crawl:', errors);
+        if (errors && errors.length > 0) {
+          console.warn('Crawl warnings:', errors);
+          errors.forEach(err => toast.warning(err));
         }
 
         if (crawledEpisodes.length === 0) {
-          toast.error('Nenhum episódio encontrado nesta página');
+          toast.error('Nenhum episódio encontrado');
         } else {
           toast.success(`${crawledEpisodes.length} episódios encontrados`);
-          
-          // Save to local cache
-          const updatedAnime = {
-            ...animeData,
-            episodes: crawledEpisodes,
-            updatedAt: new Date().toISOString()
-          };
-          saveLocalAnime(updatedAnime);
+        }
+
+        // Update local storage with episodes
+        if (driverData.id.startsWith('local_')) {
+          const updatedAnime = { ...animeData, episodes: crawledEpisodes };
+          const animesList = getAnimesByDriver(driverData.id);
+          const updatedAnimesList = animesList.map(a => 
+            a.id === animeData.id ? updatedAnime : a
+          );
+          localStorage.setItem(`animes_${driverData.id}`, JSON.stringify(updatedAnimesList));
           console.log('Saved anime to local cache:', updatedAnime.id);
         }
 
@@ -211,13 +217,13 @@ const AnimeDetails = () => {
       return;
     }
 
-    // If logged in, use backend crawl
+    // If logged in AND anime is in database (has indexId), use backend crawl
     setIsCrawling(true);
     try {
       const { data, error } = await supabase.functions.invoke('crawl-episodes', {
         body: {
           anime_id: animeData.id,
-          index_id: indexId ? parseInt(indexId) : null,
+          index_id: parseInt(indexId),
           anime_url: animeData.sourceUrl,
           driver_id: driverData.id
         }
