@@ -1,5 +1,5 @@
-import { Badge, Button, Card, Separator } from '@anidock/shared-ui';
-import { supabase } from '@anidock/shared-utils';
+import { Badge, Button, Card, Separator, VideoPlayerModal } from '@anidock/shared-ui';
+import { supabase, useIsMobile } from '@anidock/shared-utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale/pt-BR';
 import { Clock, ExternalLink, Film, Play, Trash2, ArrowLeft } from 'lucide-react';
@@ -10,8 +10,15 @@ import { clearHistory, deleteHistoryItem, getHistory, getLocalDrivers, type Hist
 
 const History = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [groupByDate, _] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalVideoData, setModalVideoData] = useState<{
+    type: 'iframe' | 'video' | 'external' | null;
+    url: string | null;
+  } | null>(null);
+  const [modalEpisodeTitle, setModalEpisodeTitle] = useState('');
 
   useEffect(() => {
     loadHistory();
@@ -80,8 +87,19 @@ const History = () => {
 
         // Check video type and handle accordingly
         if (data.type === 'external') {
-          toast.info('Abrindo vídeo em nova aba...');
-          window.open(finalVideoUrl, '_blank');
+          // Se for desktop, abrir no modal fullscreen
+          if (!isMobile) {
+            setModalVideoData({
+              type: 'external',
+              url: finalVideoUrl
+            });
+            setModalEpisodeTitle(`${item.animeTitle} - Episódio ${item.episodeNumber}`);
+            setIsModalOpen(true);
+          } else {
+            // Se for mobile/tablet, abrir em nova aba
+            toast.info('Abrindo vídeo em nova aba...');
+            window.open(finalVideoUrl, '_blank');
+          }
           return;
         }
 
@@ -333,6 +351,14 @@ const History = () => {
           </div>
         </div>
       </div>
+
+      {/* Video Player Modal */}
+      <VideoPlayerModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        videoData={modalVideoData}
+        episodeTitle={modalEpisodeTitle}
+      />
     </div>
   );
 };
