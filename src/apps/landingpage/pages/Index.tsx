@@ -61,14 +61,6 @@ const Index = () => {
                   <Download className="h-5 w-5 group-hover:animate-bounce" />
                   Baixar para Windows
                 </Button>
-                <Button 
-                  size="lg"
-                  onClick={() => navigate('/browse')}
-                  variant="outline"
-                  className="border-primary/30 hover:border-primary hover:bg-primary/10 transition-all duration-300"
-                >
-                  Ver Demo
-                </Button>
               </div>
 
               {/* Features Pills */}
