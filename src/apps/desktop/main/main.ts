@@ -15,11 +15,15 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  globalShortcut.register('Ctrl+Shift+I', () => {
+  globalShortcut.register('F12', () => {
     const win = BrowserWindow.getFocusedWindow();
     if (win) win.webContents.toggleDevTools();
   });
-  
+  globalShortcut.register('f12', () => {
+    const win = BrowserWindow.getFocusedWindow();
+    if (win) win.webContents.toggleDevTools();
+  });
+
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.buuhvprojects.anidock-hub');
 
