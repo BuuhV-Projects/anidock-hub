@@ -51,53 +51,36 @@ const AnimeDetails = () => {
 
     setIsLoading(true);
     try {
-      // STEP 1: Check local cache first (fastest)
-      const cachedAnime = getLocalAnime(animeId);
-      if (cachedAnime && cachedAnime.episodes && cachedAnime.episodes.length > 0) {
-        console.log('Loading from local cache:', animeId);
-        setAnime(cachedAnime);
-        setEpisodes(cachedAnime.episodes);
-        
-        // Still need to get driver info
-        const localDriver = getLocalDrivers().find(d => d.id === driverId);
-        if (localDriver) {
-          setDriver(localDriver);
-        }
-        
-        setIsLoading(false);
-        
-        // Add to history (non-blocking)
-        try {
-          addToHistory({
-            type: 'anime',
-            animeId,
-            animeTitle: cachedAnime.title,
-            animeCover: cachedAnime.coverUrl,
-            driverId,
-            indexId: indexId || undefined
-          });
-        } catch (error) {
-          console.error('Error adding to history:', error);
-        }
-        
-        return;
-      }
-
-      // STEP 2: Find anime from local drivers or cloud indexes
+      // STEP 1: Find anime from local drivers or cloud indexes
       let foundAnime: LocalAnime | null = null;
       let foundDriver: Driver | null = null;
 
-      // Check local drivers
-      const localDrivers = getLocalDrivers();
-      for (const localDriver of localDrivers) {
-        if (localDriver.id === driverId && localDriver.indexedData) {
-          foundAnime = localDriver.indexedData.find(a => a.id === animeId) || null;
-          foundDriver = localDriver;
-          break;
+      console.log('Searching anime:', { animeId, driverId, indexId });
+
+      // STEP 2: Check local cache with episodes
+      const cachedAnime = getLocalAnime(animeId);
+      if (cachedAnime?.episodes && cachedAnime.episodes.length > 0) {
+        console.log('✓ Found in cache with episodes:', animeId);
+        foundAnime = cachedAnime;
+        foundDriver = getLocalDrivers().find(d => d.id === driverId) || null;
+      }
+
+      // STEP 3: Check local drivers indexedData if not in cache
+      if (!foundAnime) {
+        const localDrivers = getLocalDrivers();
+        console.log('Checking local drivers:', localDrivers.length);
+        for (const localDriver of localDrivers) {
+          console.log('Checking driver:', { driverId: localDriver.id, hasIndexedData: !!localDriver.indexedData });
+          if (localDriver.id === driverId && localDriver.indexedData) {
+            foundAnime = localDriver.indexedData.find(a => a.id === animeId) || null;
+            foundDriver = localDriver;
+            console.log('✓ Found in driver indexedData:', !!foundAnime);
+            break;
+          }
         }
       }
 
-      // STEP 3: Check cloud indexes if logged in and not found locally
+      // STEP 4: Check cloud indexes if logged in and not found locally
       if (!foundAnime && user && indexId) {
         const { data: index, error: indexError } = await supabase
           .from('indexes')
@@ -195,16 +178,10 @@ const AnimeDetails = () => {
           toast.success(`${crawledEpisodes.length} episódios encontrados`);
         }
 
-        // Update local storage with episodes
-        if (driverData.id.startsWith('local_')) {
-          const updatedAnime = { ...animeData, episodes: crawledEpisodes };
-          const animesList = getAnimesByDriver(driverData.id);
-          const updatedAnimesList = animesList.map(a => 
-            a.id === animeData.id ? updatedAnime : a
-          );
-          localStorage.setItem(`animes_${driverData.id}`, JSON.stringify(updatedAnimesList));
-          console.log('Saved anime to local cache:', updatedAnime.id);
-        }
+        // Save to local cache
+        const updatedAnime = { ...animeData, episodes: crawledEpisodes };
+        saveLocalAnime(updatedAnime);
+        console.log('✓ Saved anime to local cache:', updatedAnime.id);
 
         setEpisodes(crawledEpisodes);
       } catch (error) {
