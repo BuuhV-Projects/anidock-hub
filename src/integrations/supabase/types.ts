@@ -254,7 +254,7 @@ export type Database = {
         }
         Relationships: []
       }
-      user_roles: {
+      user_subscriptions: {
         Row: {
           created_at: string
           id: number
