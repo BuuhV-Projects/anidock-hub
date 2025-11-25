@@ -1,0 +1,94 @@
+name: Deploy Desktop Prod
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    environment:
+      name: production
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+          cache-dependency-path: |
+            yarn.lock
+            src/apps/*/yarn.lock
+            src/packages/*/yarn.lock
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Configure environment
+        run: |
+          cat <<EOF > .env
+          VITE_SUPABASE_PROJECT_ID=${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          EOF
+          echo "######## ENVIRONMENT ########"
+          cat .env
+          echo "#############################"
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Install Windows build deps
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            wine32 \
+            wine64 \
+            mono-complete \
+            icoutils \
+            xvfb
+
+      - name: Build desktop assets
+        run: yarn build:desktop
+
+      - name: Package desktop for Windows
+        run: yarn build:desktop:win
+
+      - name: Upload desktop artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-dist
+          path: src/apps/desktop/dist
+
+      - name: Notificar no Discord
+        if: always()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "DISCORD_WEBHOOK_URL não configurado. Pulando notificação."
+            exit 0
+          fi
+
+          STATUS="${{ job.status }}"
+          if [ "$STATUS" = "success" ]; then
+            COLOR=3066993
+            MESSAGE="✅ Deploy Desktop Prod finalizado com sucesso!"
+          else
+            COLOR=15158332
+            MESSAGE="❌ Deploy Desktop Prod falhou!"
+          fi
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d "{\"embeds\":[{\"title\":\"Deploy Desktop Prod\",\"description\":\"$MESSAGE\",\"color\":$COLOR,\"fields\":[{\"name\":\"Branch\",\"value\":\"${GITHUB_REF#refs/heads/}\"},{\"name\":\"Commit\",\"value\":\"${GITHUB_SHA}\"}]}]}" \
+            $DISCORD_WEBHOOK_URL
+
