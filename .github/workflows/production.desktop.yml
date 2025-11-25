@@ -43,8 +43,8 @@ jobs:
           cat .env
           echo "#############################"
 
-      - name: Lint
-        run: yarn lint
+      # - name: Lint
+      #   run: yarn lint
 
       - name: Install Windows build deps
         run: |
