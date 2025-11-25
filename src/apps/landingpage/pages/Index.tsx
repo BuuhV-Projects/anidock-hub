@@ -89,7 +89,7 @@ const Index = () => {
 
               {/* Info */}
               <p className="text-sm text-muted-foreground">
-                Windows 10/11 • Gratuito • Código Aberto
+                Windows 10/11 • Gratuito
               </p>
             </div>
 
@@ -296,7 +296,7 @@ const Index = () => {
             </h2>
             
             <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
-              Software desktop gratuito e de código aberto para Windows. 
+              Software desktop gratuito para Windows. 
               Organize seus animes do seu jeito, no seu PC.
             </p>
 
@@ -313,10 +313,6 @@ const Index = () => {
 
             <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4" />
-                <span>Open Source</span>
-              </div>
-              <div className="flex items-center gap-2">
                 <Zap className="h-4 w-4" />
                 <span>Gratuito</span>
               </div>
@@ -332,14 +328,14 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t border-border/50 bg-card/30 backdrop-blur-sm py-12">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
+          <div className="grid md:grid-cols-2 gap-8 mb-8 max-w-2xl mx-auto">
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Cpu className="h-6 w-6 text-primary" />
                 <span className="font-display font-bold text-xl">AniDock</span>
               </div>
               <p className="text-sm text-muted-foreground">
-                Indexador inteligente de animes. 100% local, privado e de código aberto.
+                Indexador inteligente de animes. 100% local e privado.
               </p>
             </div>
             
@@ -358,21 +354,6 @@ const Index = () => {
                 <button onClick={() => navigate('/direitos-autorais')} className="block text-muted-foreground hover:text-primary transition-colors">
                   Direitos Autorais
                 </button>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-display font-semibold mb-4">Recursos</h4>
-              <div className="space-y-2 text-sm">
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="block text-muted-foreground hover:text-primary transition-colors">
-                  GitHub
-                </a>
-                <a href="#" className="block text-muted-foreground hover:text-primary transition-colors">
-                  Documentação
-                </a>
-                <a href="#" className="block text-muted-foreground hover:text-primary transition-colors">
-                  Comunidade
-                </a>
               </div>
             </div>
           </div>
