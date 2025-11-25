@@ -148,16 +148,6 @@ export default function PremiumFeatures() {
             )}
           </div>
         </div>
-
-        <div className="bg-muted/50 rounded-lg p-6 text-center">
-          <h3 className="text-xl font-bold mb-2">Como funcionam as recomendações de IA?</h3>
-          <p className="text-muted-foreground max-w-3xl mx-auto">
-            A IA analisa seu histórico de visualização (títulos assistidos e episódios) e 
-            compara com o catálogo de animes que você possui nos seus drivers. Assim, ela 
-            recomenda animes similares que você já tem indexado, mas ainda não assistiu. 
-            <span className="font-semibold"> Seus dados nunca saem do sistema.</span>
-          </p>
-        </div>
       </div>
     </div>
   );
