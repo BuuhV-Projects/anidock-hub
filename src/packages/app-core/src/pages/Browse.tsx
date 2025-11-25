@@ -164,10 +164,19 @@ const Browse = () => {
                   key={anime.id}
                   className="glass border-border/50 hover:border-primary/50 transition-all cursor-pointer group overflow-hidden"
                   onClick={() => {
+                    // Get driver ID from either local driver or cloud index
+                    const driverId = (anime as any)._driverId || anime.driverId;
+                    
+                    if (!driverId) {
+                      console.error('Missing driverId for anime:', anime);
+                      toast.error('Erro: Driver não encontrado');
+                      return;
+                    }
+                    
                     // Navigate to anime details page with necessary IDs
                     const params = new URLSearchParams({
                       id: anime.id,
-                      driver: anime.driverId || '',
+                      driver: String(driverId),
                     });
                     
                     // Add index ID if this anime comes from a cloud index
