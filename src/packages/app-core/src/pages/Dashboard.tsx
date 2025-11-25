@@ -105,6 +105,18 @@ const Dashboard = () => {
     fetchRecommendations();
   }, [user, subscriptionStatus.role]);
 
+  // Scroll to recommendations if hash is present
+  useEffect(() => {
+    if (window.location.hash === '#recommendations') {
+      setTimeout(() => {
+        document.getElementById('recommendations')?.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }, 100);
+    }
+  }, []);
+
   if (!user) {
     return null;
   }
@@ -242,7 +254,7 @@ const Dashboard = () => {
 
         {/* AI Recommendations for Premium Users */}
         {subscriptionStatus.role === 'premium' && (
-          <Card className="glass p-8 border-border/50 mb-8">
+          <Card id="recommendations" className="glass p-8 border-border/50 mb-8 scroll-mt-20">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
                 <Sparkles className="h-5 w-5 text-primary" />

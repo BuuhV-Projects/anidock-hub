@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@anidock/shared-ui';
 import { useAuth } from '../../contexts/auth/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { Cpu, Upload, User, LogOut, Clock, Crown, Settings } from 'lucide-react';
+import { Cpu, Upload, User, LogOut, Clock, Crown, Settings, Sparkles } from 'lucide-react';
 import { useElectronApi } from '../../hooks/useElectronApi';
 import { supabase } from '@anidock/shared-utils';
 
@@ -53,6 +53,16 @@ export const BrowseHeader = ({ user, navigate, isDesktop }: BrowseHeaderProps) =
               <Upload className="h-4 w-4" />
               Importar Driver
             </Button>
+            {isPremium && (
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/dashboard#recommendations')}
+                className="text-muted-foreground hover:text-foreground gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                Recomendações
+              </Button>
+            )}
             <Button
               variant="ghost"
               onClick={() => navigate('/history')}
