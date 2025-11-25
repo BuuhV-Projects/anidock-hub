@@ -118,14 +118,17 @@ const Dashboard = () => {
                     <Settings className="h-4 w-4 mr-2" />
                     Dashboard
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/subscription')}>
-                    <Crown className="h-4 w-4 mr-2" />
-                    Gerenciar Assinatura
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/premium')}>
-                    <Crown className="h-4 w-4 mr-2" />
-                    Planos Premium
-                  </DropdownMenuItem>
+                  {(userRole === 'Premium' || userRole === 'Premium+') ? (
+                    <DropdownMenuItem onClick={() => navigate('/subscription')}>
+                      <Crown className="h-4 w-4 mr-2" />
+                      Gerenciar Assinatura
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem onClick={() => navigate('/premium')}>
+                      <Crown className="h-4 w-4 mr-2" />
+                      Planos Premium
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={signOut} className="text-destructive">
                     <LogOut className="h-4 w-4 mr-2" />
