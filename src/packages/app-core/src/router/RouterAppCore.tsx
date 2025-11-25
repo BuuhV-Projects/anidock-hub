@@ -6,6 +6,7 @@ import {
     Dashboard,
     EditDriver,
     EditIndexedAnime,
+    History,
     ImportDriver,
     IndexManual,
     MyDrivers,
@@ -29,6 +30,7 @@ const RouterAppCore = () => {
             <Route path="/browse" element={<Browse />} />
             <Route path="/anime" element={<AnimeDetails />} />
             <Route path="/player" element={<Player />} />
+            <Route path="/history" element={<History />} />
             <Route path="/drivers/import" element={<ImportDriver />} />
             <Route path="/drivers/create" element={
                 <ProtectedRoute user={user} loading={loading}>

@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@anidock/shared-ui';
 import { useAuth } from '../../contexts/auth/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { Cpu, Upload, User, LogOut } from 'lucide-react';
+import { Cpu, Upload, User, LogOut, Clock } from 'lucide-react';
 import { useElectronApi } from '../../hooks/useElectronApi';
 
 type BrowseHeaderProps = {
@@ -43,6 +43,14 @@ export const BrowseHeader = ({ user, navigate, isDesktop }: BrowseHeaderProps) =
           >
             <Upload className="h-4 w-4" />
             Importar Driver
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/history')}
+            className="text-muted-foreground hover:text-foreground gap-2"
+          >
+            <Clock className="h-4 w-4" />
+            Histórico
           </Button>
           {user ? (
             <>

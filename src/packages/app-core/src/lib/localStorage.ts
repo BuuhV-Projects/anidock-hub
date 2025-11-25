@@ -10,6 +10,21 @@ const DRIVERS_KEY = 'anidock_drivers';
 const ANIMES_KEY = 'anidock_animes';
 const SETTINGS_KEY = 'anidock_settings';
 const INDEXES_KEY = 'anidock_indexes';
+const HISTORY_KEY = 'anidock_history';
+
+// History types
+export interface HistoryItem {
+  id: string;
+  type: 'anime' | 'episode';
+  animeId: string;
+  animeTitle: string;
+  animeCover?: string;
+  driverId: string;
+  indexId?: string;
+  episodeNumber?: number;
+  episodeUrl?: string;
+  timestamp: string;
+}
 
 // Drivers Management
 export const getLocalDrivers = (): Driver[] => {
@@ -304,5 +319,67 @@ export const exportIndexData = (index: AnimeIndex): void => {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+};
+
+// ========== HISTORY MANAGEMENT ==========
+export const getHistory = (): HistoryItem[] => {
+  try {
+    const data = localStorage.getItem(HISTORY_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error('Error loading history:', error);
+    return [];
+  }
+};
+
+export const addToHistory = (item: Omit<HistoryItem, 'id' | 'timestamp'>): void => {
+  try {
+    const history = getHistory();
+    const newItem: HistoryItem = {
+      ...item,
+      id: `history_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: new Date().toISOString()
+    };
+    
+    // Remove duplicate entries (same anime/episode watched recently)
+    const filteredHistory = history.filter(h => {
+      if (h.type !== newItem.type) return true;
+      if (h.animeId !== newItem.animeId) return true;
+      if (newItem.type === 'episode' && h.episodeNumber !== newItem.episodeNumber) return true;
+      
+      // If same item, check if it was within last 5 minutes
+      const timeDiff = Date.now() - new Date(h.timestamp).getTime();
+      return timeDiff > 5 * 60 * 1000; // 5 minutes
+    });
+    
+    // Add new item at the beginning
+    filteredHistory.unshift(newItem);
+    
+    // Keep only last 500 items
+    const limitedHistory = filteredHistory.slice(0, 500);
+    
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(limitedHistory));
+  } catch (error) {
+    console.error('Error adding to history:', error);
+  }
+};
+
+export const clearHistory = (): void => {
+  try {
+    if (confirm('Tem certeza que deseja limpar todo o histórico? Esta ação não pode ser desfeita.')) {
+      localStorage.removeItem(HISTORY_KEY);
+    }
+  } catch (error) {
+    console.error('Error clearing history:', error);
+  }
+};
+
+export const deleteHistoryItem = (itemId: string): void => {
+  try {
+    const history = getHistory().filter(h => h.id !== itemId);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  } catch (error) {
+    console.error('Error deleting history item:', error);
+  }
 };
 

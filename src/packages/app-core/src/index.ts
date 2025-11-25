@@ -4,6 +4,7 @@ export { default as Dashboard } from './pages/Dashboard';
 export { default as Browse } from './pages/Browse';
 export { default as AnimeDetails } from './pages/AnimeDetails';
 export { default as Player } from './pages/Player';
+export { default as History } from './pages/History';
 export { default as ImportDriver } from './pages/ImportDriver';
 export { default as CreateDriver } from './pages/CreateDriver';
 export { default as EditDriver } from './pages/EditDriver';

@@ -6,7 +6,8 @@ import { crawlEpisodes } from '../lib/crawler';
 import { 
   getLocalDrivers, 
   getLocalAnime, 
-  saveLocalAnime, 
+  saveLocalAnime,
+  addToHistory,
   type LocalAnime, 
   type LocalEpisode, 
   type Driver 
@@ -61,6 +62,16 @@ const AnimeDetails = () => {
         if (localDriver) {
           setDriver(localDriver);
         }
+        
+        // Add to history
+        addToHistory({
+          type: 'anime',
+          animeId,
+          animeTitle: cachedAnime.title,
+          animeCover: cachedAnime.coverUrl,
+          driverId,
+          indexId
+        });
         
         setIsLoading(false);
         return;
