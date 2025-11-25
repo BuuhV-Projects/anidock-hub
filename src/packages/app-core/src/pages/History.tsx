@@ -2,7 +2,7 @@ import { Badge, Button, Card, Separator } from '@anidock/shared-ui';
 import { supabase } from '@anidock/shared-utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale/pt-BR';
-import { Clock, ExternalLink, Film, Play, Trash2 } from 'lucide-react';
+import { Clock, ExternalLink, Film, Play, Trash2, ArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -233,6 +233,16 @@ const History = () => {
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-2xl mx-auto">
+            {/* Back Button */}
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/browse')}
+              className="gap-2 mb-6"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Voltar
+            </Button>
+
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h1 className="text-3xl font-display font-bold flex items-center gap-3">
@@ -265,6 +275,16 @@ const History = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
+          {/* Back Button */}
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/browse')}
+            className="gap-2 mb-6"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar
+          </Button>
+
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
