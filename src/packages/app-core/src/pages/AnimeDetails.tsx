@@ -288,6 +288,25 @@ const AnimeDetails = () => {
       if (error) {
         console.error('Error extracting video:', error);
         toast.error('Erro ao carregar vídeo');
+
+        // Registrar no histórico mesmo com erro (abre página do episódio)
+        try {
+          if (anime) {
+            addToHistory({
+              type: 'episode',
+              animeId: anime.id,
+              animeTitle: anime.title,
+              animeCover: anime.coverUrl,
+              driverId: anime.driverId,
+              indexId: indexId || undefined,
+              episodeNumber: episode.episodeNumber,
+              episodeUrl: episode.sourceUrl
+            });
+          }
+        } catch (historyError) {
+          console.error('Error adding episode to history:', historyError);
+        }
+
         window.open(episode.sourceUrl, '_blank');
         return;
       }
@@ -295,15 +314,54 @@ const AnimeDetails = () => {
       if (!data?.success || !data?.videoUrl) {
         console.log('No video found, opening episode page directly');
         toast.info('Abrindo página do episódio...');
+
+        // Sem vídeo detectado, registra com URL do episódio
+        try {
+          if (anime) {
+            addToHistory({
+              type: 'episode',
+              animeId: anime.id,
+              animeTitle: anime.title,
+              animeCover: anime.coverUrl,
+              driverId: anime.driverId,
+              indexId: indexId || undefined,
+              episodeNumber: episode.episodeNumber,
+              episodeUrl: episode.sourceUrl
+            });
+          }
+        } catch (historyError) {
+          console.error('Error adding episode to history:', historyError);
+        }
+
         window.open(episode.sourceUrl, '_blank');
         return;
       }
+
+      const finalVideoUrl = data.videoUrl as string;
 
       // Check video type and handle accordingly
       if (data.type === 'external') {
         // External link - open in new tab
         toast.info('Abrindo vídeo em nova aba...');
-        window.open(data.videoUrl, '_blank');
+
+        try {
+          if (anime) {
+            addToHistory({
+              type: 'episode',
+              animeId: anime.id,
+              animeTitle: anime.title,
+              animeCover: anime.coverUrl,
+              driverId: anime.driverId,
+              indexId: indexId || undefined,
+              episodeNumber: episode.episodeNumber,
+              episodeUrl: finalVideoUrl
+            });
+          }
+        } catch (historyError) {
+          console.error('Error adding episode to history:', historyError);
+        }
+
+        window.open(finalVideoUrl, '_blank');
         return;
       }
 
@@ -312,8 +370,26 @@ const AnimeDetails = () => {
         setCurrentEpisodeTitle(episodeTitle);
         setCurrentVideoData({
           type: data.type,
-          url: data.videoUrl
+          url: finalVideoUrl
         });
+
+        try {
+          if (anime) {
+            addToHistory({
+              type: 'episode',
+              animeId: anime.id,
+              animeTitle: anime.title,
+              animeCover: anime.coverUrl,
+              driverId: anime.driverId,
+              indexId: indexId || undefined,
+              episodeNumber: episode.episodeNumber,
+              episodeUrl: finalVideoUrl
+            });
+          }
+        } catch (historyError) {
+          console.error('Error adding episode to history:', historyError);
+        }
+
         setIsPlayerModalOpen(true);
         toast.success('Player carregado!');
         return;
@@ -321,12 +397,48 @@ const AnimeDetails = () => {
 
       // Fallback - open episode page
       toast.info('Abrindo página do episódio...');
+
+      try {
+        if (anime) {
+          addToHistory({
+            type: 'episode',
+            animeId: anime.id,
+            animeTitle: anime.title,
+            animeCover: anime.coverUrl,
+            driverId: anime.driverId,
+            indexId: indexId || undefined,
+            episodeNumber: episode.episodeNumber,
+            episodeUrl: episode.sourceUrl
+          });
+        }
+      } catch (historyError) {
+        console.error('Error adding episode to history:', historyError);
+      }
+      
       window.open(episode.sourceUrl, '_blank');
       
     } catch (error) {
       console.error('Error calling extract-video-data:', error);
       toast.dismiss();
       toast.error('Erro ao processar episódio');
+
+      try {
+        if (anime) {
+          addToHistory({
+            type: 'episode',
+            animeId: anime.id,
+            animeTitle: anime.title,
+            animeCover: anime.coverUrl,
+            driverId: anime.driverId,
+            indexId: indexId || undefined,
+            episodeNumber: episode.episodeNumber,
+            episodeUrl: episode.sourceUrl
+          });
+        }
+      } catch (historyError) {
+        console.error('Error adding episode to history:', historyError);
+      }
+
       window.open(episode.sourceUrl, '_blank');
     }
   };
