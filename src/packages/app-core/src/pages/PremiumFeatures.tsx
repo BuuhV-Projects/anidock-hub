@@ -3,9 +3,11 @@ import { Button } from "@anidock/shared-ui";
 import { useAuth } from "@anidock/app-core";
 import { useState, useEffect } from "react";
 import { supabase } from "@anidock/shared-utils/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 export default function PremiumFeatures() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [userRole, setUserRole] = useState<string>('free');
 
   useEffect(() => {
@@ -136,9 +138,9 @@ export default function PremiumFeatures() {
             </div>
 
             {isPremium ? (
-              <Button className="w-full" disabled>
+              <Button className="w-full" onClick={() => navigate('/subscription')}>
                 <Crown className="w-4 h-4 mr-2" />
-                Plano Ativo
+                Gerenciar Assinatura
               </Button>
             ) : (
               <Button className="w-full">

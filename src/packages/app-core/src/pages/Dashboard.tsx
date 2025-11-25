@@ -160,7 +160,7 @@ const Dashboard = () => {
 
           <Card 
             className="glass p-6 border-border/50 hover:border-accent/50 transition-all cursor-pointer"
-            onClick={() => navigate('/premium')}
+            onClick={() => navigate(userRole === 'Free' ? '/premium' : '/subscription')}
           >
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-lg bg-accent/20 flex items-center justify-center">
@@ -171,7 +171,7 @@ const Dashboard = () => {
                   {isLoading ? '...' : userRole}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {userRole === 'Free' ? 'Fazer upgrade' : 'Plano Atual'}
+                  {userRole === 'Free' ? 'Fazer upgrade' : 'Gerenciar assinatura'}
                 </p>
               </div>
               {userRole === 'Free' && (
