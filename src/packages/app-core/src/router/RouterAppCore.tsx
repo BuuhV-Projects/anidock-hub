@@ -10,6 +10,7 @@ import {
     History,
     ImportDriver,
     IndexManual,
+    ManageSubscription,
     MyDrivers,
     NotFound,
     Player,
@@ -65,6 +66,11 @@ const RouterAppCore = () => {
                 </ProtectedRoute>
             } />
             <Route path="/premium" element={<PremiumFeatures />} />
+            <Route path="/subscription" element={
+                <ProtectedRoute user={user} loading={loading}>
+                    <ManageSubscription />
+                </ProtectedRoute>
+            } />
             <Route path="/verify-otp" element={<VerifyOtp />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/update-password" element={<UpdatePassword />} />
