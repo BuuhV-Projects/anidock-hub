@@ -30,7 +30,9 @@ export default function PremiumFeatures() {
     }
   };
 
-  const isPremium = userRole === 'premium' || userRole === 'premium_plus';
+  const isPremium = userRole === 'premium';
+  
+  const PREMIUM_PRICE_ID = "price_1QhuEJP6HFXE8TuXdhfqy9qO"; // R$ 14,90/month
 
   return (
     <div className="min-h-screen bg-background">
@@ -143,7 +145,23 @@ export default function PremiumFeatures() {
                 Gerenciar Assinatura
               </Button>
             ) : (
-              <Button className="w-full">
+              <Button 
+                className="w-full"
+                onClick={async () => {
+                  try {
+                    const { data, error } = await supabase.functions.invoke('create-checkout', {
+                      body: { priceId: PREMIUM_PRICE_ID }
+                    });
+                    
+                    if (error) throw error;
+                    if (data?.url) {
+                      window.open(data.url, '_blank');
+                    }
+                  } catch (error) {
+                    console.error('Error creating checkout:', error);
+                  }
+                }}
+              >
                 <Crown className="w-4 h-4 mr-2" />
                 Fazer Upgrade
               </Button>
