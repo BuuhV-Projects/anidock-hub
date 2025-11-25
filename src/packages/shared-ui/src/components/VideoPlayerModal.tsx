@@ -6,7 +6,7 @@ interface VideoPlayerModalProps {
   isOpen: boolean;
   onClose: () => void;
   videoData: {
-    type: 'iframe' | 'video' | null;
+    type: 'iframe' | 'video' | 'external' | null;
     url: string | null;
   } | null;
   episodeTitle: string;
@@ -22,7 +22,7 @@ export const VideoPlayerModal = ({
 }: VideoPlayerModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl w-full h-[80vh]">
+      <DialogContent className="max-w-[95vw] w-full h-[95vh]">
         <DialogHeader>
           <DialogTitle>{episodeTitle}</DialogTitle>
         </DialogHeader>
@@ -44,7 +44,7 @@ export const VideoPlayerModal = ({
             </Alert>
           )}
 
-          {!isLoading && videoData?.url && videoData.type === 'iframe' && (
+          {!isLoading && videoData?.url && (videoData.type === 'iframe' || videoData.type === 'external') && (
             <iframe
               src={videoData.url}
               className="w-full h-full"
