@@ -51,7 +51,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         subscribed: false,
         role: 'free' as 'free' | 'premium',
         productId: null as string | null,
-        subscriptionEnd: null as string | null
+        subscriptionEnd: null as string | null,
+        cancelAtPeriodEnd: false
     });
     const { sendWelcomeEmail } = useEmailService();
 
@@ -71,7 +72,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     subscribed: data.subscribed || false,
                     role: data.role || 'free',
                     productId: data.product_id || null,
-                    subscriptionEnd: data.subscription_end || null
+                    subscriptionEnd: data.subscription_end || null,
+                    cancelAtPeriodEnd: data.cancel_at_period_end || false
                 });
             }
         } catch (error) {
