@@ -132,6 +132,18 @@ const AnimeDetails = () => {
           driverId,
           indexId: indexId || undefined
         });
+
+        // Sync to cloud for Premium users
+        if (user && subscriptionStatus.role === 'premium') {
+          await syncHistoryToCloud(supabase, user.id, {
+            animeTitle: foundAnime.title,
+            animeCover: foundAnime.coverUrl,
+            animeSourceUrl: foundAnime.sourceUrl,
+            episodeNumber: 0, // View of anime page, not specific episode
+            episodeUrl: foundAnime.sourceUrl,
+            driverId
+          });
+        }
       } catch (error) {
         console.error('Error adding to history:', error);
       }
@@ -269,6 +281,19 @@ const AnimeDetails = () => {
           episodeNumber: episode.episodeNumber,
           episodeUrl: episode.sourceUrl // URL original do episódio no site
         });
+
+        // Sync to cloud for Premium users
+        if (user && subscriptionStatus.role === 'premium') {
+          await syncHistoryToCloud(supabase, user.id, {
+            animeTitle: anime.title,
+            animeCover: anime.coverUrl,
+            animeSourceUrl: anime.sourceUrl,
+            episodeTitle: `Episódio ${episode.episodeNumber}`,
+            episodeNumber: episode.episodeNumber,
+            episodeUrl: episode.sourceUrl,
+            driverId: anime.driverId
+          });
+        }
         
         // Se usuário estiver logado e for premium, sincronizar com a nuvem
         if (user) {
