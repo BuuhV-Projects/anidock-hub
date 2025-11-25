@@ -42,6 +42,35 @@ serve(async (req) => {
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Existing customer found", { customerId });
+      
+      // Check if customer already has an active subscription
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "active",
+        limit: 1,
+      });
+      
+      if (subscriptions.data.length > 0) {
+        const subscription = subscriptions.data[0];
+        logStep("Active subscription already exists", { 
+          subscriptionId: subscription.id,
+          cancelAtPeriodEnd: subscription.cancel_at_period_end
+        });
+        
+        // If subscription is active and not scheduled for cancellation
+        if (!subscription.cancel_at_period_end) {
+          return new Response(JSON.stringify({ 
+            error: "Você já possui uma assinatura ativa",
+            hasActiveSubscription: true
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 400,
+          });
+        }
+        
+        // If subscription is scheduled for cancellation, allow reactivation via checkout
+        logStep("Subscription scheduled for cancellation, allowing new checkout");
+      }
     } else {
       logStep("Creating new customer");
     }
