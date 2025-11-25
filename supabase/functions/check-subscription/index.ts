@@ -93,6 +93,15 @@ serve(async (req) => {
       }
       logStep("Determined subscription product", { productId });
       
+      // Check current role before updating
+      const { data: currentSub } = await supabaseClient
+        .from('user_subscriptions')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
+      
+      const wasFreePlan = currentSub?.role === 'free';
+      
       // Update user role to premium
       const { error: updateError } = await supabaseClient
         .from('user_subscriptions')
@@ -103,6 +112,39 @@ serve(async (req) => {
         logStep("Error updating role to premium", { error: updateError });
       } else {
         logStep("Successfully updated role to premium");
+        
+        // Send welcome email only if user was on free plan before
+        if (wasFreePlan) {
+          try {
+            // Get user profile for name
+            const { data: profile } = await supabaseClient
+              .from('profiles')
+              .select('nickname, display_name')
+              .eq('user_id', user.id)
+              .single();
+            
+            const userName = profile?.display_name || profile?.nickname || user.email?.split('@')[0];
+            
+            // Send premium activation email
+            await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                to: user.email,
+                subject: '🎉 Sua assinatura Premium foi ativada!',
+                type: 'premium_activated',
+                data: { name: userName }
+              }),
+            });
+            
+            logStep("Premium activation email sent successfully");
+          } catch (emailError) {
+            logStep("Error sending premium activation email", { error: emailError });
+          }
+        }
       }
     } else {
       logStep("No active subscription found, setting to free");

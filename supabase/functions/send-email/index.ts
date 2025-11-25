@@ -8,7 +8,7 @@ const corsHeaders = {
 interface EmailRequest {
   to: string;
   subject: string;
-  type: 'welcome' | 'notification' | 'verification' | 'custom';
+  type: 'welcome' | 'notification' | 'verification' | 'premium_activated' | 'custom';
   data?: {
     name?: string;
     message?: string;
@@ -210,6 +210,135 @@ const getEmailTemplate = (type: string, data: any) => {
                 </ul>
                 <a href="https://anidock.buuhvprojects.com" class="button">Começar Agora</a>
                 <p>Aproveite sua jornada no mundo dos animes!</p>
+              </div>
+              <div class="footer">
+                <p>© 2024 AniDock - Indexação inteligente de animes</p>
+                <p>Este é um email automático, por favor não responda.</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `;
+    
+    case 'premium_activated':
+      return `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <style>
+              body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+                background: linear-gradient(135deg, #0a0f1a 0%, #1a1f2e 100%);
+                margin: 0;
+                padding: 40px 20px;
+              }
+              .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background: rgba(26, 31, 46, 0.8);
+                border: 1px solid rgba(255, 215, 0, 0.3);
+                border-radius: 12px;
+                padding: 40px;
+                box-shadow: 0 0 40px rgba(255, 215, 0, 0.2);
+              }
+              .logo {
+                text-align: center;
+                margin-bottom: 30px;
+              }
+              .logo h1 {
+                background: linear-gradient(135deg, #ffd700, #9d4edd);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                font-size: 36px;
+                margin: 0;
+                font-weight: 700;
+              }
+              .crown {
+                text-align: center;
+                font-size: 64px;
+                margin: 20px 0;
+              }
+              .content {
+                color: #e2e8f0;
+                line-height: 1.6;
+                text-align: center;
+              }
+              .content h2 {
+                color: #ffd700;
+                font-size: 28px;
+                margin-bottom: 20px;
+              }
+              .features {
+                background: rgba(255, 215, 0, 0.1);
+                border-radius: 8px;
+                padding: 24px;
+                margin: 30px 0;
+                text-align: left;
+              }
+              .features ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+              }
+              .features li {
+                padding: 12px 0;
+                border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+              }
+              .features li:last-child {
+                border-bottom: none;
+              }
+              .features li::before {
+                content: "✨";
+                margin-right: 12px;
+              }
+              .button {
+                display: inline-block;
+                background: #ffd700;
+                color: #0a0f1a;
+                padding: 14px 40px;
+                text-decoration: none;
+                border-radius: 8px;
+                font-weight: 700;
+                margin: 20px 0;
+                box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+              }
+              .footer {
+                text-align: center;
+                margin-top: 40px;
+                color: #64748b;
+                font-size: 12px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="logo">
+                <h1>AniDock</h1>
+              </div>
+              <div class="crown">👑</div>
+              <div class="content">
+                <h2>Bem-vindo ao Premium!</h2>
+                <p>Olá ${data.name || 'Otaku'}!</p>
+                <p><strong>Sua assinatura Premium foi ativada com sucesso!</strong></p>
+                <p>Agora você tem acesso ilimitado a todos os recursos do AniDock:</p>
+                
+                <div class="features">
+                  <ul>
+                    <li><strong>Drivers Ilimitados</strong> - Crie e use quantos drivers quiser</li>
+                    <li><strong>Sincronização Automática</strong> - Todos os seus dados na nuvem</li>
+                    <li><strong>Histórico Sincronizado</strong> - Continue de onde parou em qualquer dispositivo</li>
+                    <li><strong>Recomendações com IA</strong> - Sugestões personalizadas baseadas no seu histórico</li>
+                  </ul>
+                </div>
+                
+                <a href="https://anidock.buuhvprojects.com/dashboard" class="button">Explorar Recursos Premium</a>
+                
+                <p style="margin-top: 30px; font-size: 14px;">
+                  Sua assinatura será renovada automaticamente mensalmente por R$ 14,90. 
+                  Você pode gerenciar sua assinatura a qualquer momento nas configurações.
+                </p>
               </div>
               <div class="footer">
                 <p>© 2024 AniDock - Indexação inteligente de animes</p>
