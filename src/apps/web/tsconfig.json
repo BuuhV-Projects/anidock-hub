@@ -20,6 +20,7 @@
       "@/*": ["./*"],
       "@anidock/anime-core": ["../../packages/anime-core/src"],
       "@anidock/anime-drivers": ["../../packages/anime-drivers/src"],
+      "@anidock/app-core": ["../../packages/app-core/src"],
       "@anidock/shared-ui": ["../../packages/shared-ui/src"],
       "@anidock/shared-utils": ["../../packages/shared-utils/src"]
     }

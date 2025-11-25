@@ -2,35 +2,14 @@ import { Crown, Cloud, Sparkles, History, Infinity } from "lucide-react";
 import { Button } from "@anidock/shared-ui";
 import { useAuth } from "@anidock/app-core";
 import { useState, useEffect } from "react";
-import { supabase } from "@anidock/shared-utils/integrations/supabase/client";
+import { supabase } from "@anidock/shared-utils";
 import { useNavigate } from "react-router-dom";
 
 export default function PremiumFeatures() {
-  const { user } = useAuth();
+  const { user, subscriptionStatus } = useAuth();
   const navigate = useNavigate();
-  const [userRole, setUserRole] = useState<string>('free');
 
-  useEffect(() => {
-    if (user) {
-      getUserRole();
-    }
-  }, [user]);
-
-  const getUserRole = async () => {
-    if (!user) return;
-    
-    const { data } = await supabase
-      .from('user_subscriptions')
-      .select('role')
-      .eq('user_id', user.id)
-      .single();
-    
-    if (data) {
-      setUserRole(data.role);
-    }
-  };
-
-  const isPremium = userRole === 'premium';
+  const isPremium = subscriptionStatus.role === 'premium';
   
   const PREMIUM_PRICE_ID = "price_1SXLgQ5O2lRcfH35ckLj4j6j"; // R$ 14,90/month
 

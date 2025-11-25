@@ -90,7 +90,7 @@ export default function ManageSubscription() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold">
-                  {userRole === 'premium_plus' ? 'Premium+' : userRole === 'premium' ? 'Premium' : 'Free'}
+                  {subscriptionStatus.role === 'premium' ? 'Premium' : 'Free'}
                 </h2>
                 <p className="text-sm text-muted-foreground">
                   {isPremium ? 'Plano ativo' : 'Plano básico'}
