@@ -94,12 +94,12 @@ const Index = () => {
             </div>
 
             {/* Right Content - Screenshot */}
-            <div className="relative max-w-xl mx-auto lg:mx-0">
+            <div className="relative">
               <div className="relative rounded-xl overflow-hidden border border-primary/20 glow-cyan shadow-2xl">
                 <img 
                   src={heroImage} 
                   alt="AniDock Interface"
-                  className="w-full h-auto scale-90"
+                  className="w-full h-auto"
                 />
               </div>
               {/* Floating Elements */}
