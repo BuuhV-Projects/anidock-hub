@@ -28,26 +28,12 @@ const DesktopCloseButton = () => {
 };
 
 export const BrowseHeader = ({ user, navigate, isDesktop }: BrowseHeaderProps) => {
-  const { signOut } = useAuth();
+  const { signOut, subscriptionStatus } = useAuth();
   const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      checkUserRole();
-    }
-  }, [user]);
-
-  const checkUserRole = async () => {
-    if (!user) return;
-    
-    const { data } = await supabase
-      .from('user_subscriptions')
-      .select('role')
-      .eq('user_id', user.id)
-      .single();
-    
-    setIsPremium(data && (data.role === 'premium' || data.role === 'premium_plus'));
-  };
+    setIsPremium(subscriptionStatus.role === 'premium');
+  }, [subscriptionStatus]);
 
   return (
     <header className="border-b border-border/50 sticky top-0 z-50 bg-background/80 backdrop-blur-sm">

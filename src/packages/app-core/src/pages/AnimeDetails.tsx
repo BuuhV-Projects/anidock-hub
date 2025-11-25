@@ -20,7 +20,7 @@ import { VideoPlayerModal } from '@anidock/shared-ui';
 
 const AnimeDetails = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, subscriptionStatus } = useAuth();
   const [searchParams] = useSearchParams();
   const animeId = searchParams.get('id');
   const driverId = searchParams.get('driver');
@@ -290,14 +290,7 @@ const AnimeDetails = () => {
         
         // Se usuário estiver logado e for premium, sincronizar com a nuvem
         if (user) {
-          // Check user role
-          const { data: roleData } = await supabase
-            .from('user_subscriptions')
-            .select('role')
-            .eq('user_id', user.id)
-            .single();
-          
-          const isPremium = roleData && (roleData.role === 'premium' || roleData.role === 'premium_plus');
+          const isPremium = subscriptionStatus.role === 'premium';
           
           if (isPremium) {
             await syncHistoryToCloud(supabase, user.id, {
