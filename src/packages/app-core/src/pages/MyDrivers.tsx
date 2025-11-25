@@ -53,34 +53,49 @@ const MyDrivers = () => {
   const [deleteDriver, setDeleteDriver] = useState<Driver | null>(null);
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [canCreateMoreDrivers, setCanCreateMoreDrivers] = useState(true);
+  const [showingLimitedDrivers, setShowingLimitedDrivers] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, subscriptionStatus } = useAuth();
 
   const fetchDrivers = useCallback(async () => {
     try {
       if (!user?.id) return;
       setIsLoading(true);
-      const { data, error } = await supabase
+      
+      const isFree = subscriptionStatus.role === 'free';
+      
+      // Build query
+      let query = supabase
         .from('drivers')
         .select('*')
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
+      
+      // Limit to 3 drivers for free users
+      if (isFree) {
+        query = query.limit(3);
+      }
+      
+      const { data, error } = await query;
 
       if (error) throw error;
 
       const driversList = (data || []) as Driver[];
       setDrivers(driversList);
 
-      // Check driver limit for free users
-      if (user) {
-        const { data: roleData } = await supabase.rpc('get_user_role', { _user_id: user.id });
-        const userRole = roleData as 'free' | 'premium' | 'premium_plus';
-
-        if (userRole === 'free') {
-          setCanCreateMoreDrivers(driversList.length < 3);
-        } else {
-          setCanCreateMoreDrivers(true);
-        }
+      // Check if user has more than 3 drivers (free users only)
+      if (isFree) {
+        const { count } = await supabase
+          .from('drivers')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+        
+        const hasMoreDrivers = (count || 0) > 3;
+        setShowingLimitedDrivers(hasMoreDrivers);
+        setCanCreateMoreDrivers(driversList.length < 3);
+      } else {
+        setShowingLimitedDrivers(false);
+        setCanCreateMoreDrivers(true);
       }
     } catch (error: any) {
       console.error('Error fetching drivers:', error);
@@ -88,7 +103,7 @@ const MyDrivers = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, subscriptionStatus.role]);
 
   useEffect(() => {
     if (!user) {
@@ -208,6 +223,21 @@ const MyDrivers = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
+        {showingLimitedDrivers && (
+          <Card className="glass p-4 border-border/50 mb-6 bg-accent/20">
+            <p className="text-sm text-center">
+              ⚠️ Você possui mais de 3 drivers, mas apenas os 3 primeiros estão sendo exibidos.{' '}
+              <Button
+                variant="link"
+                className="p-0 h-auto text-primary hover:text-primary/80"
+                onClick={() => navigate('/premium')}
+              >
+                Faça upgrade para Premium
+              </Button>
+              {' '}para ter acesso ilimitado.
+            </p>
+          </Card>
+        )}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
