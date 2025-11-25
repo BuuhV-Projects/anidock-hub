@@ -341,13 +341,18 @@ export const addToHistory = (item: Omit<HistoryItem, 'id' | 'timestamp'>): void 
       timestamp: new Date().toISOString()
     };
     
-    // Remove duplicate entries (same anime/episode watched recently)
+    // Remove all previous episodes of the same anime to keep only the latest
     const filteredHistory = history.filter(h => {
-      if (h.type !== newItem.type) return true;
+      // Keep if different anime
       if (h.animeId !== newItem.animeId) return true;
-      if (newItem.type === 'episode' && h.episodeNumber !== newItem.episodeNumber) return true;
       
-      // If same item, check if it was within last 5 minutes
+      // Remove all episodes of the same anime
+      if (newItem.type === 'episode' && h.type === 'episode') return false;
+      
+      // Keep if different type (e.g., anime view vs episode)
+      if (h.type !== newItem.type) return true;
+      
+      // If same anime and same type, check if it was within last 5 minutes to avoid duplicates
       const timeDiff = Date.now() - new Date(h.timestamp).getTime();
       return timeDiff > 5 * 60 * 1000; // 5 minutes
     });
