@@ -163,8 +163,7 @@ const AnimeDetails = () => {
           animeData.sourceUrl,
           driverData,
           animeData.id,
-          indexId ? parseInt(indexId) : undefined,
-          driverData.id
+          indexId ? parseInt(indexId) : undefined
         );
 
         if (errors && errors.length > 0) {
