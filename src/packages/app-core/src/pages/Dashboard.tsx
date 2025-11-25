@@ -1,19 +1,26 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/auth/useAuth';
-import { Button, Card, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@anidock/shared-ui';
-import { Cpu, Plus, Database, Zap, LogOut, Crown, User, Settings } from 'lucide-react';
+import { Button, Card, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Skeleton } from '@anidock/shared-ui';
+import { Cpu, Plus, Database, Zap, LogOut, Crown, User, Settings, Sparkles } from 'lucide-react';
 import { supabase } from '@anidock/shared-utils';
 import { toast } from 'sonner';
 
+interface Recommendation {
+  title: string;
+  reason: string;
+}
+
 const Dashboard = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, subscriptionStatus } = useAuth();
   const navigate = useNavigate();
   const [driversCount, setDriversCount] = useState(0);
   const [animesCount, setAnimesCount] = useState(0);
   const [userRole, setUserRole] = useState<string>('Free');
   const [isLoading, setIsLoading] = useState(true);
   const [canCreateMoreDrivers, setCanCreateMoreDrivers] = useState(true);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -70,6 +77,33 @@ const Dashboard = () => {
 
     fetchStats();
   }, [user, navigate]);
+
+  // Fetch AI recommendations for Premium users
+  useEffect(() => {
+    if (!user || subscriptionStatus.role !== 'premium') return;
+
+    const fetchRecommendations = async () => {
+      setIsLoadingRecommendations(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('ai-recommendations');
+        
+        if (error) {
+          console.error('Error fetching recommendations:', error);
+          return;
+        }
+        
+        if (data?.recommendations) {
+          setRecommendations(data.recommendations);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setIsLoadingRecommendations(false);
+      }
+    };
+
+    fetchRecommendations();
+  }, [user, subscriptionStatus.role]);
 
   if (!user) {
     return null;
@@ -205,6 +239,57 @@ const Dashboard = () => {
             </div>
           </Card>
         </div>
+
+        {/* AI Recommendations for Premium Users */}
+        {subscriptionStatus.role === 'premium' && (
+          <Card className="glass p-8 border-border/50 mb-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-xl font-display font-bold">
+                  Recomendações com IA
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Baseado no seu histórico de visualização
+                </p>
+              </div>
+            </div>
+
+            {isLoadingRecommendations ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-20 w-full" />
+                ))}
+              </div>
+            ) : recommendations.length > 0 ? (
+              <div className="space-y-3">
+                {recommendations.map((rec, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 rounded-lg bg-primary/5 border border-primary/20 hover:border-primary/40 transition-all cursor-pointer"
+                    onClick={() => navigate('/browse')}
+                  >
+                    <h4 className="font-semibold text-foreground mb-1">
+                      {rec.title}
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      {rec.reason}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+                <p className="text-muted-foreground">
+                  Assista alguns animes para receber recomendações personalizadas!
+                </p>
+              </div>
+            )}
+          </Card>
+        )}
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-3 gap-6">
