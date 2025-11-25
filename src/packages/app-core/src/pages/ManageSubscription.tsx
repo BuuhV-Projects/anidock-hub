@@ -105,16 +105,6 @@ export default function ManageSubscription() {
           {isPremium && (
             <div className="space-y-4 border-t pt-4">
               <div className="flex items-center gap-3">
-                <CreditCard className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">Próxima renovação</p>
-                  <p className="text-sm text-muted-foreground">
-                    {formatDate(subscriptionStatus.subscriptionEnd)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
                 <CheckCircle className="h-5 w-5 text-green-500" />
                 <div>
                   <p className="text-sm font-medium">Valor</p>
