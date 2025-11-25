@@ -171,25 +171,6 @@ export default function ManageSubscription() {
           </Card>
         )}
 
-        {/* Cancel Subscription */}
-        {isPremium && (
-          <Card className="p-6 border-primary/50">
-            <div className="flex items-start gap-4">
-              <CreditCard className="h-6 w-6 text-primary mt-1" />
-              <div className="flex-1">
-                <h3 className="font-semibold mb-2">Gerenciar Assinatura</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Gerencie sua forma de pagamento, visualize faturas ou cancele sua assinatura diretamente no portal do Stripe.
-                </p>
-                
-                <Button onClick={handleManageSubscription}>
-                  Abrir Portal de Gerenciamento
-                </Button>
-              </div>
-            </div>
-          </Card>
-        )}
-
         {/* Help Section */}
         <div className="mt-8 text-center">
           <p className="text-sm text-muted-foreground">
