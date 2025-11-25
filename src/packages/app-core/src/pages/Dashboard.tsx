@@ -103,14 +103,36 @@ const Dashboard = () => {
               >
                 Navegar
               </Button>
-              <Button
-                variant="outline"
-                onClick={signOut}
-                className="border-primary/50 hover:bg-primary/10 gap-2"
-              >
-                <LogOut className="h-4 w-4" />
-                Sair
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="border-primary/50 hover:bg-primary/10 gap-2"
+                  >
+                    <User className="h-4 w-4" />
+                    Perfil
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/subscription')}>
+                    <Crown className="h-4 w-4 mr-2" />
+                    Gerenciar Assinatura
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/premium')}>
+                    <Crown className="h-4 w-4 mr-2" />
+                    Planos Premium
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut} className="text-destructive">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sair
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </nav>
           </div>
         </div>
