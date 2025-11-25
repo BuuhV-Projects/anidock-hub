@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/auth/useAuth';
-import { Button, Card } from '@anidock/shared-ui';
-import { Cpu, Plus, Database, Zap, LogOut, Crown } from 'lucide-react';
+import { Button, Card, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@anidock/shared-ui';
+import { Cpu, Plus, Database, Zap, LogOut, Crown, User, Settings } from 'lucide-react';
 import { supabase } from '@anidock/shared-utils';
 import { toast } from 'sonner';
 
