@@ -89,17 +89,17 @@ const Index = () => {
 
               {/* Info */}
               <p className="text-sm text-muted-foreground">
-                Windows 10/11 • ~50MB • Gratuito • Código Aberto
+                Windows 10/11 • Gratuito • Código Aberto
               </p>
             </div>
 
             {/* Right Content - Screenshot */}
-            <div className="relative">
-              <div className="relative rounded-xl overflow-hidden border border-primary/20 glow-cyan">
+            <div className="relative max-w-xl mx-auto lg:mx-0">
+              <div className="relative rounded-xl overflow-hidden border border-primary/20 glow-cyan shadow-2xl">
                 <img 
                   src={screenshotBrowse} 
                   alt="AniDock Interface"
-                  className="w-full h-auto"
+                  className="w-full h-auto scale-90"
                 />
               </div>
               {/* Floating Elements */}
@@ -209,7 +209,7 @@ const Index = () => {
               </div>
               <h3 className="font-display font-semibold text-lg mb-2">Leve e Rápido</h3>
               <p className="text-sm text-muted-foreground">
-                Apenas ~50MB de instalação. Inicia em segundos. Interface fluida e responsiva.
+                Instalação rápida. Inicia em segundos. Interface fluida e responsiva.
               </p>
             </Card>
           </div>
@@ -313,16 +313,16 @@ const Index = () => {
 
             <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
-                <HardDrive className="h-4 w-4" />
-                <span>~50MB</span>
-              </div>
-              <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4" />
                 <span>Open Source</span>
               </div>
               <div className="flex items-center gap-2">
                 <Zap className="h-4 w-4" />
                 <span>Gratuito</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <HardDrive className="h-4 w-4" />
+                <span>100% Local</span>
               </div>
             </div>
           </div>
