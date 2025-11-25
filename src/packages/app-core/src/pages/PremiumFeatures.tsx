@@ -4,6 +4,7 @@ import { useAuth } from "@anidock/app-core";
 import { useState, useEffect } from "react";
 import { supabase } from "@anidock/shared-utils";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function PremiumFeatures() {
   const { user, subscriptionStatus, checkSubscription } = useAuth();
@@ -198,12 +199,22 @@ export default function PremiumFeatures() {
                       body: { priceId: PREMIUM_PRICE_ID }
                     });
                     
-                    if (error) throw error;
+                    if (error) {
+                      // Check if it's the "already has subscription" error
+                      if (data?.hasActiveSubscription) {
+                        toast.error('Você já possui uma assinatura Premium ativa!');
+                        navigate('/subscription');
+                        return;
+                      }
+                      throw error;
+                    }
+                    
                     if (data?.url) {
                       window.open(data.url, '_blank');
                     }
-                  } catch (error) {
+                  } catch (error: any) {
                     console.error('Error creating checkout:', error);
+                    toast.error(error.message || 'Erro ao criar sessão de checkout');
                   }
                 }}
               >
