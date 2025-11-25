@@ -72,6 +72,16 @@ jobs:
             icoutils \
             xvfb
 
+      - name: Cache Electron downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+          key: ${{ runner.os }}-electron-cache-${{ hashFiles('src/apps/desktop/package.json', 'src/apps/desktop/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-electron-cache-
+
       - name: Build desktop assets
         working-directory: src/apps/desktop
         run: yarn build
