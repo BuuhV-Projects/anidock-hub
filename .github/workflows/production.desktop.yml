@@ -46,11 +46,25 @@ jobs:
       # - name: Lint
       #   run: yarn lint
 
+      - name: Prepare apt cache directory
+        run: mkdir -p ~/.cache/apt/archives/partial
+
+      - name: Cache Windows build apt downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/apt
+          key: ${{ runner.os }}-apt-win-build-${{ hashFiles('.github/workflows/production.desktop.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-apt-win-build-
+
       - name: Install Windows build deps
+        env:
+          APT_CACHE_DIR: $HOME/.cache/apt
         run: |
           sudo dpkg --add-architecture i386
-          sudo apt-get update
+          sudo apt-get update -o Dir::Cache::archives=$APT_CACHE_DIR/archives
           sudo apt-get install --no-install-recommends -y \
+            -o Dir::Cache::archives=$APT_CACHE_DIR/archives \
             wine \
             wine32 \
             wine64 \

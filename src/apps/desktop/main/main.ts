@@ -2,6 +2,7 @@ import { app, BrowserWindow } from 'electron';
 import { electronApp, optimizer } from '@electron-toolkit/utils';
 import { WindowManager } from './windowManager';
 import { registerIpcHandlers } from './ipc';
+import { globalShortcut } from 'electron';
 
 const windowManager = new WindowManager();
 
@@ -9,10 +10,16 @@ function createWindow(): void {
   windowManager.createMainWindow();
 }
 
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  globalShortcut.register('Ctrl+Shift+I', () => {
+    const win = BrowserWindow.getFocusedWindow();
+    if (win) win.webContents.toggleDevTools();
+  });
+  
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.buuhvprojects.anidock-hub');
 

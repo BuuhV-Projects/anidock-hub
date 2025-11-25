@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,10 +26,11 @@ import {
   Sparkles,
   Trash2
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/auth/useAuth';
+import { Json } from '../../../shared-utils/src/integrations/supabase/types';
 
 interface Driver {
   id: number;
@@ -54,17 +56,9 @@ const MyDrivers = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-
-    fetchDrivers();
-  }, [user, navigate]);
-
-  const fetchDrivers = async () => {
+  const fetchDrivers = useCallback(async () => {
     try {
+      if (!user?.id) return;
       setIsLoading(true);
       const { data, error } = await supabase
         .from('drivers')
@@ -76,12 +70,12 @@ const MyDrivers = () => {
 
       const driversList = (data || []) as Driver[];
       setDrivers(driversList);
-      
+
       // Check driver limit for free users
       if (user) {
         const { data: roleData } = await supabase.rpc('get_user_role', { _user_id: user.id });
         const userRole = roleData as 'free' | 'premium' | 'premium_plus';
-        
+
         if (userRole === 'free') {
           setCanCreateMoreDrivers(driversList.length < 3);
         } else {
@@ -94,7 +88,16 @@ const MyDrivers = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
+    fetchDrivers();
+  }, [user, navigate, fetchDrivers]);
 
   const handleDelete = async () => {
     if (!deleteDriver) return;
@@ -119,7 +122,7 @@ const MyDrivers = () => {
   const handleExport = async (driver: Driver) => {
     try {
       // Fetch index data for this driver
-      let indexData = null;
+      let indexData: Json | null = null;
       if (user) {
         const { data, error } = await supabase
           .from('indexes')
@@ -127,12 +130,12 @@ const MyDrivers = () => {
           .eq('driver_id', driver.id)
           .eq('user_id', user.id)
           .maybeSingle();
-          
+
         if (!error && data) {
           indexData = data.index_data;
         }
       }
-      
+
       const exportData = {
         name: driver.name,
         domain: driver.domain,
@@ -335,7 +338,7 @@ const MyDrivers = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir Driver?</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir o driver "{deleteDriver?.name}"? 
+              Tem certeza que deseja excluir o driver "{deleteDriver?.name}"?
               Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
