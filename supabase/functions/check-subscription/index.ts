@@ -75,24 +75,49 @@ serve(async (req) => {
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      
+      // Safely convert timestamp to ISO string
+      try {
+        if (subscription.current_period_end) {
+          subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+        }
+      } catch (dateError) {
+        logStep("Error converting date", { error: dateError, timestamp: subscription.current_period_end });
+      }
+      
       logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
-      productId = subscription.items.data[0].price.product;
+      
+      // Get product ID safely
+      if (subscription.items?.data?.[0]?.price?.product) {
+        productId = subscription.items.data[0].price.product;
+      }
       logStep("Determined subscription product", { productId });
       
       // Update user role to premium
-      await supabaseClient
+      const { error: updateError } = await supabaseClient
         .from('user_subscriptions')
         .update({ role: 'premium' })
         .eq('user_id', user.id);
+      
+      if (updateError) {
+        logStep("Error updating role to premium", { error: updateError });
+      } else {
+        logStep("Successfully updated role to premium");
+      }
     } else {
       logStep("No active subscription found, setting to free");
       
       // Update user role to free
-      await supabaseClient
+      const { error: updateError } = await supabaseClient
         .from('user_subscriptions')
         .update({ role: 'free' })
         .eq('user_id', user.id);
+      
+      if (updateError) {
+        logStep("Error updating role to free", { error: updateError });
+      } else {
+        logStep("Successfully updated role to free");
+      }
     }
 
     return new Response(JSON.stringify({
