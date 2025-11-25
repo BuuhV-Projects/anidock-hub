@@ -122,7 +122,7 @@ const Index = () => {
             <p className="text-lg text-muted-foreground leading-relaxed">
               AniDock é um software desktop que revoluciona como você organiza e assiste animes. 
               Cole o link de qualquer site, nossa IA analisa a estrutura, cria um "driver" automaticamente 
-              e indexa todo o catálogo localmente no seu computador.
+              e indexa todo o catálogo localmente no seu computador. Tudo sem depender de servidores externos.
             </p>
           </div>
 
