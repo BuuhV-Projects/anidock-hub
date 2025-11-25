@@ -15,7 +15,7 @@ export class WindowManager {
       width: 1200,
       height: 800,
       show: false,
-      autoHideMenuBar: config.getBoolEnv('ELECTRON_AUTO_HIDE_MENU_BAR', false),
+      autoHideMenuBar: config.getBoolEnv('ELECTRON_AUTO_HIDE_MENU_BAR', true),
       fullscreen: true,
       ...(process.platform === 'linux' ? { icon: join(__dirname, '../../resources/icon.png') } : {}),
       webPreferences: {
