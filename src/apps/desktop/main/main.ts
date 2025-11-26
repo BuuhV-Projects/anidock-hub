@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import { electronApp, optimizer } from '@electron-toolkit/utils';
 import { WindowManager } from './windowManager';
 import { registerIpcHandlers } from './ipc';
@@ -35,6 +35,12 @@ app.whenReady().then(() => {
   });
 
   registerIpcHandlers(windowManager);
+  
+  // Register IPC handler for app version
+  ipcMain.handle('get-app-version', () => {
+    return app.getVersion();
+  });
+  
   createWindow();
 
   app.on('activate', function () {

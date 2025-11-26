@@ -5,6 +5,7 @@ declare global {
     electron?: ElectronAPI;
     api?: {
       closeWindow: () => void;
+      getAppVersion: () => Promise<string>;
     };
   }
 }
@@ -18,6 +19,7 @@ export const useElectronApi = () => {
   }
 
   return {
-    closeWindow: window.api.closeWindow
+    closeWindow: window.api.closeWindow,
+    getAppVersion: window.api.getAppVersion
   };
 };

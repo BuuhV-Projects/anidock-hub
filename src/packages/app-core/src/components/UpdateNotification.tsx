@@ -10,6 +10,7 @@ import {
 } from '@anidock/shared-ui';
 import { supabase } from '@anidock/shared-utils';
 import { Download } from 'lucide-react';
+import { usePlataform } from '../contexts/plataform/usePlataform';
 
 interface UpdateInfo {
   hasUpdate: boolean;
@@ -20,23 +21,27 @@ interface UpdateInfo {
   isCritical?: boolean;
 }
 
-const CURRENT_VERSION = '1.0.0'; // This should match your app version
-
 export function UpdateNotification() {
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const { appVersion } = usePlataform();
 
   useEffect(() => {
-    checkForUpdates();
-    // Check for updates every 30 minutes
-    const interval = setInterval(checkForUpdates, 30 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
+    // Only check for updates if we have a version (desktop app)
+    if (appVersion) {
+      checkForUpdates();
+      // Check for updates every 30 minutes
+      const interval = setInterval(checkForUpdates, 30 * 60 * 1000);
+      return () => clearInterval(interval);
+    }
+  }, [appVersion]);
 
   const checkForUpdates = async () => {
+    if (!appVersion) return;
+    
     try {
       const { data, error } = await supabase.functions.invoke('check-app-version', {
-        body: { currentVersion: CURRENT_VERSION }
+        body: { currentVersion: appVersion }
       });
 
       if (error) throw error;

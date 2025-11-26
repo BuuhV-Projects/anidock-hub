@@ -5,7 +5,8 @@ import { IPC_CHANNELS } from '../common/ipc/channels';
 const windowApi = {
   closeWindow: () => {
     ipcRenderer.send(IPC_CHANNELS.window.close);
-  }
+  },
+  getAppVersion: () => ipcRenderer.invoke('get-app-version')
 };
 
 const api = windowApi;
