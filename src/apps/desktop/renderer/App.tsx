@@ -13,10 +13,17 @@ import { HashRouter } from "react-router-dom";
 const queryClient = new QueryClient();
 
 function AppContent() {
-    const { setIsDesktop } = usePlataform();
+    const { setIsDesktop, setAppVersion } = usePlataform();
     useEffect(() => {
         if (typeof setIsDesktop === 'function') setIsDesktop(true);
-    }, [setIsDesktop]);
+        
+        // Get app version from Electron
+        if (window.api?.getAppVersion) {
+            window.api.getAppVersion().then((version) => {
+                if (typeof setAppVersion === 'function') setAppVersion(version);
+            }).catch(console.error);
+        }
+    }, [setIsDesktop, setAppVersion]);
     return (
         <HashRouter>
             <AuthProvider>
