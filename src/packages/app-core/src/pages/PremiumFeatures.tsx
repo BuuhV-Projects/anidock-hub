@@ -1,3 +1,4 @@
+import React from "react";
 import { Crown, Cloud, Sparkles, History, Infinity, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { Button, Alert, AlertDescription, AlertTitle } from "@anidock/shared-ui";
 import { useAuth } from "@anidock/app-core";
@@ -7,10 +8,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function PremiumFeatures() {
-  const { user, subscriptionStatus, checkSubscription } = useAuth();
+  const { subscriptionStatus, checkSubscription } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
+  const [isLoadingCheckout, setIsLoadingCheckout] = useState(true);
 
   const isPremium = subscriptionStatus.role === 'premium';
   

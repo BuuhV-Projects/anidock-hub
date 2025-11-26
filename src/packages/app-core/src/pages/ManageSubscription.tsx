@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/auth/useAuth';
-import { Button, Card, Badge, AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@anidock/shared-ui';
-import { Crown, CreditCard, AlertTriangle, ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Badge, Button, Card } from '@anidock/shared-ui';
 import { supabase } from '@anidock/shared-utils';
+import { AlertTriangle, ArrowLeft, CheckCircle, Crown, XCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useAuth } from '../contexts/auth/useAuth';
 
 export default function ManageSubscription() {
   const { user, subscriptionStatus, checkSubscription } = useAuth();
@@ -70,16 +70,6 @@ export default function ManageSubscription() {
   };
 
   const isPremium = subscriptionStatus.role === 'premium';
-  
-  
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('pt-BR', { 
-      day: '2-digit', 
-      month: 'long', 
-      year: 'numeric' 
-    });
-  };
 
   if (isLoading) {
     return (
