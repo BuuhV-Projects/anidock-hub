@@ -1,4 +1,4 @@
-import { Crown, Cloud, Sparkles, History, Infinity, CheckCircle, XCircle } from "lucide-react";
+import { Crown, Cloud, Sparkles, History, Infinity, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { Button, Alert, AlertDescription, AlertTitle } from "@anidock/shared-ui";
 import { useAuth } from "@anidock/app-core";
 import { useState, useEffect } from "react";
@@ -222,8 +222,17 @@ export default function PremiumFeatures() {
                   }
                 }}
               >
-                <Crown className="w-4 h-4 mr-2" />
-                {isLoadingCheckout ? 'Carregando...' : 'Fazer Upgrade'}
+                {isLoadingCheckout ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Carregando...
+                  </>
+                ) : (
+                  <>
+                    <Crown className="w-4 h-4 mr-2" />
+                    Fazer Upgrade
+                  </>
+                )}
               </Button>
             )}
           </div>
