@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import { electronApp, optimizer } from '@electron-toolkit/utils';
 import { WindowManager } from './windowManager';
-import { registerIpcHandlers } from './ipc';
+import { registerIpcHandlers } from '../common/ipc';
 import { globalShortcut } from 'electron';
 
 const windowManager = new WindowManager();
@@ -34,12 +34,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window);
   });
 
-  registerIpcHandlers(windowManager);
-  
-  // Register IPC handler for app version
-  ipcMain.handle('get-app-version', () => {
-    return app.getVersion();
-  });
+  registerIpcHandlers(windowManager, app);
   
   createWindow();
 

@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,6 +9,7 @@ import {
 } from '@anidock/shared-ui';
 import { supabase } from '@anidock/shared-utils';
 import { Download } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { usePlataform } from '../contexts/plataform/usePlataform';
 
 interface UpdateInfo {
@@ -24,24 +24,24 @@ interface UpdateInfo {
 export function UpdateNotification() {
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
   const [isOpen, setIsOpen] = useState(false);
-  const { appVersion } = usePlataform();
+  const { appVersion, isDesktop } = usePlataform();
 
   useEffect(() => {
     // Only check for updates if we have a version (desktop app)
-    if (appVersion) {
+    if (appVersion && isDesktop) {
       checkForUpdates();
       // Check for updates every 30 minutes
       const interval = setInterval(checkForUpdates, 30 * 60 * 1000);
       return () => clearInterval(interval);
     }
-  }, [appVersion]);
+  }, [appVersion, isDesktop]);
 
   const checkForUpdates = async () => {
-    if (!appVersion) return;
+    if (!appVersion || !isDesktop) return;
     
     try {
       const { data, error } = await supabase.functions.invoke('check-app-version', {
-        body: { currentVersion: appVersion }
+        body: { currentVersion: appVersion, isDesktop }
       });
 
       if (error) throw error;
