@@ -10,6 +10,7 @@ export default function PremiumFeatures() {
   const { user, subscriptionStatus, checkSubscription } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
 
   const isPremium = subscriptionStatus.role === 'premium';
   
@@ -192,8 +193,10 @@ export default function PremiumFeatures() {
             ) : (
               <Button 
                 className="w-full"
+                disabled={isLoadingCheckout}
                 onClick={async () => {
                   try {
+                    setIsLoadingCheckout(true);
                     const { data, error } = await supabase.functions.invoke('create-checkout', {
                       body: { priceId: PREMIUM_PRICE_ID }
                     });
@@ -214,11 +217,13 @@ export default function PremiumFeatures() {
                   } catch (error: any) {
                     console.error('Error creating checkout:', error);
                     toast.error(error.message || 'Erro ao criar sessão de checkout');
+                  } finally {
+                    setIsLoadingCheckout(false);
                   }
                 }}
               >
                 <Crown className="w-4 h-4 mr-2" />
-                Fazer Upgrade
+                {isLoadingCheckout ? 'Carregando...' : 'Fazer Upgrade'}
               </Button>
             )}
           </div>
