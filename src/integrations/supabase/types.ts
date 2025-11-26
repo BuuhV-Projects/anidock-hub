@@ -70,6 +70,36 @@ export type Database = {
           },
         ]
       }
+      app_versions: {
+        Row: {
+          created_at: string
+          description: string | null
+          download_url: string | null
+          id: number
+          is_critical: boolean | null
+          release_date: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          download_url?: string | null
+          id?: number
+          is_critical?: boolean | null
+          release_date?: string
+          version: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          download_url?: string | null
+          id?: number
+          is_critical?: boolean | null
+          release_date?: string
+          version?: string
+        }
+        Relationships: []
+      }
       drivers: {
         Row: {
           catalog_url: string | null
