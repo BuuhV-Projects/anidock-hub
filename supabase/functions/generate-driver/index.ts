@@ -154,48 +154,57 @@ serve(async (req) => {
             role: 'system',
             content: `Você é um especialista em web scraping. Analise o HTML da página de CATÁLOGO de animes.
 
-TAREFA: Extrair seletores CSS para LISTAR ANIMES (não episódios ainda).
+TAREFA: Extrair seletores CSS ESPECÍFICOS E PRECISOS para LISTAR ANIMES.
 
-INSTRUÇÕES DETALHADAS:
-1. Encontre elementos que se REPETEM na página (cada um representa um anime)
-2. O seletor deve capturar TODOS os animes da lista
-3. Procure por padrões comuns: divs com classes, listas (ul/li), grids, etc.
-4. Teste mentalmente: "Se eu usar querySelectorAll() com este seletor, vou pegar todos os animes?"
-5. O seletor animeUrl pode ser um <a> DENTRO do animeList ou o próprio animeList já pode ser o link
+🎯 REGRAS FUNDAMENTAIS:
+1. NUNCA invente seletores genéricos (ex: ".anime-card", ".item", ".box")
+2. USE EXATAMENTE as classes, tags e IDs que você VÊ no HTML fornecido
+3. PRIORIZE seletores compostos (tag + classe) para maior especificidade: "article.boxAN", "div.item-list"
+4. VERIFIQUE que o seletor realmente existe no HTML antes de retornar
+5. TESTE mentalmente: "querySelectorAll(seletor) vai pegar TODOS os animes repetidos?"
 
-PARA O TÍTULO (IMPORTANTE):
-- Procure por tags de cabeçalho: h1, h2, h3, h4, h5, h6
-- Procure por classes/IDs que contenham palavras-chave: "title", "titulo", "nome", "name", "heading"
-- O título geralmente é o texto mais proeminente dentro de cada item da lista
-- Se o título estiver DENTRO do link (animeList é o <a>), o seletor pode ser vazio "" ou apenas uma tag como "h2"
+📋 PROCESSO DE ANÁLISE:
+1. IDENTIFIQUE o padrão que se repete (cada repetição = um anime)
+2. OBSERVE a estrutura HTML exata: tags, classes, IDs
+3. CONSTRUA o seletor usando as classes/tags REAIS que você vê
+4. VALIDE: o seletor captura todos os itens repetidos?
 
-EXEMPLOS DE ESTRUTURAS COMUNS:
-- Links diretos: ".itemlistanime a" (onde cada <a> dentro de .itemlistanime é um anime)
-  - Título pode estar em: "h2", ".title", ".nome-anime"
-- Containers: ".anime-card" (onde cada div é um container de anime)
-  - Título pode estar em: ".anime-title", "h3.title", ".nome"
-- Lista: "ul.anime-list li" (cada li é um anime)
-  - Título pode estar em: "h4", ".episode-title", ".anime-name"
+🔍 EXEMPLOS DE ESTRUTURAS REAIS:
+- article.boxAN (cada article com classe "boxAN" é um anime)
+- .itemlistanime a (cada link dentro de .itemlistanime)
+- div.anime-item (cada div com classe "anime-item")
+- li.episode-card (cada li com classe "episode-card")
 
-Formato esperado:
+📝 PARA CADA SELETOR:
+- animeList: Container que se repete (article.boxAN, .item-list, li.anime)
+- animeTitle: Tag com o título DENTRO do container (.title, h2.name, .anime-title)
+- animeCover: Tag img dentro do container (img, img.cover, .thumb img)
+- animeUrl: Link (se animeList já for <a>, deixe vazio ""; senão: "a", "a.link")
+- animeSynopsis: Descrição/sinopse se houver (.synopsis, .desc, .summary)
+
+⚠️ ERROS COMUNS A EVITAR:
+❌ NÃO use ".anime-card" se não vir essa classe no HTML
+❌ NÃO use ".item" genérico - seja específico
+❌ NÃO invente estruturas - use o que está no HTML
+✅ USE "article.boxAN" se você vê <article class="boxAN">
+✅ USE ".title" se você vê <div class="title">
+✅ USE "h2.name" se você vê <h2 class="name">
+
+Formato de retorno:
 {
   "name": "Nome do Site",
   "domain": "exemplo.com",
   "selectors": {
-    "animeList": ".itemlistanime a",
-    "animeTitle": "h2.title",
-    "animeCover": "img",
-    "animeUrl": "",
-    "animeSynopsis": ".synopsis"
+    "animeList": "article.boxAN",
+    "animeTitle": ".title",
+    "animeCover": "img.cover",
+    "animeUrl": "a",
+    "animeSynopsis": ".desc"
   }
 }
 
-IMPORTANTE: 
-- animeList deve capturar TODOS os animes (use querySelectorAll mentalmente)
-- animeTitle deve apontar para a tag/classe que contém o NOME do anime (procure h1-h6, ou classes com "title", "titulo", "name", "nome")
-- Se animeList já for o próprio link (ex: ".itemlistanime a"), deixe animeUrl vazio ""
-- Se animeList for um container, animeUrl deve ser o link DENTRO dele (ex: "a", "a.link")
-- Retorne APENAS o JSON válido, sem markdown ou explicações`
+🚨 LEMBRE-SE: Use SOMENTE classes/tags que você REALMENTE vê no HTML fornecido!
+Retorne APENAS o JSON válido, sem markdown ou explicações.`
           },
           {
             role: 'user',
@@ -317,7 +326,26 @@ HTML:\n\n${html.slice(0, 30000)}`
                 role: 'system',
                 content: `Você é um especialista em web scraping. Analise o HTML da página de UM ANIME ESPECÍFICO.
 
-TAREFA: Extrair seletores para o TÍTULO DO ANIME e LISTAR EPISÓDIOS.
+TAREFA: Extrair seletores CSS ESPECÍFICOS E PRECISOS para TÍTULO DO ANIME e LISTA DE EPISÓDIOS.
+
+🎯 REGRAS FUNDAMENTAIS:
+1. NUNCA invente seletores genéricos (ex: ".episode-item", ".ep-number")
+2. USE EXATAMENTE as classes, tags e IDs que você VÊ no HTML fornecido
+3. PRIORIZE seletores compostos (tag + classe) quando possível
+4. VERIFIQUE que o seletor realmente existe no HTML antes de retornar
+
+📋 PROCESSO DE ANÁLISE:
+1. IDENTIFIQUE o título principal do anime (geralmente h1, h2 com classe específica)
+2. IDENTIFIQUE o padrão que se repete para episódios
+3. OBSERVE a estrutura HTML exata: tags, classes, IDs
+4. CONSTRUA seletores usando classes/tags REAIS
+
+🔍 PARA CADA SELETOR:
+- animePageTitle: Título principal (h1.title, h2.anime-name, .main-title h1)
+- episodeList: Container que se repete (.ep-item, li.episode, .episodeList li)
+- episodeNumber: Número do episódio (.ep-num, .number, span.episode-number)
+- episodeTitle: Nome do episódio (.ep-title, .episode-name, h3.title)
+- episodeUrl: Link do episódio (a, a.link, .watch-link)
 
 Formato esperado:
 {
@@ -328,11 +356,8 @@ Formato esperado:
   "episodeUrl": "a.ep-link"
 }
 
-IMPORTANTE:
-- animePageTitle: Procure por h1, h2, h3 ou classes com "title", "titulo", "name", "nome" que contenha o NOME DO ANIME
-- episodeList é o container de cada episódio
-- episodeUrl deve apontar para a página do player/vídeo
-- Retorne APENAS o JSON, sem explicações`
+🚨 LEMBRE-SE: Use SOMENTE classes/tags que você REALMENTE vê no HTML fornecido!
+Retorne APENAS o JSON válido, sem markdown ou explicações.`
               },
               {
                 role: 'user',
@@ -391,19 +416,30 @@ IMPORTANTE:
                       role: 'system',
                       content: `Você é um especialista em análise de páginas de vídeo.
 
-TAREFA: Determinar se a página tem um player de vídeo embutido (iframe/video) ou se é apenas um link/botão que redireciona para outro site.
+TAREFA: Determinar se a página tem player embutido ou link externo.
 
-Retorne JSON:
+🎯 REGRAS:
+1. USE EXATAMENTE as classes, tags e IDs que você VÊ no HTML
+2. NÃO invente seletores genéricos
+3. VERIFIQUE se iframe/video realmente existe
+
+📋 ANÁLISE:
+- hasEmbeddedPlayer = true: Se há <iframe> ou <video> no HTML
+- hasEmbeddedPlayer = false: Se só há botões/links para outro site
+
+🔍 SELETORES:
+- videoSelector: Tag exata do player (iframe#player, iframe.video, video)
+- externalLinkSelector: Link externo se não houver player (a.watch, .link-button a)
+
+Formato:
 {
-  "hasEmbeddedPlayer": true/false,
-  "videoSelector": "iframe.player" ou "video" (se houver player),
-  "externalLinkSelector": "a.watch-button" (se for link externo)
+  "hasEmbeddedPlayer": true,
+  "videoSelector": "iframe.player",
+  "externalLinkSelector": ""
 }
 
-IMPORTANTE:
-- hasEmbeddedPlayer = true se houver <iframe> ou <video> na página
-- hasEmbeddedPlayer = false se for apenas um botão/link que abre outro site
-- Retorne APENAS o JSON, sem explicações`
+🚨 Use APENAS tags/classes que REALMENTE existem no HTML!
+Retorne APENAS JSON, sem explicações.`
                     },
                     {
                       role: 'user',
