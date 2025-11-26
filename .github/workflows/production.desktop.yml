@@ -11,10 +11,15 @@ jobs:
     environment:
       name: production
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -84,6 +89,9 @@ jobs:
 
       - name: Version desktop
         run: yarn version:desktop
+
+      - name: Push tags
+        run: git push --tags
 
       - name: Build desktop assets
         working-directory: src/apps/desktop
