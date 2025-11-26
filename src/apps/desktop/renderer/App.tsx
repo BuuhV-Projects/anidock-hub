@@ -2,6 +2,7 @@ import {
     AuthProvider,
     PlataformProvider,
     RouterAppCore,
+    UpdateNotification,
     usePlataform
 } from "@anidock/app-core";
 import { Toaster, TooltipProvider } from "@anidock/shared-ui";
@@ -29,6 +30,7 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
         <TooltipProvider>
             <Toaster />
+            <UpdateNotification />
             <PlataformProvider>
                 <AppContent />
             </PlataformProvider>
