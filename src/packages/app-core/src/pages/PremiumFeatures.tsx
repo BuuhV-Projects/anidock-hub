@@ -10,7 +10,6 @@ export default function PremiumFeatures() {
   const { user, subscriptionStatus, checkSubscription } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const isPremium = subscriptionStatus.role === 'premium';
   
@@ -19,33 +18,44 @@ export default function PremiumFeatures() {
   const success = searchParams.get('success');
   const canceled = searchParams.get('canceled');
 
-  // Atualizar status após sucesso no pagamento
+  // Verificar status ao carregar a página
+  useEffect(() => {
+    checkSubscription();
+  }, [checkSubscription]);
+
+  // Atualizar status após sucesso no pagamento - verificar múltiplas vezes
   useEffect(() => {
     if (success) {
-      // Esperar 2 segundos para o Stripe processar
-      setTimeout(() => {
+      // Verificar imediatamente e depois a cada 3 segundos por 30 segundos
+      checkSubscription();
+      
+      const interval = setInterval(() => {
         checkSubscription();
-      }, 2000);
+      }, 3000);
+      
+      // Parar após 30 segundos
+      const timeout = setTimeout(() => {
+        clearInterval(interval);
+      }, 30000);
+      
+      return () => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+      };
     }
   }, [success, checkSubscription]);
 
-  // Limpar os params após 5 segundos
+  // Limpar os params após 35 segundos (depois das verificações automáticas)
   useEffect(() => {
     if (success || canceled) {
       const timer = setTimeout(() => {
         searchParams.delete('success');
         searchParams.delete('canceled');
         setSearchParams(searchParams, { replace: true });
-      }, 5000);
+      }, 35000);
       return () => clearTimeout(timer);
     }
   }, [success, canceled, searchParams, setSearchParams]);
-
-  const handleRefreshStatus = async () => {
-    setIsRefreshing(true);
-    await checkSubscription();
-    setTimeout(() => setIsRefreshing(false), 1000);
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -80,17 +90,6 @@ export default function PremiumFeatures() {
           <p className="text-muted-foreground text-lg">
             Desbloqueie todo o potencial do AniDock
           </p>
-          {user && !isPremium && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefreshStatus}
-              disabled={isRefreshing}
-              className="mt-4"
-            >
-              {isRefreshing ? "Atualizando..." : "Atualizar Status da Assinatura"}
-            </Button>
-          )}
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 mb-12">
