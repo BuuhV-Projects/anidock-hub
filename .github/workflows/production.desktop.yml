@@ -41,8 +41,10 @@ jobs:
         run: |
           cat <<EOF > .env
           VITE_SUPABASE_PROJECT_ID=${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_URL=${{ vars.VITE_SUPABASE_URL }}
+          ELECTRON_SANDBOX=${{ vars.ELECTRON_SANDBOX }}
+          ELECTRON_AUTO_HIDE_MENU_BAR=${{ vars.ELECTRON_AUTO_HIDE_MENU_BAR }}
           EOF
           echo "######## ENVIRONMENT ########"
           cat .env
