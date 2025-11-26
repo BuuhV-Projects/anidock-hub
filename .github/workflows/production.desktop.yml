@@ -82,6 +82,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-electron-cache-
 
+      - name: Version desktop
+        run: yarn version:desktop
+
       - name: Build desktop assets
         working-directory: src/apps/desktop
         run: yarn build

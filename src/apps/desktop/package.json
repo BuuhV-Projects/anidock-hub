@@ -17,7 +17,12 @@
     "build:linux": "electron-vite build --linux",
     "preview": "electron-vite preview",
     "package": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "version": "standard-version --message \"[skip ci]\"",
+    "version:rc": "yarn changelog -- --prerelease rc --skip.changelog --skip.tag",
+    "version:patch": "yarn changelog -- --release-as patch --prerelease rc",
+    "version:minor": "yarn changelog -- --release-as minor --prerelease rc",
+    "version:major": "yarn changelog -- --release-as major --prerelease rc"
   },
   "dependencies": {
     "@anidock/anime-core": "*",
@@ -35,12 +40,13 @@
     "sonner": "^1.7.4"
   },
   "devDependencies": {
-    "electron": "33.0.0",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react-swc": "^3.11.0",
+    "electron": "33.0.0",
     "electron-builder": "^26.0.12",
     "electron-vite": "^4.0.1",
+    "standard-version": "^9.5.0",
     "typescript": "^5.8.3",
     "vite": "^5.4.19"
   }
