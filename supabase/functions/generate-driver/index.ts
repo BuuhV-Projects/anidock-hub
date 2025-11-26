@@ -160,35 +160,44 @@ TAREFA: Extrair seletores CSS ESPECÍFICOS E PRECISOS para LISTAR ANIMES.
 1. NUNCA invente seletores genéricos (ex: ".anime-card", ".item", ".box")
 2. USE EXATAMENTE as classes, tags e IDs que você VÊ no HTML fornecido
 3. PRIORIZE seletores compostos (tag + classe) para maior especificidade: "article.boxAN", "div.item-list"
-4. VERIFIQUE que o seletor realmente existe no HTML antes de retornar
-5. TESTE mentalmente: "querySelectorAll(seletor) vai pegar TODOS os animes repetidos?"
+4. Para elementos SEM CLASSE (ex: <a> sem classe), use APENAS a tag: "a", "img", "span"
+5. NUNCA adicione classes que não existem (ex: se vê <a> sem classe, use "a", NÃO "a.link")
+6. VERIFIQUE que o seletor realmente existe no HTML antes de retornar
+7. TESTE mentalmente: "querySelectorAll(seletor) vai pegar TODOS os animes repetidos?"
 
 📋 PROCESSO DE ANÁLISE:
 1. IDENTIFIQUE o padrão que se repete (cada repetição = um anime)
 2. OBSERVE a estrutura HTML exata: tags, classes, IDs
-3. CONSTRUA o seletor usando as classes/tags REAIS que você vê
-4. VALIDE: o seletor captura todos os itens repetidos?
+3. CONSTRUA o seletor usando SOMENTE as classes/tags REAIS que você vê
+4. Se um elemento NÃO tem classe, use apenas a tag
+5. VALIDE: o seletor captura todos os itens repetidos?
 
 🔍 EXEMPLOS DE ESTRUTURAS REAIS:
 - article.boxAN (cada article com classe "boxAN" é um anime)
-- .itemlistanime a (cada link dentro de .itemlistanime)
+- .itemlistanime a (cada link dentro de .itemlistanime - note que "a" não tem classe)
 - div.anime-item (cada div com classe "anime-item")
 - li.episode-card (cada li com classe "episode-card")
 
 📝 PARA CADA SELETOR:
 - animeList: Container que se repete (article.boxAN, .item-list, li.anime)
-- animeTitle: Tag com o título DENTRO do container (.title, h2.name, .anime-title)
+- animeTitle: Tag com o título DENTRO do container (.title, h2.name, h2, .anime-title)
 - animeCover: Tag img dentro do container (img, img.cover, .thumb img)
-- animeUrl: Link (se animeList já for <a>, deixe vazio ""; senão: "a", "a.link")
-- animeSynopsis: Descrição/sinopse se houver (.synopsis, .desc, .summary)
+- animeUrl: Link relativo a animeList:
+  * Se animeList JÁ for um <a>, deixe vazio ""
+  * Se há <a> SEM CLASSE dentro do container, use "a"
+  * Se há <a class="link">, use "a.link"
+  * NUNCA invente "a.link" se a tag <a> não tem classe!
+- animeSynopsis: Descrição/sinopse se houver (.synopsis, .desc, .summary, p)
 
 ⚠️ ERROS COMUNS A EVITAR:
 ❌ NÃO use ".anime-card" se não vir essa classe no HTML
+❌ NÃO use "a.link" se vir apenas <a> sem classe
 ❌ NÃO use ".item" genérico - seja específico
 ❌ NÃO invente estruturas - use o que está no HTML
 ✅ USE "article.boxAN" se você vê <article class="boxAN">
+✅ USE "a" (sem classe) se você vê <a> sem atributo class
 ✅ USE ".title" se você vê <div class="title">
-✅ USE "h2.name" se você vê <h2 class="name">
+✅ USE "h2" (sem classe) se você vê <h2> sem atributo class
 
 Formato de retorno:
 {
@@ -196,14 +205,15 @@ Formato de retorno:
   "domain": "exemplo.com",
   "selectors": {
     "animeList": "article.boxAN",
-    "animeTitle": ".title",
+    "animeTitle": "h2",
     "animeCover": "img.cover",
     "animeUrl": "a",
     "animeSynopsis": ".desc"
   }
 }
 
-🚨 LEMBRE-SE: Use SOMENTE classes/tags que você REALMENTE vê no HTML fornecido!
+🚨 CRÍTICO: Use SOMENTE classes/tags que você REALMENTE vê no HTML fornecido!
+🚨 Se um elemento não tem classe, use APENAS a tag (ex: "a", "h2", "img", "p")
 Retorne APENAS o JSON válido, sem markdown ou explicações.`
           },
           {
@@ -331,32 +341,50 @@ TAREFA: Extrair seletores CSS ESPECÍFICOS E PRECISOS para TÍTULO DO ANIME e LI
 🎯 REGRAS FUNDAMENTAIS:
 1. NUNCA invente seletores genéricos (ex: ".episode-item", ".ep-number")
 2. USE EXATAMENTE as classes, tags e IDs que você VÊ no HTML fornecido
-3. PRIORIZE seletores compostos (tag + classe) quando possível
-4. VERIFIQUE que o seletor realmente existe no HTML antes de retornar
+3. Para elementos SEM CLASSE, use APENAS a tag (ex: "a", "h1", "span", "li")
+4. NUNCA adicione classes que não existem (ex: se vê <a>, use "a", NÃO "a.link")
+5. PRIORIZE seletores compostos (tag + classe) quando a classe REALMENTE existe
+6. VERIFIQUE que o seletor existe no HTML antes de retornar
 
 📋 PROCESSO DE ANÁLISE:
-1. IDENTIFIQUE o título principal do anime (geralmente h1, h2 com classe específica)
+1. IDENTIFIQUE o título principal do anime (geralmente h1, h2 - pode ter ou não ter classe)
 2. IDENTIFIQUE o padrão que se repete para episódios
 3. OBSERVE a estrutura HTML exata: tags, classes, IDs
-4. CONSTRUA seletores usando classes/tags REAIS
+4. CONSTRUA seletores usando SOMENTE classes/tags REAIS
+5. Se um elemento NÃO tem classe, use apenas a tag
 
 🔍 PARA CADA SELETOR:
-- animePageTitle: Título principal (h1.title, h2.anime-name, .main-title h1)
-- episodeList: Container que se repete (.ep-item, li.episode, .episodeList li)
-- episodeNumber: Número do episódio (.ep-num, .number, span.episode-number)
-- episodeTitle: Nome do episódio (.ep-title, .episode-name, h3.title)
-- episodeUrl: Link do episódio (a, a.link, .watch-link)
+- animePageTitle: Título principal
+  * Se <h1 class="title">, use "h1.title"
+  * Se <h1> sem classe, use "h1"
+  * Se <h2 class="anime-name">, use "h2.anime-name"
+- episodeList: Container que se repete (.ep-item, li.episode, li sem classe = "li")
+- episodeNumber: Número do episódio (.ep-num, .number, span sem classe = "span")
+- episodeTitle: Nome do episódio (.ep-title, .episode-name, h3 sem classe = "h3")
+- episodeUrl: Link do episódio
+  * Se <a> SEM classe, use "a"
+  * Se <a class="link">, use "a.link"
+  * NUNCA invente "a.link" se não vê a classe!
+
+⚠️ ERROS COMUNS A EVITAR:
+❌ NÃO use "a.link" se vir apenas <a> sem classe
+❌ NÃO use ".episode-item" se não vir essa classe
+❌ NÃO invente estruturas - use o que está no HTML
+✅ USE "a" se você vê <a> sem atributo class
+✅ USE "h1" se você vê <h1> sem atributo class
+✅ USE "li.episode" se você vê <li class="episode">
 
 Formato esperado:
 {
-  "animePageTitle": "h1.anime-title",
-  "episodeList": ".episode-item",
-  "episodeNumber": ".ep-number",
-  "episodeTitle": ".ep-title",
-  "episodeUrl": "a.ep-link"
+  "animePageTitle": "h1",
+  "episodeList": "li.episode",
+  "episodeNumber": "span.number",
+  "episodeTitle": "h3",
+  "episodeUrl": "a"
 }
 
-🚨 LEMBRE-SE: Use SOMENTE classes/tags que você REALMENTE vê no HTML fornecido!
+🚨 CRÍTICO: Use SOMENTE classes/tags que você REALMENTE vê no HTML!
+🚨 Se um elemento não tem classe, use APENAS a tag!
 Retorne APENAS o JSON válido, sem markdown ou explicações.`
               },
               {
@@ -420,25 +448,34 @@ TAREFA: Determinar se a página tem player embutido ou link externo.
 
 🎯 REGRAS:
 1. USE EXATAMENTE as classes, tags e IDs que você VÊ no HTML
-2. NÃO invente seletores genéricos
-3. VERIFIQUE se iframe/video realmente existe
+2. Para elementos SEM CLASSE, use APENAS a tag
+3. NUNCA adicione classes que não existem
+4. VERIFIQUE se iframe/video realmente existe
 
 📋 ANÁLISE:
 - hasEmbeddedPlayer = true: Se há <iframe> ou <video> no HTML
 - hasEmbeddedPlayer = false: Se só há botões/links para outro site
 
 🔍 SELETORES:
-- videoSelector: Tag exata do player (iframe#player, iframe.video, video)
-- externalLinkSelector: Link externo se não houver player (a.watch, .link-button a)
+- videoSelector: Tag exata do player
+  * Se <iframe id="player">, use "iframe#player"
+  * Se <iframe class="video">, use "iframe.video"
+  * Se <iframe> sem classe/id, use "iframe"
+  * Se <video>, use "video"
+- externalLinkSelector: Link externo se não houver player
+  * Se <a> SEM classe, use "a"
+  * Se <a class="watch">, use "a.watch"
+  * NUNCA invente classes!
 
 Formato:
 {
   "hasEmbeddedPlayer": true,
-  "videoSelector": "iframe.player",
+  "videoSelector": "iframe",
   "externalLinkSelector": ""
 }
 
 🚨 Use APENAS tags/classes que REALMENTE existem no HTML!
+🚨 Se um elemento não tem classe/id, use apenas a tag!
 Retorne APENAS JSON, sem explicações.`
                     },
                     {
