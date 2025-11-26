@@ -47,6 +47,7 @@ jobs:
           echo "######## ENVIRONMENT ########"
           cat .env
           echo "#############################"
+          cp .env src/apps/desktop/.env
 
       # - name: Lint
       #   run: yarn lint
