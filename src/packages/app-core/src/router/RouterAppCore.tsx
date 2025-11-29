@@ -12,9 +12,9 @@ import {
     IndexManual,
     MyDrivers,
     NotFound,
-    Player,
-    Settings
+    Player
 } from "@anidock/app-core";
+import Settings from "../pages/Settings";
 import { Route, Routes } from "react-router-dom";
 
 const RouterAppCore = () => {
