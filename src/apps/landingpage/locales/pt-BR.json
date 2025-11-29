@@ -1,4 +1,8 @@
 {
+  "common": {
+    "backButton": "Voltar",
+    "lastUpdated": "Última atualização"
+  },
   "hero": {
     "badge": "v1.0 • Open Source",
     "title": "O indexador de animes",

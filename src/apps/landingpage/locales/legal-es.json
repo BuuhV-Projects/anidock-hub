@@ -1,0 +1,65 @@
+{
+  "common": {
+    "backButton": "Volver",
+    "lastUpdated": "Última actualización"
+  },
+  "terms": {
+    "title": "Términos de Uso",
+    "acceptance": {
+      "title": "1. Aceptación de los Términos",
+      "content": "Al descargar, instalar o utilizar AniDock, usted acepta estar sujeto a estos Términos de Uso. Si no está de acuerdo con estos términos, no utilice el software."
+    },
+    "description": {
+      "title": "2. Descripción del Servicio",
+      "content": "AniDock es un software de escritorio para Windows que permite a los usuarios indexar y organizar información sobre anime disponible públicamente en internet. El software almacena solo metadatos (títulos, sinopsis, portadas) localmente en la computadora del usuario.",
+      "note": "AniDock NO aloja, almacena, distribuye o transmite ningún contenido de video. El software solo organiza enlaces e información de sitios web de terceros que el usuario elige indexar."
+    },
+    "responsibilities": {
+      "title": "3. Responsabilidades del Usuario",
+      "intro": "Al utilizar AniDock, usted acepta:",
+      "item1": "Utilizar el software solo para fines legales y de acuerdo con todas las leyes aplicables",
+      "item2": "No utilizar el software para violar derechos de autor o propiedad intelectual de terceros",
+      "item3": "Respetar los términos de uso de los sitios web que elija indexar",
+      "item4": "Asumir total responsabilidad por el contenido que elija indexar y acceder",
+      "item5": "No utilizar el software para distribuir, compartir o facilitar el acceso a contenido pirata"
+    },
+    "liability": {
+      "title": "4. Limitación de Responsabilidad",
+      "intro": "AniDock se proporciona \"tal cual\", sin garantías de ningún tipo. No somos responsables de:",
+      "item1": "Contenido accedido a través de sitios web de terceros",
+      "item2": "Precisión, legalidad o disponibilidad del contenido indexado",
+      "item3": "Daños directos o indirectos resultantes del uso del software",
+      "item4": "Violaciones de derechos de autor cometidas por usuarios",
+      "item5": "Interrupciones o errores en el funcionamiento del software"
+    },
+    "ip": {
+      "title": "5. Propiedad Intelectual",
+      "content": "AniDock y todo su código, diseño y documentación son propiedad de sus desarrolladores y están protegidos por leyes de derechos de autor. No puede reproducir, modificar o distribuir el software sin autorización expresa."
+    },
+    "modifications": {
+      "title": "6. Modificaciones de los Términos",
+      "content": "Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios entrarán en vigor inmediatamente después de la publicación. El uso continuado del software después de las modificaciones constituye aceptación de los nuevos términos."
+    },
+    "termination": {
+      "title": "7. Terminación",
+      "content": "Podemos terminar o suspender su acceso al software inmediatamente, sin previo aviso, por cualquier motivo, incluida la violación de estos Términos de Uso."
+    },
+    "law": {
+      "title": "8. Ley Aplicable",
+      "content": "Estos términos se rigen por las leyes brasileñas. Cualquier disputa se resolverá en los tribunales brasileños competentes."
+    },
+    "contact": {
+      "title": "9. Contacto",
+      "content": "Para preguntas sobre estos términos, contáctenos a través de nuestro sitio web oficial."
+    }
+  },
+  "privacy": {
+    "title": "Política de Privacidad"
+  },
+  "lgpd": {
+    "title": "LGPD - Ley General de Protección de Datos"
+  },
+  "copyright": {
+    "title": "Política de Derechos de Autor"
+  }
+}
