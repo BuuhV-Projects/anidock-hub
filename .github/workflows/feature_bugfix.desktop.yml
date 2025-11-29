@@ -1,0 +1,101 @@
+name: Deploy Desktop Prod
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - bugfix/**
+      - hotfix/**
+      - feature/**
+
+jobs:
+  build:
+    environment:
+      name: production
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+          cache-dependency-path: |
+            yarn.lock
+            src/apps/*/yarn.lock
+            src/packages/*/yarn.lock
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Configure environment
+        run: |
+          cat <<EOF > .env
+          VITE_SUPABASE_PROJECT_ID=${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+          VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_URL=${{ vars.VITE_SUPABASE_URL }}
+          ELECTRON_SANDBOX=${{ vars.ELECTRON_SANDBOX }}
+          ELECTRON_AUTO_HIDE_MENU_BAR=${{ vars.ELECTRON_AUTO_HIDE_MENU_BAR }}
+          EOF
+          echo "######## ENVIRONMENT ########"
+          cat .env
+          echo "#############################"
+          cp .env src/apps/desktop/.env
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Prepare apt cache directory
+        run: mkdir -p ~/.cache/apt/archives/partial
+
+      - name: Cache Windows build apt downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/apt
+          key: ${{ runner.os }}-apt-win-build-${{ hashFiles('.github/workflows/feature_bugfix.desktop.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-apt-win-build-
+
+      - name: Install Windows build deps
+        env:
+          APT_CACHE_DIR: $HOME/.cache/apt
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update -o Dir::Cache::archives=$APT_CACHE_DIR/archives
+          sudo apt-get install --no-install-recommends -y \
+            -o Dir::Cache::archives=$APT_CACHE_DIR/archives \
+            wine \
+            wine32 \
+            wine64 \
+            mono-complete \
+            icoutils \
+            xvfb
+
+      - name: Cache Electron downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+          key: ${{ runner.os }}-electron-cache-${{ hashFiles('src/apps/desktop/package.json', 'src/apps/desktop/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-electron-cache-
+
+      - name: Build desktop assets
+        working-directory: src/apps/desktop
+        run: yarn build
+
+      - name: Package desktop for Windows
+        working-directory: src/apps/desktop
+        run: yarn build:win
