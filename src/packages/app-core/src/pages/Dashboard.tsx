@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Skeleton } from '@anidock/shared-ui';
-import { Cpu, Plus, Database, Zap } from 'lucide-react';
+import { Cpu, Plus, Database, Zap, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { getHistory, getLocalDrivers } from '../lib/localStorage';
 import { db } from '../lib/indexedDB';
@@ -124,6 +124,14 @@ const Dashboard = () => {
               >
                 <Zap className="h-4 w-4 mr-2" />
                 Explorar Catálogo
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => navigate('/backup')}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Backup e Restauração
               </Button>
             </div>
           </Card>

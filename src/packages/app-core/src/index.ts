@@ -10,6 +10,7 @@ export { default as EditDriver } from './pages/EditDriver';
 export { default as MyDrivers } from './pages/MyDrivers';
 export { default as IndexManual } from './pages/IndexManual';
 export { default as EditIndexedAnime } from './pages/EditIndexedAnime';
+export { default as Backup } from './pages/Backup';
 export { default as NotFound } from './pages/NotFound';
 export { default as TermsOfService } from './pages/TermsOfService';
 export { default as PrivacyPolicy } from './pages/PrivacyPolicy';
