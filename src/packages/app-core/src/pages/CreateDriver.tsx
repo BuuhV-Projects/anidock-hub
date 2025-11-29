@@ -70,7 +70,6 @@ const CreateDriver = () => {
     }
 
     setIsGenerating(true);
-    setGeneratedDriver(null);
 
     try {
       const config: AIConfig = {

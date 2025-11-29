@@ -12,6 +12,11 @@ interface AnimeData {
   coverUrl?: string;
   sourceUrl: string;
   episodes: LocalEpisode[];
+  createdAt: string;
+  updatedAt: string;
+  driverId: string;
+  alternativeTitles?: string[];
+  metadata?: Record<string, any>;
 }
 
 const EditIndexedAnime = () => {
@@ -21,9 +26,9 @@ const EditIndexedAnime = () => {
   
   const [driver, setDriver] = useState<Driver | null>(null);
   const [indexes, setIndexes] = useState<AnimeIndex[]>([]);
-  const [animes, setAnimes] = useState<AnimeData[]>([]);
+  const [animes, setAnimes] = useState<LocalAnime[]>([]);
   const [selectedAnimeId, setSelectedAnimeId] = useState<string>(animeId || '');
-  const [selectedAnime, setSelectedAnime] = useState<AnimeData | null>(null);
+  const [selectedAnime, setSelectedAnime] = useState<LocalAnime | null>(null);
   
   const [animeForm, setAnimeForm] = useState({
     title: '',
@@ -75,7 +80,7 @@ const EditIndexedAnime = () => {
       setIndexes(indexesData);
 
       // Collect all animes from all indexes
-      const allAnimes: AnimeData[] = [];
+      const allAnimes: LocalAnime[] = [];
       indexesData.forEach(index => {
         allAnimes.push(...index.animes);
       });
@@ -118,9 +123,10 @@ const EditIndexedAnime = () => {
     try {
       // Update anime data
       const updatedAnime: LocalAnime = {
-        ...selectedAnime,
+        id: selectedAnime.id,
         driverId: driver.id,
         title: animeForm.title,
+        sourceUrl: selectedAnime.sourceUrl,
         synopsis: animeForm.synopsis || undefined,
         coverUrl: animeForm.coverUrl || undefined,
         episodes: episodes,
