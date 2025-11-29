@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { Button, Card, Input, Label, Alert, AlertDescription } from '@anidock/shared-ui';
 import { Settings as SettingsIcon, Eye, EyeOff, Trash2, Save, ArrowLeft, Key } from 'lucide-react';
@@ -95,7 +96,7 @@ const Settings = () => {
         <Alert>
           <Key className="h-4 w-4" />
           <AlertDescription>
-            Suas chaves de API são armazenadas localmente no navegador e nunca são enviadas para servidores externos.
+            Suas chaves de API são armazenadas localmente no computador e nunca são enviadas para servidores externos.
             São usadas apenas para gerar drivers automaticamente com IA.
           </AlertDescription>
         </Alert>
