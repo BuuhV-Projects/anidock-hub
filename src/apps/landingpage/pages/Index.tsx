@@ -1,9 +1,12 @@
 import { Button, Card } from "@anidock/shared-ui";
 import { Cpu, Database, Download, HardDrive, Lock, MonitorPlay, Sparkles, Users, Zap, Github, Code } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "../components/LanguageSelector";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleDownload = () => {
     window.open('https://github.com/BuuhV-Projects/anidock-hub/releases', '_blank');
@@ -21,6 +24,11 @@ const Index = () => {
         {/* Animated grid */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f12_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f12_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
         
+        {/* Language Selector */}
+        <div className="absolute top-4 right-4 z-10">
+          <LanguageSelector />
+        </div>
+
         <div className="container relative mx-auto px-4 py-20">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
@@ -29,21 +37,21 @@ const Index = () => {
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card/50 px-4 py-2 backdrop-blur-sm">
                 <Code className="h-4 w-4 text-primary animate-pulse" />
                 <span className="text-sm font-medium text-muted-foreground">
-                  v1.0 • Open Source
+                  {t('hero.badge')}
                 </span>
               </div>
 
               {/* Main Heading */}
               <div>
                 <h1 className="font-display text-5xl md:text-7xl font-bold tracking-tight mb-4">
-                  O indexador de animes
+                  {t('hero.title')}
                   <span className="text-gradient-primary animate-glow block mt-2">
-                    definitivo
+                    {t('hero.titleHighlight')}
                   </span>
                 </h1>
                 
                 <p className="text-xl text-muted-foreground max-w-xl">
-                  Conecte qualquer site de anime. Nossa IA aprende a estrutura e indexa tudo localmente no seu PC Windows.
+                  {t('hero.subtitle')}
                 </p>
               </div>
 
@@ -55,7 +63,7 @@ const Index = () => {
                   className="bg-primary text-primary-foreground hover:bg-primary/90 glow-cyan font-semibold px-8 transition-all duration-300 hover:scale-105 gap-2 group"
                 >
                   <Download className="h-5 w-5 group-hover:animate-bounce" />
-                  Baixar para Windows
+                  {t('hero.downloadButton')}
                 </Button>
                 <Button 
                   size="lg" 
@@ -64,7 +72,7 @@ const Index = () => {
                   className="border-primary/20 hover:border-primary/50 hover:bg-primary/10 font-semibold px-8 transition-all duration-300 gap-2 group"
                 >
                   <Github className="h-5 w-5 group-hover:rotate-12 transition-transform" />
-                  Ver no GitHub
+                  {t('hero.githubButton')}
                 </Button>
               </div>
 
@@ -72,25 +80,25 @@ const Index = () => {
               <div className="flex flex-wrap gap-3">
                 <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 border border-border/50">
                   <Code className="h-4 w-4 text-primary" />
-                  <span className="text-sm">Open Source</span>
+                  <span className="text-sm">{t('hero.openSource')}</span>
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 border border-border/50">
                   <Lock className="h-4 w-4 text-primary" />
-                  <span className="text-sm">100% Local</span>
+                  <span className="text-sm">{t('hero.local')}</span>
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 border border-border/50">
                   <Sparkles className="h-4 w-4 text-secondary" />
-                  <span className="text-sm">IA Integrada</span>
+                  <span className="text-sm">{t('hero.aiIntegrated')}</span>
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 border border-border/50">
                   <Users className="h-4 w-4 text-accent" />
-                  <span className="text-sm">Drivers compartilháveis</span>
+                  <span className="text-sm">{t('hero.sharedDrivers')}</span>
                 </div>
               </div>
 
               {/* Info */}
               <p className="text-sm text-muted-foreground">
-                Windows 10/11 • Gratuito • Código Aberto
+                {t('hero.systemRequirements')}
               </p>
             </div>
 
@@ -100,7 +108,7 @@ const Index = () => {
                 <div className="w-full h-auto bg-muted/30 flex items-center justify-center p-12">
                   <div className="text-center">
                     <Cpu className="h-24 w-24 text-primary mx-auto mb-4" />
-                    <p className="text-muted-foreground">Interface AniDock</p>
+                    <p className="text-muted-foreground">{t('hero.interfacePreview')}</p>
                   </div>
                 </div>
               </div>
@@ -119,12 +127,10 @@ const Index = () => {
         <div className="container relative mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-6">
-              O que é o AniDock?
+              {t('about.title')}
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              AniDock é um software desktop <strong>open source</strong> que revoluciona como você organiza e assiste animes. 
-              Cole o link de qualquer site, nossa IA analisa a estrutura, cria um "driver" automaticamente 
-              e indexa todo o catálogo localmente no seu computador. Totalmente gratuito e com código aberto.
+              {t('about.description')}
             </p>
           </div>
 
@@ -134,7 +140,7 @@ const Index = () => {
               <div className="w-full h-64 bg-muted/30 flex items-center justify-center">
                 <div className="text-center">
                   <Database className="h-16 w-16 text-primary mx-auto mb-2" />
-                  <p className="text-muted-foreground text-sm">Dashboard Preview</p>
+                  <p className="text-muted-foreground text-sm">{t('about.dashboardPreview')}</p>
                 </div>
               </div>
             </Card>
@@ -147,10 +153,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4">
-              Muitos recursos incríveis
+              {t('features.title')}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Tudo que você precisa para organizar e assistir animes do seu jeito
+              {t('features.subtitle')}
             </p>
           </div>
 
@@ -160,9 +166,9 @@ const Index = () => {
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Code className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-display font-semibold text-lg mb-2">Open Source</h3>
+              <h3 className="font-display font-semibold text-lg mb-2">{t('features.openSource.title')}</h3>
               <p className="text-sm text-muted-foreground">
-                Código 100% aberto no GitHub. Transparência total, audite e contribua com o projeto.
+                {t('features.openSource.description')}
               </p>
             </Card>
 
@@ -170,9 +176,9 @@ const Index = () => {
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Sparkles className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-display font-semibold text-lg mb-2">IA que Aprende</h3>
+              <h3 className="font-display font-semibold text-lg mb-2">{t('features.aiLearning.title')}</h3>
               <p className="text-sm text-muted-foreground">
-                Cole qualquer URL de site de anime. Nossa IA analisa a estrutura HTML e cria drivers automaticamente.
+                {t('features.aiLearning.description')}
               </p>
             </Card>
 
@@ -180,9 +186,9 @@ const Index = () => {
               <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Lock className="h-6 w-6 text-secondary" />
               </div>
-              <h3 className="font-display font-semibold text-lg mb-2">100% Privado</h3>
+              <h3 className="font-display font-semibold text-lg mb-2">{t('features.privacy.title')}</h3>
               <p className="text-sm text-muted-foreground">
-                Tudo roda localmente. Zero telemetria, zero tracking. Seus dados nunca saem do seu PC.
+                {t('features.privacy.description')}
               </p>
             </Card>
 
@@ -190,9 +196,9 @@ const Index = () => {
               <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Users className="h-6 w-6 text-accent" />
               </div>
-              <h3 className="font-display font-semibold text-lg mb-2">Compartilhe Drivers</h3>
+              <h3 className="font-display font-semibold text-lg mb-2">{t('features.shareDrivers.title')}</h3>
               <p className="text-sm text-muted-foreground">
-                Exporte e compartilhe drivers com amigos. Importe drivers criados pela comunidade.
+                {t('features.shareDrivers.description')}
               </p>
             </Card>
 
@@ -200,9 +206,9 @@ const Index = () => {
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Database className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-display font-semibold text-lg mb-2">Indexação Inteligente</h3>
+              <h3 className="font-display font-semibold text-lg mb-2">{t('features.smartIndexing.title')}</h3>
               <p className="text-sm text-muted-foreground">
-                Catálogos completos indexados localmente. Pesquisa rápida e organização automática.
+                {t('features.smartIndexing.description')}
               </p>
             </Card>
 
@@ -210,9 +216,9 @@ const Index = () => {
               <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <MonitorPlay className="h-6 w-6 text-secondary" />
               </div>
-              <h3 className="font-display font-semibold text-lg mb-2">Player Integrado</h3>
+              <h3 className="font-display font-semibold text-lg mb-2">{t('features.integratedPlayer.title')}</h3>
               <p className="text-sm text-muted-foreground">
-                Assista diretamente no aplicativo ou abra links externos. Histórico de visualização completo.
+                {t('features.integratedPlayer.description')}
               </p>
             </Card>
 
@@ -220,9 +226,9 @@ const Index = () => {
               <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Zap className="h-6 w-6 text-accent" />
               </div>
-              <h3 className="font-display font-semibold text-lg mb-2">Leve e Rápido</h3>
+              <h3 className="font-display font-semibold text-lg mb-2">{t('features.lightFast.title')}</h3>
               <p className="text-sm text-muted-foreground">
-                Instalação rápida. Inicia em segundos. Interface fluida e responsiva.
+                {t('features.lightFast.description')}
               </p>
             </Card>
           </div>
@@ -233,12 +239,12 @@ const Index = () => {
               <div className="w-full h-64 bg-muted/30 flex items-center justify-center">
                 <div className="text-center">
                   <Sparkles className="h-16 w-16 text-secondary mx-auto mb-2" />
-                  <p className="text-muted-foreground text-sm">AI Driver Creation</p>
+                  <p className="text-muted-foreground text-sm">{t('features.aiDriverCreation')}</p>
                 </div>
               </div>
             </Card>
             <p className="text-center text-sm text-muted-foreground mt-4">
-              Cole o link de qualquer site e deixe a IA fazer o resto
+              {t('features.aiDriverHint')}
             </p>
           </div>
         </div>
@@ -249,10 +255,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4">
-              Como funciona
+              {t('howItWorks.title')}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Três passos simples para começar
+              {t('howItWorks.subtitle')}
             </p>
           </div>
 
@@ -261,10 +267,10 @@ const Index = () => {
               <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-6">
                 <Download className="h-8 w-8 text-primary" />
               </div>
-              <div className="text-4xl font-display font-bold text-primary mb-4">01</div>
-              <h3 className="font-display font-semibold text-xl mb-3">Baixe e Instale</h3>
+              <div className="text-4xl font-display font-bold text-primary mb-4">{t('howItWorks.step1.number')}</div>
+              <h3 className="font-display font-semibold text-xl mb-3">{t('howItWorks.step1.title')}</h3>
               <p className="text-muted-foreground">
-                Download rápido e instalação em segundos. Sem configuração complexa ou cadastro necessário.
+                {t('howItWorks.step1.description')}
               </p>
             </div>
 
@@ -272,10 +278,10 @@ const Index = () => {
               <div className="w-16 h-16 rounded-2xl bg-secondary/10 border border-secondary/20 flex items-center justify-center mx-auto mb-6">
                 <Sparkles className="h-8 w-8 text-secondary" />
               </div>
-              <div className="text-4xl font-display font-bold text-secondary mb-4">02</div>
-              <h3 className="font-display font-semibold text-xl mb-3">Cole o Link</h3>
+              <div className="text-4xl font-display font-bold text-secondary mb-4">{t('howItWorks.step2.number')}</div>
+              <h3 className="font-display font-semibold text-xl mb-3">{t('howItWorks.step2.title')}</h3>
               <p className="text-muted-foreground">
-                Cole a URL de qualquer site de anime. Nossa IA analisa e cria um driver automaticamente.
+                {t('howItWorks.step2.description')}
               </p>
             </div>
 
@@ -283,10 +289,10 @@ const Index = () => {
               <div className="w-16 h-16 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-6">
                 <MonitorPlay className="h-8 w-8 text-accent" />
               </div>
-              <div className="text-4xl font-display font-bold text-accent mb-4">03</div>
-              <h3 className="font-display font-semibold text-xl mb-3">Assista</h3>
+              <div className="text-4xl font-display font-bold text-accent mb-4">{t('howItWorks.step3.number')}</div>
+              <h3 className="font-display font-semibold text-xl mb-3">{t('howItWorks.step3.title')}</h3>
               <p className="text-muted-foreground">
-                Navegue pelo catálogo indexado e assista. Tudo organizado e salvo localmente.
+                {t('howItWorks.step3.description')}
               </p>
             </div>
           </div>
@@ -302,16 +308,15 @@ const Index = () => {
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card/50 px-4 py-2 backdrop-blur-sm mb-8">
               <Zap className="h-4 w-4 text-primary animate-pulse" />
-              <span className="text-sm font-medium">Baixe agora</span>
+              <span className="text-sm font-medium">{t('cta.badge')}</span>
             </div>
             
             <h2 className="text-4xl md:text-6xl font-display font-bold mb-6">
-              Baixe o AniDock
+              {t('cta.title')}
             </h2>
             
             <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
-              Software desktop gratuito para Windows. 
-              Organize seus animes do seu jeito, no seu PC.
+              {t('cta.subtitle')}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
@@ -321,7 +326,7 @@ const Index = () => {
                 className="bg-primary text-primary-foreground hover:bg-primary/90 glow-cyan font-semibold px-10 text-lg group"
               >
                 <Download className="h-6 w-6 mr-2 group-hover:animate-bounce" />
-                Download para Windows
+                {t('cta.downloadButton')}
               </Button>
               <Button 
                 size="lg"
@@ -330,22 +335,22 @@ const Index = () => {
                 className="border-primary/20 hover:border-primary/50 hover:bg-primary/10 font-semibold px-10 text-lg group"
               >
                 <Github className="h-6 w-6 mr-2 group-hover:rotate-12 transition-transform" />
-                GitHub
+                {t('cta.githubButton')}
               </Button>
             </div>
 
             <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Code className="h-4 w-4" />
-                <span>Open Source</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4" />
-                <span>Gratuito</span>
+                <span>{t('cta.openSource')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <HardDrive className="h-4 w-4" />
-                <span>100% Local</span>
+                <span>{t('cta.free')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Lock className="h-4 w-4" />
+                <span>{t('cta.noAccount')}</span>
               </div>
             </div>
           </div>
@@ -353,49 +358,88 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 bg-card/30 backdrop-blur-sm py-12">
+      <footer className="bg-muted/30 border-t border-border/50 py-12">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-8 mb-8 max-w-2xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
+            {/* Brand */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Cpu className="h-6 w-6 text-primary" />
                 <span className="font-display font-bold text-xl">AniDock</span>
               </div>
-              <p className="text-sm text-muted-foreground mb-3">
-                Indexador inteligente de animes. 100% local, privado e open source.
+              <p className="text-sm text-muted-foreground mb-4">
+                {t('footer.description')}
               </p>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => window.open('https://github.com/BuuhV-Projects/anidock-hub', '_blank')}
-                className="gap-2"
-              >
-                <Github className="h-4 w-4" />
-                <span>GitHub</span>
-              </Button>
             </div>
-            
+
+            {/* Legal */}
             <div>
-              <h4 className="font-display font-semibold mb-4">Legal</h4>
-              <div className="space-y-2 text-sm">
-                <button onClick={() => navigate('/termos')} className="block text-muted-foreground hover:text-primary transition-colors">
-                  Termos de Uso
+              <h3 className="font-semibold mb-4">{t('footer.legal')}</h3>
+              <div className="space-y-2">
+                <button 
+                  onClick={() => navigate('/termos')}
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t('footer.terms')}
                 </button>
-                <button onClick={() => navigate('/privacidade')} className="block text-muted-foreground hover:text-primary transition-colors">
-                  Privacidade
+                <button 
+                  onClick={() => navigate('/privacidade')}
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t('footer.privacy')}
                 </button>
-                <button onClick={() => navigate('/lgpd')} className="block text-muted-foreground hover:text-primary transition-colors">
-                  LGPD
+                <button 
+                  onClick={() => navigate('/lgpd')}
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t('footer.lgpd')}
                 </button>
-                <button onClick={() => navigate('/direitos-autorais')} className="block text-muted-foreground hover:text-primary transition-colors">
-                  Direitos Autorais
+                <button 
+                  onClick={() => navigate('/direitos-autorais')}
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t('footer.copyright')}
                 </button>
+              </div>
+            </div>
+
+            {/* Community */}
+            <div>
+              <h3 className="font-semibold mb-4">{t('footer.community')}</h3>
+              <div className="space-y-2">
+                <a 
+                  href="https://github.com/BuuhV-Projects/anidock-hub" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t('footer.github')}
+                </a>
+                <a 
+                  href="https://github.com/BuuhV-Projects/anidock-hub/issues" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t('footer.issues')}
+                </a>
+                <a 
+                  href="https://github.com/BuuhV-Projects/anidock-hub/discussions" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {t('footer.discussions')}
+                </a>
               </div>
             </div>
           </div>
 
-          <div className="pt-8 border-t border-border/50 text-center text-sm text-muted-foreground">
-            <p>© 2024 AniDock. Todos os direitos reservados.</p>
+          {/* Bottom */}
+          <div className="border-t border-border/50 pt-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} AniDock. {t('footer.rightsReserved')}
+            </p>
           </div>
         </div>
       </footer>

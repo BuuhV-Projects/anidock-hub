@@ -1,0 +1,97 @@
+{
+  "hero": {
+    "badge": "v1.0 • Código Abierto",
+    "title": "El indexador de anime",
+    "titleHighlight": "definitivo",
+    "subtitle": "Conecta cualquier sitio de anime. Nuestra IA aprende la estructura e indexa todo localmente en tu PC Windows.",
+    "downloadButton": "Descargar para Windows",
+    "githubButton": "Ver en GitHub",
+    "openSource": "Código Abierto",
+    "local": "100% Local",
+    "aiIntegrated": "IA Integrada",
+    "sharedDrivers": "Drivers compartibles",
+    "systemRequirements": "Windows 10/11 • Gratis • Código Abierto",
+    "interfacePreview": "Interfaz AniDock"
+  },
+  "about": {
+    "title": "¿Qué es AniDock?",
+    "description": "AniDock es un software de escritorio de código abierto que revoluciona cómo organizas y ves anime. Pega el enlace de cualquier sitio, nuestra IA analiza la estructura, crea un \"driver\" automáticamente e indexa todo el catálogo localmente en tu computadora. Totalmente gratis y de código abierto.",
+    "dashboardPreview": "Vista Previa del Panel"
+  },
+  "features": {
+    "title": "Características increíbles",
+    "subtitle": "Todo lo que necesitas para organizar y ver anime a tu manera",
+    "openSource": {
+      "title": "Código Abierto",
+      "description": "Código 100% abierto en GitHub. Transparencia total, audita y contribuye al proyecto."
+    },
+    "aiLearning": {
+      "title": "IA que Aprende",
+      "description": "Pega cualquier URL de sitio de anime. Nuestra IA analiza la estructura HTML y crea drivers automáticamente."
+    },
+    "privacy": {
+      "title": "100% Privado",
+      "description": "Todo funciona localmente. Cero telemetría, cero rastreo. Tus datos nunca salen de tu PC."
+    },
+    "shareDrivers": {
+      "title": "Comparte Drivers",
+      "description": "Exporta y comparte drivers con amigos. Importa drivers creados por la comunidad."
+    },
+    "smartIndexing": {
+      "title": "Indexación Inteligente",
+      "description": "Catálogos completos indexados localmente. Búsqueda rápida y organización automática."
+    },
+    "integratedPlayer": {
+      "title": "Reproductor Integrado",
+      "description": "Mira directamente en la aplicación o abre enlaces externos. Historial de visualización completo."
+    },
+    "lightFast": {
+      "title": "Ligero y Rápido",
+      "description": "Instalación rápida. Inicia en segundos. Interfaz fluida y responsiva."
+    },
+    "aiDriverCreation": "Creación de Driver con IA",
+    "aiDriverHint": "Pega el enlace de cualquier sitio y deja que la IA haga el resto"
+  },
+  "howItWorks": {
+    "title": "Cómo funciona",
+    "subtitle": "Tres pasos simples para comenzar",
+    "step1": {
+      "number": "01",
+      "title": "Descarga e Instala",
+      "description": "Descarga rápida e instalación en segundos. Sin configuración compleja o registro necesario."
+    },
+    "step2": {
+      "number": "02",
+      "title": "Pega el Enlace",
+      "description": "Pega la URL de cualquier sitio de anime. Nuestra IA analiza y crea un driver automáticamente."
+    },
+    "step3": {
+      "number": "03",
+      "title": "Mira",
+      "description": "Navega por el catálogo indexado y mira. Todo organizado y guardado localmente."
+    }
+  },
+  "cta": {
+    "badge": "Descarga ahora",
+    "title": "Descarga AniDock",
+    "subtitle": "Software de escritorio gratuito para Windows. Organiza tu anime a tu manera, en tu PC.",
+    "downloadButton": "Descargar para Windows",
+    "githubButton": "GitHub",
+    "openSource": "Código Abierto",
+    "free": "Gratis",
+    "noAccount": "Sin Registro"
+  },
+  "footer": {
+    "description": "El indexador de anime de código abierto que funciona 100% localmente en tu computadora.",
+    "legal": "Legal",
+    "terms": "Términos de Uso",
+    "privacy": "Privacidad",
+    "lgpd": "LGPD",
+    "copyright": "Derechos de Autor",
+    "community": "Comunidad",
+    "github": "GitHub",
+    "issues": "Issues",
+    "discussions": "Discussions",
+    "rightsReserved": "Todos los derechos reservados."
+  }
+}
