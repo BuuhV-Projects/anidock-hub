@@ -4,8 +4,10 @@ import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { db, Driver } from '../lib/indexedDB';
+import { useTranslation } from 'react-i18next';
 
 const ImportDriver = () => {
+  const { t } = useTranslation();
   const [driverJson, setDriverJson] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -25,7 +27,7 @@ const ImportDriver = () => {
 
   const handleImport = async () => {
     if (!driverJson.trim()) {
-      toast.error('Cole o JSON do driver primeiro');
+      toast.error(t('importDriver.pasteFirst'));
       return;
     }
 
@@ -35,7 +37,7 @@ const ImportDriver = () => {
       
       // Validate driver structure
       if (!driver.id || !driver.name || !driver.config) {
-        throw new Error('Driver inválido');
+        throw new Error(t('importDriver.invalidDriver'));
       }
 
       // Initialize IndexedDB
@@ -44,10 +46,10 @@ const ImportDriver = () => {
       // Save driver
       await db.saveDriver(driver);
       
-      toast.success(`Driver "${driver.name}" importado com sucesso!`);
+      toast.success(t('importDriver.importSuccess', { name: driver.name }));
       navigate('/browse');
     } catch (error) {
-      toast.error('Erro ao importar driver. Verifique o formato JSON.');
+      toast.error(t('importDriver.importError'));
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -86,7 +88,7 @@ const ImportDriver = () => {
     a.download = 'example-driver.json';
     a.click();
     URL.revokeObjectURL(url);
-    toast.success('Exemplo baixado!');
+    toast.success(t('importDriver.exampleDownloaded'));
   };
 
   return (
@@ -99,7 +101,7 @@ const ImportDriver = () => {
             </Button>
             <Cpu className="h-8 w-8 text-primary animate-pulse-glow" />
             <h1 className="font-display text-2xl font-bold text-gradient-primary">
-              Importar Driver
+              {t('importDriver.title')}
             </h1>
           </div>
         </div>
@@ -108,11 +110,10 @@ const ImportDriver = () => {
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8 text-center">
           <h2 className="text-3xl font-display font-bold mb-3">
-            Importe um Driver Local
+            {t('importDriver.subtitle')}
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Drivers são arquivos JSON que definem como extrair dados de sites de anime.
-            Importe drivers compartilhados pela comunidade.
+            {t('importDriver.description')}
           </p>
         </div>
 
@@ -123,10 +124,10 @@ const ImportDriver = () => {
                 <Upload className="h-8 w-8 text-primary" />
               </div>
               <h3 className="font-display font-bold text-lg mb-2">
-                Upload de Arquivo
+                {t('importDriver.uploadFile')}
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Selecione um arquivo .json do seu dispositivo
+                {t('importDriver.uploadDescription')}
               </p>
               <input
                 ref={fileInputRef}
@@ -141,7 +142,7 @@ const ImportDriver = () => {
                 className="border-primary/50 hover:bg-primary/10 w-full"
               >
                 <FileCode className="h-4 w-4 mr-2" />
-                Escolher Arquivo
+                {t('importDriver.chooseFile')}
               </Button>
             </div>
           </Card>
@@ -152,17 +153,17 @@ const ImportDriver = () => {
                 <FileCode className="h-8 w-8 text-primary" />
               </div>
               <h3 className="font-display font-bold text-lg mb-2">
-                Driver de Exemplo
+                {t('importDriver.exampleDriver')}
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Baixe um driver de exemplo para ver a estrutura
+                {t('importDriver.exampleDescription')}
               </p>
               <Button
                 onClick={downloadExample}
                 variant="outline"
                 className="border-primary/50 hover:bg-primary/10 w-full"
               >
-                Baixar Exemplo
+                {t('importDriver.downloadExample')}
               </Button>
             </div>
           </Card>
@@ -170,13 +171,13 @@ const ImportDriver = () => {
 
         <Card className="p-6">
           <Label htmlFor="driverJson" className="text-lg mb-4 block">
-            Cole o JSON do Driver
+            {t('importDriver.pasteJson')}
           </Label>
           <Textarea
             id="driverJson"
             value={driverJson}
             onChange={(e) => setDriverJson(e.target.value)}
-            placeholder='{\n  "name": "Site Exemplo",\n  "domain": "exemplo.com",\n  ...\n}'
+            placeholder={t('importDriver.placeholder')}
             className="font-mono text-sm h-64 mb-4"
           />
 
@@ -189,12 +190,12 @@ const ImportDriver = () => {
             {isLoading ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                Importando...
+                {t('importDriver.importing')}
               </>
             ) : (
               <>
                 <Upload className="h-5 w-5" />
-                Importar Driver
+                {t('importDriver.importButton')}
               </>
             )}
           </Button>

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { AnimeIndex, db, Driver, LocalAnime } from '../lib/indexedDB';
+import { useTranslation } from 'react-i18next';
 
 interface AnimeForm {
   id: string;
@@ -22,6 +23,7 @@ interface EpisodeForm {
 }
 
 const IndexManual = () => {
+  const { t } = useTranslation();
   const { driverId } = useParams();
   const [driver, setDriver] = useState<Driver | null>(null);
   const [animes, setAnimes] = useState<AnimeForm[]>([{
@@ -48,7 +50,7 @@ const IndexManual = () => {
 
       const driverData = await db.getDriver(driverId!);
       if (!driverData) {
-        toast.error('Driver não encontrado');
+        toast.error(t('indexManual.notFound'));
         navigate('/drivers');
         return;
       }
@@ -56,12 +58,12 @@ const IndexManual = () => {
       setDriver(driverData);
     } catch (error: any) {
       console.error('Error fetching driver:', error);
-      toast.error('Erro ao carregar driver');
+      toast.error(t('indexManual.loadError'));
       navigate('/drivers');
     } finally {
       setIsLoading(false);
     }
-  }, [driverId, navigate]);
+  }, [driverId, navigate, t]);
 
   const addAnime = () => {
     setAnimes([...animes, {
@@ -108,7 +110,7 @@ const IndexManual = () => {
     // Validate
     const validAnimes = animes.filter(a => a.title.trim() && a.sourceUrl.trim());
     if (validAnimes.length === 0) {
-      toast.error('Adicione pelo menos um anime válido');
+      toast.error(t('indexManual.addOneAnime'));
       return;
     }
 
@@ -149,13 +151,13 @@ const IndexManual = () => {
 
       await db.saveIndex(newIndex);
 
-      toast.success(`Indexação manual salva com ${localAnimes.length} animes!`);
+      toast.success(t('indexManual.saveSuccess', { count: localAnimes.length }));
       setTimeout(() => {
         navigate('/drivers');
       }, 1500);
     } catch (error: any) {
       console.error('Error saving manual index:', error);
-      toast.error('Erro ao salvar indexação');
+      toast.error(t('indexManual.saveError'));
     } finally {
       setIsSaving(false);
     }
@@ -180,18 +182,18 @@ const IndexManual = () => {
           <div className="flex items-center justify-between">
             <Button variant="ghost" onClick={() => navigate('/drivers')} className="gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Voltar
+              {t('indexManual.back')}
             </Button>
             <Button onClick={handleSave} disabled={isSaving} className="gap-2">
               {isSaving ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Salvando...
+                  {t('indexManual.saving')}
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4" />
-                  Salvar Indexação
+                  {t('indexManual.save')}
                 </>
               )}
             </Button>
@@ -200,23 +202,23 @@ const IndexManual = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-5xl">
-        <h2 className="text-3xl font-bold mb-2">Indexação Manual</h2>
+        <h2 className="text-3xl font-bold mb-2">{t('indexManual.title')}</h2>
         <p className="text-muted-foreground mb-6">
-          Driver: {driver?.name}
+          {t('indexManual.driver')}: {driver?.name}
         </p>
 
         <Tabs defaultValue="animes" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="animes">Animes ({animes.length})</TabsTrigger>
-            <TabsTrigger value="episodes">Episódios ({episodes.length})</TabsTrigger>
+            <TabsTrigger value="animes">{t('indexManual.animeList')} ({animes.length})</TabsTrigger>
+            <TabsTrigger value="episodes">{t('indexManual.episodeList')} ({episodes.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="animes" className="space-y-4">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold">Lista de Animes</h3>
+              <h3 className="text-xl font-semibold">{t('indexManual.animeList')}</h3>
               <Button onClick={addAnime} size="sm" className="gap-2">
                 <Plus className="h-4 w-4" />
-                Adicionar Anime
+                {t('indexManual.addAnime')}
               </Button>
             </div>
 
@@ -225,7 +227,7 @@ const IndexManual = () => {
                 <div className="flex items-start gap-4">
                   <div className="flex-1 space-y-3">
                     <div>
-                      <Label>Título *</Label>
+                      <Label>{t('indexManual.animeTitle')} {t('indexManual.required')}</Label>
                       <Input
                         value={anime.title}
                         onChange={(e) => updateAnime(anime.id, 'title', e.target.value)}
@@ -234,7 +236,7 @@ const IndexManual = () => {
                       />
                     </div>
                     <div>
-                      <Label>URL do Anime *</Label>
+                      <Label>{t('indexManual.animeUrl')} {t('indexManual.required')}</Label>
                       <Input
                         type="url"
                         value={anime.sourceUrl}
@@ -244,7 +246,7 @@ const IndexManual = () => {
                       />
                     </div>
                     <div>
-                      <Label>URL da Capa</Label>
+                      <Label>{t('indexManual.animeCover')}</Label>
                       <Input
                         type="url"
                         value={anime.coverUrl}
@@ -254,7 +256,7 @@ const IndexManual = () => {
                       />
                     </div>
                     <div>
-                      <Label>Sinopse</Label>
+                      <Label>{t('indexManual.animeSynopsis')}</Label>
                       <Textarea
                         value={anime.synopsis}
                         onChange={(e) => updateAnime(anime.id, 'synopsis', e.target.value)}
@@ -277,10 +279,10 @@ const IndexManual = () => {
 
           <TabsContent value="episodes" className="space-y-4">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold">Lista de Episódios</h3>
+              <h3 className="text-xl font-semibold">{t('indexManual.episodeList')}</h3>
               <Button onClick={addEpisode} size="sm" className="gap-2">
                 <Plus className="h-4 w-4" />
-                Adicionar Episódio
+                {t('indexManual.addEpisode')}
               </Button>
             </div>
 
@@ -289,7 +291,7 @@ const IndexManual = () => {
                 <div className="flex items-start gap-4">
                   <div className="flex-1 grid grid-cols-2 gap-3">
                     <div>
-                      <Label>Número *</Label>
+                      <Label>{t('indexManual.episodeNumber')} {t('indexManual.required')}</Label>
                       <Input
                         type="number"
                         value={episode.episodeNumber || ''}
@@ -298,7 +300,7 @@ const IndexManual = () => {
                       />
                     </div>
                     <div>
-                      <Label>Título</Label>
+                      <Label>{t('indexManual.episodeTitle')}</Label>
                       <Input
                         value={episode.title}
                         onChange={(e) => updateEpisode(episode.id, 'title', e.target.value)}
@@ -306,7 +308,7 @@ const IndexManual = () => {
                       />
                     </div>
                     <div className="col-span-2">
-                      <Label>URL do Episódio *</Label>
+                      <Label>{t('indexManual.episodeUrl')} {t('indexManual.required')}</Label>
                       <Input
                         type="url"
                         value={episode.url}
