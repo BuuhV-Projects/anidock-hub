@@ -4,8 +4,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { db, Driver } from '../lib/indexedDB';
+import { useTranslation } from 'react-i18next';
 
 const EditDriver = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { driverId } = useParams();
 
@@ -33,7 +35,7 @@ const EditDriver = () => {
       const driverData = await db.getDriver(driverId!);
 
       if (!driverData) {
-        toast.error('Driver não encontrado');
+        toast.error(t('editDriver.notFound'));
         navigate('/drivers');
         return;
       }
@@ -56,12 +58,12 @@ const EditDriver = () => {
       }
     } catch (error: any) {
       console.error('Error loading driver:', error);
-      toast.error('Erro ao carregar driver');
+      toast.error(t('editDriver.loadError'));
       navigate('/drivers');
     } finally {
       setIsLoading(false);
     }
-  }, [driverId, navigate]);
+  }, [driverId, navigate, t]);
 
   const handleSave = async () => {
     if (!driver) return;
@@ -82,11 +84,11 @@ const EditDriver = () => {
 
       await db.saveDriver(updatedDriver);
 
-      toast.success('Driver atualizado com sucesso!');
+      toast.success(t('editDriver.saveSuccess'));
       navigate('/drivers');
     } catch (error: any) {
       console.error('Error saving driver:', error);
-      toast.error('Erro ao salvar driver');
+      toast.error(t('editDriver.saveError'));
     } finally {
       setIsSaving(false);
     }
@@ -115,18 +117,18 @@ const EditDriver = () => {
           <div className="flex items-center justify-between">
             <Button variant="ghost" onClick={() => navigate('/drivers')} className="gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Voltar
+              {t('editDriver.back')}
             </Button>
             <Button onClick={handleSave} disabled={isSaving} className="gap-2">
               {isSaving ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Salvando...
+                  {t('editDriver.saving')}
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4" />
-                  Salvar
+                  {t('editDriver.save')}
                 </>
               )}
             </Button>
@@ -142,10 +144,10 @@ const EditDriver = () => {
 
         <div className="space-y-6">
           <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4">Seletores da Lista de Animes</h3>
+            <h3 className="text-xl font-semibold mb-4">{t('editDriver.animeListSelectors')}</h3>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="animeList">Container de cada anime</Label>
+                <Label htmlFor="animeList">{t('editDriver.animeContainer')}</Label>
                 <Input
                   id="animeList"
                   value={selectors.animeList}
@@ -155,7 +157,7 @@ const EditDriver = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="animeTitle">Título *</Label>
+                <Label htmlFor="animeTitle">{t('editDriver.animeTitle')} {t('editDriver.required')}</Label>
                 <Input
                   id="animeTitle"
                   value={selectors.animeTitle}
@@ -166,7 +168,7 @@ const EditDriver = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="animeUrl">Link do Anime *</Label>
+                <Label htmlFor="animeUrl">{t('editDriver.animeUrl')} {t('editDriver.required')}</Label>
                 <Input
                   id="animeUrl"
                   value={selectors.animeUrl}
@@ -177,7 +179,7 @@ const EditDriver = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="animeImage">Imagem de Capa</Label>
+                <Label htmlFor="animeImage">{t('editDriver.animeImage')}</Label>
                 <Input
                   id="animeImage"
                   value={selectors.animeImage}
@@ -190,10 +192,10 @@ const EditDriver = () => {
           </Card>
 
           <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4">Seletores de Episódios</h3>
+            <h3 className="text-xl font-semibold mb-4">{t('editDriver.episodeSelectors')}</h3>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="episodeList">Container de cada episódio *</Label>
+                <Label htmlFor="episodeList">{t('editDriver.episodeContainer')} {t('editDriver.required')}</Label>
                 <Input
                   id="episodeList"
                   value={selectors.episodeList}
@@ -204,7 +206,7 @@ const EditDriver = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="episodeNumber">Número do Episódio *</Label>
+                <Label htmlFor="episodeNumber">{t('editDriver.episodeNumber')} {t('editDriver.required')}</Label>
                 <Input
                   id="episodeNumber"
                   value={selectors.episodeNumber}
@@ -215,7 +217,7 @@ const EditDriver = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="episodeUrl">Link do Episódio *</Label>
+                <Label htmlFor="episodeUrl">{t('editDriver.episodeUrl')} {t('editDriver.required')}</Label>
                 <Input
                   id="episodeUrl"
                   value={selectors.episodeUrl}
