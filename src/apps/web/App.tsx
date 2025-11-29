@@ -1,5 +1,4 @@
 import {
-    AuthProvider,
     PlataformProvider,
     RouterAppCore,
     UpdateNotification
@@ -17,9 +16,7 @@ const App = () => (
             <UpdateNotification />
             <PlataformProvider>
                 <BrowserRouter>
-                    <AuthProvider>
-                        <RouterAppCore />
-                    </AuthProvider>
+                    <RouterAppCore />
                 </BrowserRouter>
             </PlataformProvider>
         </TooltipProvider>
