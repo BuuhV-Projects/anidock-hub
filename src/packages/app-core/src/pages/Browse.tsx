@@ -1,243 +1,135 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/auth/useAuth';
 import { Button, Input, Card, Badge } from '@anidock/shared-ui';
 import { Cpu, Search, Upload, Play, Loader2 } from 'lucide-react';
-import { supabase } from '@anidock/shared-utils';
-import { getLocalDrivers } from '../lib/localStorage';
-import { LocalAnime } from '@anidock/anime-core';
+import { db, LocalAnime } from '../lib/indexedDB';
 import { toast } from 'sonner';
 import { usePlataform } from '../contexts/plataform/usePlataform';
 import { BrowseHeader } from './components/BrowseHeader';
 
 const Browse = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [allAnimes, setAllAnimes] = useState<LocalAnime[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
   const { isDesktop } = usePlataform();
 
   useEffect(() => {
     fetchAnimes();
-  }, [user]);
+  }, []);
 
   const fetchAnimes = async () => {
     setIsLoading(true);
     try {
+      await db.init();
+      
+      // Load all indexes from IndexedDB
+      const indexes = await db.getAllIndexes();
       let animes: LocalAnime[] = [];
-
-      // Load local drivers with indexed data
-      const localDrivers = getLocalDrivers().filter(d => d.indexedData && d.indexedData.length > 0);
-      localDrivers.forEach(driver => {
-        if (driver.indexedData) {
-          animes = [...animes, ...driver.indexedData];
-        }
+      
+      indexes.forEach(index => {
+        animes = [...animes, ...index.animes];
       });
-
-      // Load cloud indexes if logged in
-      if (user) {
-        const { data: cloudIndexes, error } = await supabase
-          .from('indexes')
-          .select('*')
-          .eq('user_id', user.id);
-
-        if (error) {
-          console.error('Error fetching cloud indexes:', error);
-        } else if (cloudIndexes) {
-          cloudIndexes.forEach(index => {
-            const indexAnimes = (index.index_data as any[]) || [];
-            // Add indexId metadata to each anime for proper episode saving
-            const animesWithIndexId = indexAnimes.map(anime => ({
-              ...anime,
-              _indexId: index.id, // Internal metadata for tracking
-              _driverId: index.driver_id
-            }));
-            animes = [...animes, ...animesWithIndexId];
-          });
-        }
-      }
 
       setAllAnimes(animes);
     } catch (error) {
-      console.error('Error loading animes:', error);
+      console.error('Error fetching animes:', error);
       toast.error('Erro ao carregar animes');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const filteredAnimes = allAnimes.filter(anime =>
+  const filteredAnimes = allAnimes.filter((anime) =>
     anime.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <BrowseHeader user={user} navigate={navigate} isDesktop={isDesktop} />
+  const handleWatch = (anime: LocalAnime) => {
+    navigate(`/anime?url=${encodeURIComponent(anime.sourceUrl)}&driverId=${anime.driverId}`);
+  };
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        {/* Search Section */}
-        <div className="max-w-2xl mx-auto mb-12">
-          <h2 className="text-3xl font-display font-bold text-center mb-6">
-            Navegue pela Biblioteca
-          </h2>
-          <div className="relative">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background">
+      <BrowseHeader isDesktop={isDesktop} />
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <div className="relative max-w-2xl mx-auto">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Buscar animes..."
+              placeholder="Pesquisar animes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-14 bg-input border-border text-lg"
+              className="pl-12 h-14 text-lg border-border/50 bg-card/50 backdrop-blur-sm focus:border-primary/50"
             />
           </div>
         </div>
 
-        {/* Import CTA for Empty State */}
-        {!isLoading && allAnimes.length === 0 && (
-          <Card className="glass p-8 border-primary/30 max-w-3xl mx-auto mb-12 glow-cyan">
-            <div className="text-center">
-              <Upload className="h-16 w-16 text-primary mx-auto mb-4" />
-              <h3 className="text-2xl font-display font-bold mb-3">
-                Comece a Assistir!
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                {user 
-                  ? 'Crie drivers e indexe sites de anime para começar a assistir seus favoritos.'
-                  : 'Importe drivers compartilhados pela comunidade e comece a assistir seus animes favoritos.'}
-              </p>
-              <div className="flex gap-4 justify-center">
-                <Button
-                  size="lg"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
-                  onClick={() => navigate('/drivers/import')}
-                >
-                  Importar Driver
-                </Button>
-                {user ? (
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-primary/50 hover:bg-primary/10"
-                    onClick={() => navigate('/drivers/create')}
-                  >
-                    Criar Driver
-                  </Button>
-                ) : (
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-primary/50 hover:bg-primary/10"
-                    onClick={() => navigate('/auth')}
-                  >
-                    Criar Conta
-                  </Button>
-                )}
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* Loading State */}
-        {isLoading && (
-          <div className="flex items-center justify-center py-16">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
-        )}
-
-        {/* Animes Grid */}
-        {!isLoading && filteredAnimes.length > 0 && (
-          <div>
-            <div className="flex items-center justify-between mb-6">
+        ) : allAnimes.length === 0 ? (
+          <div className="text-center py-20">
+            <Cpu className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <h3 className="text-xl font-semibold mb-2">Nenhum anime encontrado</h3>
+            <p className="text-muted-foreground mb-6">
+              Importe um driver para começar a explorar animes
+            </p>
+            <Button onClick={() => navigate('/drivers/import')}>
+              <Upload className="h-4 w-4 mr-2" />
+              Importar Driver
+            </Button>
+          </div>
+        ) : (
+          <>
+            <div className="mb-6">
               <p className="text-muted-foreground">
                 {filteredAnimes.length} {filteredAnimes.length === 1 ? 'anime encontrado' : 'animes encontrados'}
               </p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {filteredAnimes.map((anime) => (
                 <Card
                   key={anime.id}
-                  className="glass border-border/50 hover:border-primary/50 transition-all cursor-pointer group overflow-hidden"
-                  onClick={() => {
-                    // Get driver ID from either local driver or cloud index
-                    const driverId = (anime as any)._driverId || anime.driverId;
-                    
-                    if (!driverId) {
-                      console.error('Missing driverId for anime:', anime);
-                      toast.error('Erro: Driver não encontrado');
-                      return;
-                    }
-                    
-                    // Navigate to anime details page with necessary IDs
-                    const params = new URLSearchParams({
-                      id: anime.id,
-                      driver: String(driverId),
-                    });
-                    
-                    // Add index ID if this anime comes from a cloud index
-                    if ((anime as any)._indexId) {
-                      params.append('index', String((anime as any)._indexId));
-                    }
-                    
-                    navigate(`/anime?${params.toString()}`);
-                  }}
+                  className="group relative overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/30 transition-all cursor-pointer"
+                  onClick={() => handleWatch(anime)}
                 >
                   <div className="aspect-[2/3] relative overflow-hidden">
                     {anime.coverUrl ? (
                       <img
                         src={anime.coverUrl}
                         alt={anime.title}
-                        referrerPolicy="no-referrer"
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        loading="lazy"
                       />
                     ) : (
-                      <div className="w-full h-full bg-muted flex items-center justify-center">
-                        <Cpu className="h-12 w-12 text-muted-foreground" />
+                      <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                        <Cpu className="h-12 w-12 text-primary/30" />
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4">
-                      <Button size="sm" className="gap-2">
-                        <Play className="h-4 w-4" />
-                        Assistir
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Button size="icon" variant="outline" className="border-primary/50">
+                        <Play className="h-5 w-5" />
                       </Button>
                     </div>
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-display font-bold text-sm line-clamp-2 mb-2">
-                      {anime.title}
-                    </h3>
+                  <div className="p-3">
+                    <h3 className="font-semibold text-sm line-clamp-2 mb-1">{anime.title}</h3>
                     {anime.episodes && anime.episodes.length > 0 && (
-                      <Badge variant="secondary" className="text-xs">
-                        {anime.episodes.length} eps
+                      <Badge variant="outline" className="text-xs">
+                        {anime.episodes.length} {anime.episodes.length === 1 ? 'episódio' : 'episódios'}
                       </Badge>
                     )}
                   </div>
                 </Card>
               ))}
             </div>
-          </div>
+          </>
         )}
-
-        {/* No Results */}
-        {!isLoading && allAnimes.length > 0 && filteredAnimes.length === 0 && (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 rounded-full bg-muted/20 flex items-center justify-center mx-auto mb-6">
-              <Search className="h-12 w-12 text-muted-foreground" />
-            </div>
-            <h3 className="text-2xl font-display font-bold mb-3">
-              Nenhum resultado encontrado
-            </h3>
-            <p className="text-muted-foreground">
-              Tente buscar com outros termos
-            </p>
-          </div>
-        )}
-      </main>
+      </div>
     </div>
   );
 };

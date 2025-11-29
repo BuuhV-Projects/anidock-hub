@@ -7,7 +7,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@anidock/shared-ui';
-import { supabase } from '@anidock/shared-utils';
 import { Download } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { usePlataform } from '../contexts/plataform/usePlataform';
@@ -27,33 +26,10 @@ export function UpdateNotification() {
   const { appVersion, isDesktop } = usePlataform();
 
   useEffect(() => {
-    // Only check for updates if we have a version (desktop app)
-    if (appVersion && isDesktop) {
-      checkForUpdates();
-      // Check for updates every 30 minutes
-      const interval = setInterval(checkForUpdates, 30 * 60 * 1000);
-      return () => clearInterval(interval);
-    }
+    // Disabled: no backend to check for updates
+    // In a future version, this could check a GitHub releases API
+    return;
   }, [appVersion, isDesktop]);
-
-  const checkForUpdates = async () => {
-    if (!appVersion || !isDesktop) return;
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('check-app-version', {
-        body: { currentVersion: appVersion, isDesktop }
-      });
-
-      if (error) throw error;
-
-      if (data?.hasUpdate) {
-        setUpdateInfo(data);
-        setIsOpen(true);
-      }
-    } catch (error) {
-      console.error('Error checking for updates:', error);
-    }
-  };
 
   const handleDownload = () => {
     if (updateInfo?.downloadUrl) {

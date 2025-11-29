@@ -1,19 +1,15 @@
-import { Button, Card, Textarea } from '@anidock/shared-ui';
-import { supabase } from '@anidock/shared-utils';
-import { ArrowLeft, Cpu, Download, FileCode, Upload } from 'lucide-react';
+import { Button, Card, Textarea, Label } from '@anidock/shared-ui';
+import { ArrowLeft, Cpu, FileCode, Upload, Loader2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useAuth } from '../contexts/auth/useAuth';
-import { createExampleDriver } from '../lib/crawler';
-import { exportDriver, getLocalDrivers, importDriver } from '../lib/localStorage';
+import { db, Driver } from '../lib/indexedDB';
 
 const ImportDriver = () => {
   const [driverJson, setDriverJson] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -33,31 +29,21 @@ const ImportDriver = () => {
       return;
     }
 
-    // Check driver limit for free users (only for authenticated users)
-    if (user) {
-      try {
-        const { data: roleData } = await supabase.rpc('get_user_role', { _user_id: user.id });
-        const userRole = roleData as 'free' | 'premium' | 'premium_plus';
-
-        if (userRole === 'free') {
-          const localDriversCount = getLocalDrivers().length;
-          
-          if (localDriversCount >= 3) {
-            toast.error('Limite de 3 drivers atingido!', {
-              description: 'Faça upgrade para Premium para ter drivers ilimitados',
-              duration: 5000
-            });
-            return;
-          }
-        }
-      } catch (error) {
-        console.error('Error checking driver limit:', error);
-      }
-    }
-
     setIsLoading(true);
     try {
-      const driver = importDriver(driverJson);
+      const driver: Driver = JSON.parse(driverJson);
+      
+      // Validate driver structure
+      if (!driver.id || !driver.name || !driver.config) {
+        throw new Error('Driver inválido');
+      }
+
+      // Initialize IndexedDB
+      await db.init();
+      
+      // Save driver
+      await db.saveDriver(driver);
+      
       toast.success(`Driver "${driver.name}" importado com sucesso!`);
       navigate('/browse');
     } catch (error) {
@@ -69,8 +55,30 @@ const ImportDriver = () => {
   };
 
   const downloadExample = () => {
-    const example = createExampleDriver();
-    const json = exportDriver(example.id);
+    const example: Driver = {
+      id: crypto.randomUUID(),
+      name: 'Exemplo Driver',
+      domain: 'exemplo.com',
+      version: '1.0.0',
+      author: 'AniDock',
+      config: {
+        requiresExternalLink: false,
+        selectors: {
+          animeList: 'article.anime',
+          animeTitle: 'h2.title',
+          animeImage: 'img.cover',
+          animeUrl: 'a',
+          episodeList: '.episode',
+          episodeNumber: '.number',
+          episodeUrl: 'a',
+        },
+        baseUrl: 'https://exemplo.com',
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const json = JSON.stringify(example, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -83,28 +91,20 @@ const ImportDriver = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border/50 sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate(-1)}
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <Cpu className="h-8 w-8 text-primary animate-pulse-glow" />
-              <h1 className="font-display text-2xl font-bold text-gradient-primary">
-                Importar Driver
-              </h1>
-            </div>
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <Cpu className="h-8 w-8 text-primary animate-pulse-glow" />
+            <h1 className="font-display text-2xl font-bold text-gradient-primary">
+              Importar Driver
+            </h1>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8 text-center">
           <h2 className="text-3xl font-display font-bold mb-3">
@@ -112,12 +112,12 @@ const ImportDriver = () => {
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Drivers são arquivos JSON que definem como extrair dados de sites de anime.
-            Importe drivers compartilhados pela comunidade ou crie o seu próprio.
+            Importe drivers compartilhados pela comunidade.
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <Card className="glass p-6 border-border/50">
+          <Card className="p-6 border-border/50">
             <div className="text-center">
               <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
                 <Upload className="h-8 w-8 text-primary" />
@@ -146,71 +146,58 @@ const ImportDriver = () => {
             </div>
           </Card>
 
-          <Card className="glass p-6 border-border/50">
+          <Card className="p-6 border-border/50 bg-card/50">
             <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-4">
-                <Download className="h-8 w-8 text-secondary" />
+              <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                <FileCode className="h-8 w-8 text-primary" />
               </div>
               <h3 className="font-display font-bold text-lg mb-2">
-                Driver Exemplo
+                Driver de Exemplo
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Baixe um driver de exemplo para entender a estrutura
+                Baixe um driver de exemplo para ver a estrutura
               </p>
               <Button
                 onClick={downloadExample}
                 variant="outline"
-                className="border-secondary/50 hover:bg-secondary/10 w-full"
+                className="border-primary/50 hover:bg-primary/10 w-full"
               >
-                <Download className="h-4 w-4 mr-2" />
                 Baixar Exemplo
               </Button>
             </div>
           </Card>
         </div>
 
-        <Card className="glass p-6 border-border/50">
-          <h3 className="font-display font-bold text-lg mb-4">
-            JSON do Driver
-          </h3>
+        <Card className="p-6">
+          <Label htmlFor="driverJson" className="text-lg mb-4 block">
+            Cole o JSON do Driver
+          </Label>
           <Textarea
+            id="driverJson"
             value={driverJson}
             onChange={(e) => setDriverJson(e.target.value)}
-            placeholder='Cole o JSON do driver aqui ou selecione um arquivo acima...'
-            className="min-h-[400px] font-mono text-sm bg-input border-border"
+            placeholder='{\n  "name": "Site Exemplo",\n  "domain": "exemplo.com",\n  ...\n}'
+            className="font-mono text-sm h-64 mb-4"
           />
-          
-          <div className="mt-6 flex gap-4">
-            <Button
-              onClick={handleImport}
-              disabled={isLoading || !driverJson.trim()}
-              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 glow-cyan"
-            >
-              {isLoading ? 'Importando...' : 'Importar Driver'}
-            </Button>
-            <Button
-              onClick={() => setDriverJson('')}
-              variant="outline"
-              className="border-border hover:bg-muted"
-            >
-              Limpar
-            </Button>
-          </div>
-        </Card>
 
-        {/* Info Card */}
-        <Card className="glass p-6 border-accent/30 mt-8">
-          <h4 className="font-display font-bold mb-3 flex items-center gap-2">
-            <Cpu className="h-5 w-5 text-accent" />
-            Como funcionam os drivers?
-          </h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>• Drivers são arquivos JSON que definem seletores CSS</li>
-            <li>• Cada driver ensina o AniDock como extrair dados de um site específico</li>
-            <li>• Tudo funciona 100% localmente no seu navegador</li>
-            <li>• Você pode criar drivers manualmente ou usar IA (requer login)</li>
-            <li>• Drivers podem ser compartilhados com amigos via arquivo JSON</li>
-          </ul>
+          <Button
+            onClick={handleImport}
+            disabled={isLoading || !driverJson.trim()}
+            className="w-full gap-2"
+            size="lg"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Importando...
+              </>
+            ) : (
+              <>
+                <Upload className="h-5 w-5" />
+                Importar Driver
+              </>
+            )}
+          </Button>
         </Card>
       </main>
     </div>
