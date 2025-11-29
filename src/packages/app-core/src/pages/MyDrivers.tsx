@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -7,12 +7,14 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle, Button, Card, DropdownMenu,
+  AlertDialogTitle,
+  Button,
+  Card,
+  DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@anidock/shared-ui';
-import { supabase } from '@anidock/shared-utils';
 import {
   ArrowLeft,
   ChevronDown,
@@ -26,104 +28,60 @@ import {
   Sparkles,
   Trash2
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useAuth } from '../contexts/auth/useAuth';
-import { Json } from '../../../shared-utils/src/integrations/supabase/types';
-
-interface Driver {
-  id: number;
-  public_id: string;
-  name: string;
-  domain: string;
-  is_public: boolean;
-  config: any;
-  created_at: string;
-  indexed_data?: any[];
-  source_url?: string;
-  catalog_url?: string;
-  total_animes?: number;
-  last_indexed_at?: string;
-}
+import { db, Driver as IDBDriver, AnimeIndex } from '../lib/indexedDB';
 
 const MyDrivers = () => {
-  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [drivers, setDrivers] = useState<IDBDriver[]>([]);
+  const [indexes, setIndexes] = useState<Record<string, AnimeIndex>>({});
   const [isLoading, setIsLoading] = useState(true);
-  const [deleteDriver, setDeleteDriver] = useState<Driver | null>(null);
-  const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
-  const [canCreateMoreDrivers, setCanCreateMoreDrivers] = useState(true);
-  const [showingLimitedDrivers, setShowingLimitedDrivers] = useState(false);
+  const [deleteDriver, setDeleteDriver] = useState<IDBDriver | null>(null);
   const navigate = useNavigate();
-  const { user, subscriptionStatus } = useAuth();
 
   const fetchDrivers = useCallback(async () => {
     try {
-      if (!user?.id) return;
       setIsLoading(true);
+      await db.init();
       
-      const isFree = subscriptionStatus.role === 'free';
-      
-      // Build query
-      let query = supabase
-        .from('drivers')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
-      
-      // Limit to 3 drivers for free users
-      if (isFree) {
-        query = query.limit(3);
-      }
-      
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      const driversList = (data || []) as Driver[];
+      const driversList = await db.getAllDrivers();
       setDrivers(driversList);
 
-      // Check if user has more than 3 drivers (free users only)
-      if (isFree) {
-        const { count } = await supabase
-          .from('drivers')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
-        
-        const hasMoreDrivers = (count || 0) > 3;
-        setShowingLimitedDrivers(hasMoreDrivers);
-        setCanCreateMoreDrivers(driversList.length < 3);
-      } else {
-        setShowingLimitedDrivers(false);
-        setCanCreateMoreDrivers(true);
+      // Load indexes for each driver
+      const indexesData: Record<string, AnimeIndex> = {};
+      for (const driver of driversList) {
+        const driverIndexes = await db.getIndexesByDriver(driver.id);
+        if (driverIndexes.length > 0) {
+          indexesData[driver.id] = driverIndexes[0]; // Use first index
+        }
       }
+      setIndexes(indexesData);
     } catch (error: any) {
       console.error('Error fetching drivers:', error);
       toast.error('Erro ao carregar drivers');
     } finally {
       setIsLoading(false);
     }
-  }, [user, subscriptionStatus.role]);
+  }, []);
 
   useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-
     fetchDrivers();
-  }, [user, navigate, fetchDrivers]);
+  }, [fetchDrivers]);
 
   const handleDelete = async () => {
     if (!deleteDriver) return;
 
     try {
-      const { error } = await supabase
-        .from('drivers')
-        .delete()
-        .eq('id', deleteDriver.id);
-
-      if (error) throw error;
+      await db.init();
+      
+      // Delete associated indexes
+      const driverIndexes = await db.getIndexesByDriver(deleteDriver.id);
+      for (const index of driverIndexes) {
+        await db.deleteIndex(index.id);
+      }
+      
+      // Delete driver
+      await db.deleteDriver(deleteDriver.id);
 
       toast.success('Driver excluído com sucesso!');
       setDrivers(drivers.filter(d => d.id !== deleteDriver.id));
@@ -134,65 +92,54 @@ const MyDrivers = () => {
     }
   };
 
-  const handleExport = async (driver: Driver) => {
+  const handleExport = async (driver: IDBDriver) => {
     try {
-      // Fetch index data for this driver
-      let indexData: Json | null = null;
-      if (user) {
-        const { data, error } = await supabase
-          .from('indexes')
-          .select('index_data')
-          .eq('driver_id', driver.id)
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (!error && data) {
-          indexData = data.index_data;
-        }
-      }
-
-      const exportData = {
-        name: driver.name,
-        domain: driver.domain,
-        config: driver.config,
-        indexed_data: indexData || [],
-        source_url: driver.source_url,
-        total_animes: Array.isArray(indexData) ? indexData.length : 0,
-        last_indexed_at: driver.last_indexed_at,
-        version: '1.0',
-        exported_at: new Date().toISOString()
+      // Get index data for this driver
+      const driverIndexes = await db.getIndexesByDriver(driver.id);
+      const driverWithIndex = {
+        ...driver,
+        indexedData: driverIndexes.length > 0 ? driverIndexes[0].animes : [],
       };
 
-      const json = JSON.stringify(exportData, null, 2);
+      const json = JSON.stringify(driverWithIndex, null, 2);
       const blob = new Blob([json], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${driver.name.toLowerCase().replace(/\s+/g, '-')}.json`;
+      a.download = `${driver.name.replace(/\s+/g, '-').toLowerCase()}-driver.json`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success('Driver exportado com indexações!');
-    } catch (error) {
-      console.error('Export error:', error);
+      toast.success('Driver exportado!');
+    } catch (error: any) {
+      console.error('Error exporting driver:', error);
       toast.error('Erro ao exportar driver');
     }
   };
 
+  const handleViewIndexedAnimes = (driver: IDBDriver) => {
+    const index = indexes[driver.id];
+    if (!index) {
+      toast.error('Este driver não tem indexações');
+      return;
+    }
+    navigate(`/drivers/${driver.id}/edit-anime`);
+  };
 
-  if (!user) return null;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border/50 sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate('/dashboard')}
-              >
+              <Button variant="ghost" size="icon" onClick={() => navigate('/browse')}>
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <Cpu className="h-8 w-8 text-primary animate-pulse-glow" />
@@ -200,212 +147,109 @@ const MyDrivers = () => {
                 Meus Drivers
               </h1>
             </div>
-            <Button
-              onClick={() => {
-                if (!canCreateMoreDrivers) {
-                  toast.error('Limite de 3 drivers atingido!', {
-                    description: 'Faça upgrade para Premium para criar drivers ilimitados',
-                    duration: 5000
-                  });
-                } else {
-                  navigate('/drivers/create');
-                }
-              }}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 glow-cyan gap-2"
-              disabled={!canCreateMoreDrivers}
-            >
+            <Button onClick={() => navigate('/drivers/create')} className="gap-2">
               <Plus className="h-4 w-4" />
-              Criar Novo
+              Novo Driver
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {showingLimitedDrivers && (
-          <Card className="glass p-4 border-border/50 mb-6 bg-accent/20">
-            <p className="text-sm text-center">
-              ⚠️ Você possui mais de 3 drivers, mas apenas os 3 primeiros estão sendo exibidos.{' '}
-              <Button
-                variant="link"
-                className="p-0 h-auto text-primary hover:text-primary/80"
-                onClick={() => navigate('/premium')}
-              >
-                Faça upgrade para Premium
-              </Button>
-              {' '}para ter acesso ilimitado.
-            </p>
-          </Card>
-        )}
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : drivers.length === 0 ? (
-          <Card className="glass p-12 border-border/50 text-center">
-            <Cpu className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <h3 className="text-xl font-display font-bold mb-2">
-              Nenhum driver criado ainda
-            </h3>
+        {drivers.length === 0 ? (
+          <div className="text-center py-20">
+            <Cpu className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <h3 className="text-xl font-semibold mb-2">Nenhum driver encontrado</h3>
             <p className="text-muted-foreground mb-6">
-              Crie seu primeiro driver para começar a indexar animes
+              Crie ou importe um driver para começar
             </p>
-            <Button
-              onClick={() => navigate('/drivers/create')}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 glow-cyan gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Criar Primeiro Driver
-            </Button>
-          </Card>
+            <div className="flex gap-4 justify-center">
+              <Button onClick={() => navigate('/drivers/create')}>
+                <Sparkles className="h-4 w-4 mr-2" />
+                Criar com IA
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/drivers/import')}>
+                <Plus className="h-4 w-4 mr-2" />
+                Importar Driver
+              </Button>
+            </div>
+          </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {drivers.map((driver) => (
-              <Card
-                key={driver.id}
-                className="glass p-6 border-border/50 hover:border-primary/50 transition-all"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h3 className="font-display font-bold text-lg mb-1">
-                      {driver.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {driver.domain}
-                    </p>
-                    {driver.total_animes && driver.total_animes > 0 && (
-                      <p className="text-xs text-accent font-medium mt-1">
-                        {driver.total_animes} animes indexados
-                      </p>
-                    )}
-                  </div>
-                </div>
+          <div className="grid gap-4">
+            {drivers.map((driver) => {
+              const index = indexes[driver.id];
+              const totalAnimes = index?.totalAnimes || 0;
 
-                <div className="text-xs text-muted-foreground mb-4">
-                  Criado em {new Date(driver.created_at).toLocaleDateString('pt-BR')}
-                  {driver.last_indexed_at && (
-                    <>
-                      <br />
-                      Última indexação: {new Date(driver.last_indexed_at).toLocaleDateString('pt-BR')}
-                    </>
-                  )}
-                </div>
+              return (
+                <Card key={driver.id} className="p-6 border-border/50">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-xl font-semibold">{driver.name}</h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">{driver.domain}</p>
+                      <div className="flex items-center gap-4 text-sm">
+                        <span className="text-muted-foreground">
+                          {totalAnimes} animes indexados
+                        </span>
+                        <span className="text-muted-foreground">
+                          v{driver.version}
+                        </span>
+                      </div>
+                    </div>
 
-                <div className="flex gap-2 flex-wrap">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setSelectedDriver(driver)}
-                    className="flex-1 min-w-[80px]"
-                  >
-                    <Eye className="h-4 w-4 mr-1" />
-                    Ver
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => navigate(`/drivers/${driver.public_id}/edit`)}
-                    className="gap-1"
-                    title="Editar seletores CSS"
-                  >
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant={driver.total_animes && driver.total_animes > 0 ? "outline" : "default"}
-                        className={driver.total_animes && driver.total_animes > 0 ? "flex-1 min-w-[80px]" : "flex-1 min-w-[80px] bg-accent text-accent-foreground"}
-                      >
-                        <Sparkles className="h-4 w-4 mr-1" />
-                        {driver.total_animes && driver.total_animes > 0 ? 'Re-indexar' : 'Indexar'}
-                        <ChevronDown className="h-3 w-3 ml-1" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => navigate(`/drivers/create?driver=${driver.public_id}`)}>
-                        <Sparkles className="h-4 w-4 mr-2" />
-                        Indexar com IA
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate(`/drivers/${driver.public_id}/index-manual`)}>
-                        <FileEdit className="h-4 w-4 mr-2" />
-                        Adicionar Manualmente
-                      </DropdownMenuItem>
-                      {driver.total_animes && driver.total_animes > 0 && (
-                        <DropdownMenuItem onClick={() => navigate(`/drivers/${driver.public_id}/edit-anime`)}>
-                          <FileEdit className="h-4 w-4 mr-2" />
-                          Editar Animes Indexados
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon">
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleExport(driver)}>
+                          <Download className="h-4 w-4 mr-2" />
+                          Exportar
                         </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleExport(driver)}
-                  >
-                    <Download className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setDeleteDriver(driver)}
-                    className="text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </Card>
-            ))}
+                        <DropdownMenuItem onClick={() => navigate(`/drivers/${driver.id}/edit`)}>
+                          <FileEdit className="h-4 w-4 mr-2" />
+                          Editar
+                        </DropdownMenuItem>
+                        {totalAnimes > 0 && (
+                          <DropdownMenuItem onClick={() => handleViewIndexedAnimes(driver)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Ver Animes
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem
+                          onClick={() => setDeleteDriver(driver)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Excluir
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         )}
       </main>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteDriver} onOpenChange={() => setDeleteDriver(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir Driver?</AlertDialogTitle>
+            <AlertDialogTitle>Excluir Driver</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir o driver "{deleteDriver?.name}"?
-              Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir o driver "{deleteDriver?.name}"? 
+              Esta ação não pode ser desfeita e todos os dados indexados serão perdidos.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
               Excluir
             </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* View Driver Dialog */}
-      <AlertDialog open={!!selectedDriver} onOpenChange={() => setSelectedDriver(null)}>
-        <AlertDialogContent className="max-w-2xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <Cpu className="h-5 w-5 text-primary" />
-              {selectedDriver?.name}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              <div className="space-y-4 mt-4">
-                <div>
-                  <p className="text-sm font-medium text-foreground mb-1">Domínio:</p>
-                  <p className="text-sm">{selectedDriver?.domain}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground mb-2">Configuração:</p>
-                  <pre className="bg-muted p-4 rounded-lg overflow-auto max-h-64 text-xs">
-                    {JSON.stringify(selectedDriver?.config, null, 2)}
-                  </pre>
-                </div>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Fechar</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

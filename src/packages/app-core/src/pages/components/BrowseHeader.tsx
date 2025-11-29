@@ -1,14 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@anidock/shared-ui';
-import { useAuth } from '../../contexts/auth/useAuth';
+import React from 'react';
+import { Button } from '@anidock/shared-ui';
 import { useNavigate } from 'react-router-dom';
-import { Cpu, Upload, User, LogOut, Clock, Crown, Settings, Sparkles } from 'lucide-react';
+import { Cpu, Upload, Clock, LogOut } from 'lucide-react';
 import { useElectronApi } from '../../hooks/useElectronApi';
-import { supabase } from '@anidock/shared-utils';
 
 type BrowseHeaderProps = {
-  user: ReturnType<typeof useAuth>['user'];
-  navigate: ReturnType<typeof useNavigate>;
   isDesktop: boolean;
 };
 
@@ -27,13 +23,8 @@ const DesktopCloseButton = () => {
   );
 };
 
-export const BrowseHeader = ({ user, navigate, isDesktop }: BrowseHeaderProps) => {
-  const { signOut, subscriptionStatus } = useAuth();
-  const [isPremium, setIsPremium] = useState(false);
-
-  useEffect(() => {
-    setIsPremium(subscriptionStatus.role === 'premium');
-  }, [subscriptionStatus]);
+export const BrowseHeader = ({ isDesktop }: BrowseHeaderProps) => {
+  const navigate = useNavigate();
 
   return (
     <header className="border-b border-border/50 sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
@@ -53,16 +44,6 @@ export const BrowseHeader = ({ user, navigate, isDesktop }: BrowseHeaderProps) =
               <Upload className="h-4 w-4" />
               Importar Driver
             </Button>
-            {isPremium && (
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/dashboard#recommendations')}
-                className="text-muted-foreground hover:text-foreground gap-2"
-              >
-                <Sparkles className="h-4 w-4" />
-                Recomendações
-              </Button>
-            )}
             <Button
               variant="ghost"
               onClick={() => navigate('/history')}
@@ -71,50 +52,14 @@ export const BrowseHeader = ({ user, navigate, isDesktop }: BrowseHeaderProps) =
               <Clock className="h-4 w-4" />
               Histórico
             </Button>
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="border-primary/50 hover:bg-primary/10 gap-2"
-                  >
-                    <User className="h-4 w-4" />
-                    Perfil
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-                    <Settings className="h-4 w-4 mr-2" />
-                    Dashboard
-                  </DropdownMenuItem>
-                  {isPremium ? (
-                    <DropdownMenuItem onClick={() => navigate('/subscription')}>
-                      <Crown className="h-4 w-4 mr-2" />
-                      Gerenciar Assinatura
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem onClick={() => navigate('/premium')}>
-                      <Crown className="h-4 w-4 mr-2" />
-                      Planos Premium
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={signOut} className="text-destructive">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sair
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button
-                variant="outline"
-                onClick={() => navigate('/auth')}
-                className="border-primary/50 hover:bg-primary/10 gap-2"
-              >
-                <User className="h-4 w-4" />
-                Entrar
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/drivers')}
+              className="text-muted-foreground hover:text-foreground gap-2"
+            >
+              <Cpu className="h-4 w-4" />
+              Meus Drivers
+            </Button>
             {isDesktop && <DesktopCloseButton />}
           </div>
         </div>
@@ -122,4 +67,3 @@ export const BrowseHeader = ({ user, navigate, isDesktop }: BrowseHeaderProps) =
     </header>
   );
 };
-

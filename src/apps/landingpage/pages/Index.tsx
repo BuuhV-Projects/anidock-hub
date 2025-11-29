@@ -1,9 +1,6 @@
 import { Button, Card } from "@anidock/shared-ui";
 import { Database, Zap, Shield, Cpu, Download, HardDrive, MonitorPlay, Sparkles, Lock, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import heroImage from "../assets/hero.png";
-import screenshotDashboard from "../assets/screenshot-dashboard.png";
-import screenshotAiDriver from "../assets/screenshot-ai-driver.png";
 
 const Index = () => {
   const navigate = useNavigate();

@@ -26,9 +26,11 @@ export { PlataformProvider } from './contexts/plataform/PlataformProvider';
 export { usePlataform } from './contexts/plataform/usePlataform';
 
 // Export lib functions
-export * from './lib/crawler';
 export * from './lib/localStorage';
-export * from './lib/indexedDB';
-export * from './lib/clientCrawler';
-export * from './lib/aiDriver';
+export { db } from './lib/indexedDB';
+export type { Driver, LocalAnime, LocalEpisode, WatchHistoryEntry, AnimeIndex } from './lib/indexedDB';
+export { crawlWithDriver, crawlEpisodes, extractVideoUrl, fetchHTML } from './lib/clientCrawler';
+export type { CrawlResult, CrawlProgress } from './lib/clientCrawler';
+export { generateDriverWithAI, validateAPIKey } from './lib/aiDriver';
+export type { AIProvider, AIConfig } from './lib/aiDriver';
 
