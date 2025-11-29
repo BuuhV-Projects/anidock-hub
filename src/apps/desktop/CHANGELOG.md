@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.1](https://github.com/BuuhV-Projects/anidock-hub/compare/v1.1.0...v1.0.1) (2025-11-29)
+
+
+### Bug Fixes
+
+* rc ([26e8639](https://github.com/BuuhV-Projects/anidock-hub/commit/26e8639de219a3a56a05c0478f9692afe45f7d7f))
+
 ## 1.1.0 (2025-11-29)
 
 
