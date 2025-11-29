@@ -88,10 +88,7 @@ jobs:
             ${{ runner.os }}-electron-cache-
 
       - name: Version desktop
-        run: yarn version:desktop
-
-      - name: Push tags
-        run: git push --follow-tags origin main
+        run: cd src/apps/desktop && yarn version && cd ../../
 
       - name: Build desktop assets
         working-directory: src/apps/desktop
@@ -106,6 +103,9 @@ jobs:
         with:
           name: desktop-dist
           path: src/apps/desktop/dist
+
+      - name: Push tags
+        run: git push --follow-tags origin main
 
       - name: Notificar no Discord
         if: always()

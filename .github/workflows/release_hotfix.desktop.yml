@@ -89,7 +89,7 @@ jobs:
             ${{ runner.os }}-electron-cache-
 
       - name: Version desktop RC
-        run: yarn version:desktop:rc
+        run: cd src/apps/desktop && yarn version:rc && cd ../../
 
       - name: Build desktop assets
         working-directory: src/apps/desktop
