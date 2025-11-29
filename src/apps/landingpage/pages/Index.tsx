@@ -85,11 +85,12 @@ const Index = () => {
             {/* Right Content - Screenshot */}
             <div className="relative">
               <div className="relative rounded-xl overflow-hidden border border-primary/20 glow-cyan shadow-2xl">
-                <img 
-                  src={heroImage} 
-                  alt="AniDock Interface"
-                  className="w-full h-auto"
-                />
+                <div className="w-full h-auto bg-muted/30 flex items-center justify-center p-12">
+                  <div className="text-center">
+                    <Cpu className="h-24 w-24 text-primary mx-auto mb-4" />
+                    <p className="text-muted-foreground">Interface AniDock</p>
+                  </div>
+                </div>
               </div>
               {/* Floating Elements */}
               <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/20 rounded-full blur-3xl animate-pulse" />
@@ -118,11 +119,12 @@ const Index = () => {
           {/* Dashboard Screenshot */}
           <div className="max-w-5xl mx-auto">
             <Card className="glass overflow-hidden border-primary/20">
-              <img 
-                src={screenshotDashboard} 
-                alt="Dashboard do AniDock"
-                className="w-full h-auto"
-              />
+              <div className="w-full h-64 bg-muted/30 flex items-center justify-center">
+                <div className="text-center">
+                  <Database className="h-16 w-16 text-primary mx-auto mb-2" />
+                  <p className="text-muted-foreground text-sm">Dashboard Preview</p>
+                </div>
+              </div>
             </Card>
           </div>
         </div>
@@ -206,11 +208,12 @@ const Index = () => {
           {/* AI Driver Creation Screenshot */}
           <div className="max-w-5xl mx-auto">
             <Card className="glass overflow-hidden border-secondary/20">
-              <img 
-                src={screenshotAiDriver} 
-                alt="Criação de Driver com IA"
-                className="w-full h-auto"
-              />
+              <div className="w-full h-64 bg-muted/30 flex items-center justify-center">
+                <div className="text-center">
+                  <Sparkles className="h-16 w-16 text-secondary mx-auto mb-2" />
+                  <p className="text-muted-foreground text-sm">AI Driver Creation</p>
+                </div>
+              </div>
             </Card>
             <p className="text-center text-sm text-muted-foreground mt-4">
               Cole o link de qualquer site e deixe a IA fazer o resto

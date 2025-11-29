@@ -248,9 +248,8 @@ const AnimeDetails = () => {
           setIsPlayerModalOpen(false);
           setCurrentVideoData(null);
         }}
-        videoUrl={currentVideoData?.url || ''}
+        videoData={currentVideoData}
         episodeTitle={currentEpisodeTitle}
-        videoType={currentVideoData?.type || null}
       />
     </div>
   );
