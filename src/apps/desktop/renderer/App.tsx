@@ -1,5 +1,4 @@
 import {
-    AuthProvider,
     PlataformProvider,
     RouterAppCore,
     UpdateNotification,
@@ -26,9 +25,7 @@ function AppContent() {
     }, [setIsDesktop, setAppVersion]);
     return (
         <HashRouter>
-            <AuthProvider>
-                <RouterAppCore />
-            </AuthProvider>
+            <RouterAppCore />
         </HashRouter>
     );
 }
