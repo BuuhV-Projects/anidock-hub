@@ -147,10 +147,20 @@ const MyDrivers = () => {
                 Meus Drivers
               </h1>
             </div>
-            <Button onClick={() => navigate('/drivers/create')} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Novo Driver
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => navigate('/settings')}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <Settings className="h-5 w-5" />
+              </Button>
+              <Button onClick={() => navigate('/drivers/create')} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Novo Driver
+              </Button>
+            </div>
           </div>
         </div>
       </header>
