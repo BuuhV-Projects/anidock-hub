@@ -1,4 +1,3 @@
-import React, { useCallback, useEffect, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,7 +16,6 @@ import {
 } from '@anidock/shared-ui';
 import {
   ArrowLeft,
-  ChevronDown,
   Cpu,
   Download,
   Eye,
@@ -28,9 +26,10 @@ import {
   Sparkles,
   Trash2
 } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { db, Driver as IDBDriver, AnimeIndex } from '../lib/indexedDB';
+import { AnimeIndex, db, Driver as IDBDriver } from '../lib/indexedDB';
 
 const MyDrivers = () => {
   const [drivers, setDrivers] = useState<IDBDriver[]>([]);

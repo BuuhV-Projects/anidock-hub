@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import React, { useCallback } from 'react';
+import { Button, Card, Input, Label, Tabs, TabsContent, TabsList, TabsTrigger, Textarea } from '@anidock/shared-ui';
+import { ArrowLeft, Loader2, Plus, Save, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Card, Input, Label, Textarea, Tabs, TabsContent, TabsList, TabsTrigger } from '@anidock/shared-ui';
-import { ArrowLeft, Plus, Trash2, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { db, Driver, LocalAnime, LocalEpisode, AnimeIndex } from '../lib/indexedDB';
+import { AnimeIndex, db, Driver, LocalAnime } from '../lib/indexedDB';
 
 interface AnimeForm {
   id: string;
@@ -40,11 +41,7 @@ const IndexManual = () => {
   const [isSaving, setIsSaving] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchDriver();
-  }, [driverId]);
-
-  const fetchDriver = async () => {
+  const fetchDriver = useCallback(async () => {
     try {
       setIsLoading(true);
       await db.init();
@@ -64,7 +61,7 @@ const IndexManual = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [driverId, navigate]);
 
   const addAnime = () => {
     setAnimes([...animes, {
@@ -81,7 +78,7 @@ const IndexManual = () => {
   };
 
   const updateAnime = (id: string, field: string, value: string) => {
-    setAnimes(animes.map(a => 
+    setAnimes(animes.map(a =>
       a.id === id ? { ...a, [field]: value } : a
     ));
   };
@@ -100,7 +97,7 @@ const IndexManual = () => {
   };
 
   const updateEpisode = (id: string, field: string, value: any) => {
-    setEpisodes(episodes.map(ep => 
+    setEpisodes(episodes.map(ep =>
       ep.id === id ? { ...ep, [field]: value } : ep
     ));
   };
@@ -164,6 +161,10 @@ const IndexManual = () => {
     }
   };
 
+  useEffect(() => {
+    fetchDriver();
+  }, [fetchDriver]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -219,7 +220,7 @@ const IndexManual = () => {
               </Button>
             </div>
 
-            {animes.map((anime, index) => (
+            {animes.map((anime) => (
               <Card key={anime.id} className="p-4">
                 <div className="flex items-start gap-4">
                   <div className="flex-1 space-y-3">

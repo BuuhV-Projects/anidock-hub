@@ -1,16 +1,15 @@
-name: Desktop Feature/Bugfix
+name: Deploy Desktop Prod
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - bugfix/**
-      - feature/**
+      - main
 
 jobs:
   build:
     environment:
-      name: development
+      name: production
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -59,7 +58,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/apt
-          key: ${{ runner.os }}-apt-win-build-${{ hashFiles('.github/workflows/feature_bugfix.desktop.yml') }}
+          key: ${{ runner.os }}-apt-win-build-${{ hashFiles('.github/workflows/production.desktop.yml') }}
           restore-keys: |
             ${{ runner.os }}-apt-win-build-
 
@@ -88,6 +87,46 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-electron-cache-
 
+      - name: Version desktop
+        run: yarn version:desktop
+
+      - name: Push tags
+        run: git push --tags
+
       - name: Build desktop assets
         working-directory: src/apps/desktop
         run: yarn build
+
+      - name: Package desktop for Windows
+        working-directory: src/apps/desktop
+        run: yarn build:win
+
+      - name: Upload desktop artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-dist
+          path: src/apps/desktop/dist
+
+      - name: Notificar no Discord
+        if: always()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "DISCORD_WEBHOOK_URL não configurado. Pulando notificação."
+            exit 0
+          fi
+
+          STATUS="${{ job.status }}"
+          if [ "$STATUS" = "success" ]; then
+            COLOR=3066993
+            MESSAGE="✅ Deploy Desktop Prod finalizado com sucesso!"
+          else
+            COLOR=15158332
+            MESSAGE="❌ Deploy Desktop Prod falhou!"
+          fi
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d "{\"embeds\":[{\"title\":\"Deploy Desktop Prod\",\"description\":\"$MESSAGE\",\"color\":$COLOR,\"fields\":[{\"name\":\"Branch\",\"value\":\"${GITHUB_REF#refs/heads/}\"},{\"name\":\"Commit\",\"value\":\"${GITHUB_SHA}\"}]}]}" \
+            $DISCORD_WEBHOOK_URL
+

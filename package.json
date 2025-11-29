@@ -26,7 +26,8 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
-    "version:desktop": "yarn workspace @anidock/desktop version"
+    "version:desktop": "yarn workspace @anidock/desktop version",
+    "version:desktop:rc": "yarn workspace @anidock/desktop version:rc"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",

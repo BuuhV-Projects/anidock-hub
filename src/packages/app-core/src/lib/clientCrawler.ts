@@ -29,6 +29,7 @@ export async function fetchHTML(url: string): Promise<string> {
     
     return await response.text();
   } catch (error) {
+    console.error('Failed to fetch HTML:', error);
     // If direct fetch fails, use CORS proxy
     const corsProxy = 'https://api.allorigins.win/raw?url=';
     const response = await fetch(corsProxy + encodeURIComponent(url));

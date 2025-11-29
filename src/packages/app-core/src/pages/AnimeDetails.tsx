@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import { Button, Card, VideoPlayerModal } from '@anidock/shared-ui';
+import { ArrowLeft, Loader2, Play } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button, Card, Badge } from '@anidock/shared-ui';
-import { ArrowLeft, Play, Loader2, ExternalLink } from 'lucide-react';
-import { db, LocalAnime, LocalEpisode, Driver, WatchHistoryEntry } from '../lib/indexedDB';
-import { crawlEpisodes, extractVideoUrl } from '../lib/clientCrawler';
 import { toast } from 'sonner';
-import { VideoPlayerModal } from '@anidock/shared-ui';
+import { crawlEpisodes, extractVideoUrl } from '../lib/clientCrawler';
+import { db, Driver, LocalAnime, LocalEpisode, WatchHistoryEntry } from '../lib/indexedDB';
 
 const AnimeDetails = () => {
   const navigate = useNavigate();
@@ -25,11 +24,7 @@ const AnimeDetails = () => {
   } | null>(null);
   const [currentEpisodeTitle, setCurrentEpisodeTitle] = useState('');
 
-  useEffect(() => {
-    loadAnimeAndEpisodes();
-  }, [animeUrl, driverId]);
-
-  const loadAnimeAndEpisodes = async () => {
+  const loadAnimeAndEpisodes = useCallback(async () => {
     if (!animeUrl || !driverId) {
       toast.error('Dados inválidos');
       navigate('/browse');
@@ -106,7 +101,11 @@ const AnimeDetails = () => {
       setIsLoading(false);
       setIsCrawling(false);
     }
-  };
+  }, [animeUrl, driverId, navigate]);
+
+  useEffect(() => {
+    loadAnimeAndEpisodes();
+  }, [loadAnimeAndEpisodes]);
 
   const handlePlayEpisode = async (episode: LocalEpisode) => {
     if (!driver || !anime) return;

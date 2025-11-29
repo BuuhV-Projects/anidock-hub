@@ -1,15 +1,16 @@
-name: Deploy Desktop Prod
+name: Deploy Desktop RC
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - release/**
+      - hotfix/**
 
 jobs:
   build:
     environment:
-      name: production
+      name: development
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -40,9 +41,6 @@ jobs:
       - name: Configure environment
         run: |
           cat <<EOF > .env
-          VITE_SUPABASE_PROJECT_ID=${{ secrets.VITE_SUPABASE_PROJECT_ID }}
-          VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-          VITE_SUPABASE_URL=${{ vars.VITE_SUPABASE_URL }}
           ELECTRON_SANDBOX=${{ vars.ELECTRON_SANDBOX }}
           ELECTRON_AUTO_HIDE_MENU_BAR=${{ vars.ELECTRON_AUTO_HIDE_MENU_BAR }}
           EOF
@@ -51,8 +49,8 @@ jobs:
           echo "#############################"
           cp .env src/apps/desktop/.env
 
-      # - name: Lint
-      #   run: yarn lint
+      - name: Lint
+        run: yarn lint
 
       - name: Prepare apt cache directory
         run: mkdir -p ~/.cache/apt/archives/partial
@@ -61,7 +59,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/apt
-          key: ${{ runner.os }}-apt-win-build-${{ hashFiles('.github/workflows/production.desktop.yml') }}
+          key: ${{ runner.os }}-apt-win-build-${{ hashFiles('.github/workflows/release.desktop.yml') }}
           restore-keys: |
             ${{ runner.os }}-apt-win-build-
 
@@ -90,11 +88,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-electron-cache-
 
-      - name: Version desktop
-        run: yarn version:desktop
-
-      - name: Push tags
-        run: git push --tags
+      - name: Version desktop RC
+        run: yarn version:desktop:rc
 
       - name: Build desktop assets
         working-directory: src/apps/desktop
@@ -123,13 +118,13 @@ jobs:
           STATUS="${{ job.status }}"
           if [ "$STATUS" = "success" ]; then
             COLOR=3066993
-            MESSAGE="✅ Deploy Desktop Prod finalizado com sucesso!"
+            MESSAGE="✅ Deploy Desktop RC finalizado com sucesso!"
           else
             COLOR=15158332
-            MESSAGE="❌ Deploy Desktop Prod falhou!"
+            MESSAGE="❌ Deploy Desktop RC falhou!"
           fi
           curl -H "Content-Type: application/json" \
             -X POST \
-            -d "{\"embeds\":[{\"title\":\"Deploy Desktop Prod\",\"description\":\"$MESSAGE\",\"color\":$COLOR,\"fields\":[{\"name\":\"Branch\",\"value\":\"${GITHUB_REF#refs/heads/}\"},{\"name\":\"Commit\",\"value\":\"${GITHUB_SHA}\"}]}]}" \
+            -d "{\"embeds\":[{\"title\":\"Deploy Desktop RC\",\"description\":\"$MESSAGE\",\"color\":$COLOR,\"fields\":[{\"name\":\"Branch\",\"value\":\"${GITHUB_REF#refs/heads/}\"},{\"name\":\"Commit\",\"value\":\"${GITHUB_SHA}\"}]}]}" \
             $DISCORD_WEBHOOK_URL
 

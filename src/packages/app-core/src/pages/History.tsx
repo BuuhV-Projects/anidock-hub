@@ -1,16 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { Badge, Button, Card, Separator } from '@anidock/shared-ui';
+import { Badge, Button, Card } from '@anidock/shared-ui';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale/pt-BR';
-import { Clock, Film, Trash2, ArrowLeft, Play } from 'lucide-react';
+import { ArrowLeft, Clock, Film, Play, Trash2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { db, WatchHistoryEntry } from '../lib/indexedDB';
-import { usePlataform } from '../contexts/plataform/usePlataform';
 
 const History = () => {
   const navigate = useNavigate();
-  const { isDesktop } = usePlataform();
   const [history, setHistory] = useState<WatchHistoryEntry[]>([]);
   const [groupByDate, _] = useState(true);
 

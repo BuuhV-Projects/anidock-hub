@@ -1,8 +1,7 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
 import { electronApp, optimizer } from '@electron-toolkit/utils';
-import { WindowManager } from './windowManager';
+import { app, BrowserWindow, globalShortcut } from 'electron';
 import { registerIpcHandlers } from '../common/ipc';
-import { globalShortcut } from 'electron';
+import { WindowManager } from './windowManager';
 
 const windowManager = new WindowManager();
 

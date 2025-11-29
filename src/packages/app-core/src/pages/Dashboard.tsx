@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button, Card, Skeleton } from '@anidock/shared-ui';
-import { Cpu, Plus, Database, Zap, Download } from 'lucide-react';
+import { Cpu, Database, Download, Plus, Zap } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { getHistory, getLocalDrivers } from '../lib/localStorage';
 import { db } from '../lib/indexedDB';
 
 const Dashboard = () => {

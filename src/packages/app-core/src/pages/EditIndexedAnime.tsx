@@ -1,23 +1,9 @@
-import { useState, useEffect } from 'react';
+import { Button, Card, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea } from '@anidock/shared-ui';
+import { ArrowLeft, Loader2, Plus, Save, Trash2 } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Button, Card, Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@anidock/shared-ui';
-import { ArrowLeft, Plus, Trash2, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { db, Driver, AnimeIndex, LocalAnime, LocalEpisode } from '../lib/indexedDB';
-
-interface AnimeData {
-  id: string;
-  title: string;
-  synopsis?: string;
-  coverUrl?: string;
-  sourceUrl: string;
-  episodes: LocalEpisode[];
-  createdAt: string;
-  updatedAt: string;
-  driverId: string;
-  alternativeTitles?: string[];
-  metadata?: Record<string, any>;
-}
+import { AnimeIndex, db, Driver, LocalAnime, LocalEpisode } from '../lib/indexedDB';
 
 const EditIndexedAnime = () => {
   const { driverId } = useParams();
@@ -44,10 +30,6 @@ const EditIndexedAnime = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchDriverAndIndexes();
-  }, [driverId]);
-
-  useEffect(() => {
     if (selectedAnimeId && animes.length > 0) {
       const anime = animes.find(a => a.id === selectedAnimeId);
       if (anime) {
@@ -63,7 +45,7 @@ const EditIndexedAnime = () => {
     }
   }, [selectedAnimeId, animes]);
 
-  const fetchDriverAndIndexes = async () => {
+  const fetchDriverAndIndexes = useCallback(async () => {
     try {
       setIsLoading(true);
       await db.init();
@@ -96,7 +78,7 @@ const EditIndexedAnime = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [driverId, navigate, animeId]);
 
   const addEpisode = () => {
     setEpisodes([...episodes, {
@@ -153,6 +135,10 @@ const EditIndexedAnime = () => {
       setIsSaving(false);
     }
   };
+
+  useEffect(() => {
+    fetchDriverAndIndexes();
+  }, [fetchDriverAndIndexes]);
 
   if (isLoading) {
     return (
@@ -256,7 +242,7 @@ const EditIndexedAnime = () => {
               </div>
 
               <div className="space-y-4">
-                {episodes.map((episode, index) => (
+                {episodes.map((episode) => (
                   <Card key={episode.id} className="p-4 border-border/50">
                     <div className="flex items-start gap-4">
                       <div className="flex-1 space-y-3">

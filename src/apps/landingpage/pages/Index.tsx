@@ -1,5 +1,5 @@
 import { Button, Card } from "@anidock/shared-ui";
-import { Database, Zap, Shield, Cpu, Download, HardDrive, MonitorPlay, Sparkles, Lock, Users } from "lucide-react";
+import { Cpu, Database, Download, HardDrive, Lock, MonitorPlay, Sparkles, Users, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {

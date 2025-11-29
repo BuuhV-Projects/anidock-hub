@@ -1,6 +1,6 @@
 import { Button, Card, Input, Label } from '@anidock/shared-ui';
 import { ArrowLeft, Loader2, Save } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { db, Driver } from '../lib/indexedDB';
@@ -8,11 +8,11 @@ import { db, Driver } from '../lib/indexedDB';
 const EditDriver = () => {
   const navigate = useNavigate();
   const { driverId } = useParams();
-  
+
   const [driver, setDriver] = useState<Driver | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  
+
   const [selectors, setSelectors] = useState({
     animeList: '',
     animeTitle: '',
@@ -26,13 +26,8 @@ const EditDriver = () => {
     episodeUrl: '',
   });
 
-  useEffect(() => {
-    if (driverId) {
-      loadDriver();
-    }
-  }, [driverId]);
-
-  const loadDriver = async () => {
+  const loadDriver = useCallback(async () => {
+    if (!driverId) return;
     try {
       await db.init();
       const driverData = await db.getDriver(driverId!);
@@ -44,7 +39,7 @@ const EditDriver = () => {
       }
 
       setDriver(driverData);
-      
+
       if (driverData.config?.selectors) {
         setSelectors({
           animeList: driverData.config.selectors.animeList || '',
@@ -66,7 +61,7 @@ const EditDriver = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [driverId, navigate]);
 
   const handleSave = async () => {
     if (!driver) return;
@@ -96,6 +91,10 @@ const EditDriver = () => {
       setIsSaving(false);
     }
   };
+
+  useEffect(() => {
+    loadDriver();
+  }, [loadDriver]);
 
   if (isLoading) {
     return (
@@ -150,7 +149,7 @@ const EditDriver = () => {
                 <Input
                   id="animeList"
                   value={selectors.animeList}
-                  onChange={(e) => setSelectors({...selectors, animeList: e.target.value})}
+                  onChange={(e) => setSelectors({ ...selectors, animeList: e.target.value })}
                   placeholder=".anime-item, article.anime"
                   className="mt-2"
                 />
@@ -160,7 +159,7 @@ const EditDriver = () => {
                 <Input
                   id="animeTitle"
                   value={selectors.animeTitle}
-                  onChange={(e) => setSelectors({...selectors, animeTitle: e.target.value})}
+                  onChange={(e) => setSelectors({ ...selectors, animeTitle: e.target.value })}
                   placeholder="h2.title, .anime-title"
                   className="mt-2"
                   required
@@ -171,7 +170,7 @@ const EditDriver = () => {
                 <Input
                   id="animeUrl"
                   value={selectors.animeUrl}
-                  onChange={(e) => setSelectors({...selectors, animeUrl: e.target.value})}
+                  onChange={(e) => setSelectors({ ...selectors, animeUrl: e.target.value })}
                   placeholder="a, .anime-link"
                   className="mt-2"
                   required
@@ -182,7 +181,7 @@ const EditDriver = () => {
                 <Input
                   id="animeImage"
                   value={selectors.animeImage}
-                  onChange={(e) => setSelectors({...selectors, animeImage: e.target.value})}
+                  onChange={(e) => setSelectors({ ...selectors, animeImage: e.target.value })}
                   placeholder="img.cover, .anime-image"
                   className="mt-2"
                 />
@@ -198,7 +197,7 @@ const EditDriver = () => {
                 <Input
                   id="episodeList"
                   value={selectors.episodeList}
-                  onChange={(e) => setSelectors({...selectors, episodeList: e.target.value})}
+                  onChange={(e) => setSelectors({ ...selectors, episodeList: e.target.value })}
                   placeholder=".episode, .ep-item"
                   className="mt-2"
                   required
@@ -209,7 +208,7 @@ const EditDriver = () => {
                 <Input
                   id="episodeNumber"
                   value={selectors.episodeNumber}
-                  onChange={(e) => setSelectors({...selectors, episodeNumber: e.target.value})}
+                  onChange={(e) => setSelectors({ ...selectors, episodeNumber: e.target.value })}
                   placeholder=".ep-number, .number"
                   className="mt-2"
                   required
@@ -220,7 +219,7 @@ const EditDriver = () => {
                 <Input
                   id="episodeUrl"
                   value={selectors.episodeUrl}
-                  onChange={(e) => setSelectors({...selectors, episodeUrl: e.target.value})}
+                  onChange={(e) => setSelectors({ ...selectors, episodeUrl: e.target.value })}
                   placeholder="a, .ep-link"
                   className="mt-2"
                   required

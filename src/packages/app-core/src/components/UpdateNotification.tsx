@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +22,7 @@ interface UpdateInfo {
 }
 
 export function UpdateNotification() {
-  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
+  const [updateInfo, _setUpdateInfo] = useState<UpdateInfo | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const { appVersion, isDesktop } = usePlataform();
 
