@@ -1,5 +1,5 @@
 import { Button, Card } from "@anidock/shared-ui";
-import { Cpu, Database, Download, HardDrive, Lock, MonitorPlay, Sparkles, Users, Zap } from "lucide-react";
+import { Cpu, Database, Download, HardDrive, Lock, MonitorPlay, Sparkles, Users, Zap, Github, Code } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {
@@ -28,9 +28,9 @@ const Index = () => {
             <div className="space-y-8">
               {/* Badge */}
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card/50 px-4 py-2 backdrop-blur-sm">
-                <Cpu className="h-4 w-4 text-primary animate-pulse" />
+                <Code className="h-4 w-4 text-primary animate-pulse" />
                 <span className="text-sm font-medium text-muted-foreground">
-                  v1.0 • Lançamento
+                  v1.0 • Open Source
                 </span>
               </div>
 
@@ -58,10 +58,23 @@ const Index = () => {
                   <Download className="h-5 w-5 group-hover:animate-bounce" />
                   Baixar para Windows
                 </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  onClick={() => window.open('https://github.com/seu-usuario/anidock', '_blank')}
+                  className="border-primary/20 hover:border-primary/50 hover:bg-primary/10 font-semibold px-8 transition-all duration-300 gap-2 group"
+                >
+                  <Github className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+                  Ver no GitHub
+                </Button>
               </div>
 
               {/* Features Pills */}
               <div className="flex flex-wrap gap-3">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 border border-border/50">
+                  <Code className="h-4 w-4 text-primary" />
+                  <span className="text-sm">Open Source</span>
+                </div>
                 <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 border border-border/50">
                   <Lock className="h-4 w-4 text-primary" />
                   <span className="text-sm">100% Local</span>
@@ -78,7 +91,7 @@ const Index = () => {
 
               {/* Info */}
               <p className="text-sm text-muted-foreground">
-                Windows 10/11 • Gratuito
+                Windows 10/11 • Gratuito • Código Aberto
               </p>
             </div>
 
@@ -110,9 +123,9 @@ const Index = () => {
               O que é o AniDock?
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              AniDock é um software desktop que revoluciona como você organiza e assiste animes. 
+              AniDock é um software desktop <strong>open source</strong> que revoluciona como você organiza e assiste animes. 
               Cole o link de qualquer site, nossa IA analisa a estrutura, cria um "driver" automaticamente 
-              e indexa todo o catálogo localmente no seu computador.
+              e indexa todo o catálogo localmente no seu computador. Totalmente gratuito e com código aberto.
             </p>
           </div>
 
@@ -144,6 +157,16 @@ const Index = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto mb-16">
             {/* Feature Cards */}
+            <Card className="glass p-6 border-primary/20 hover:border-primary/50 transition-all duration-300 group">
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Code className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-display font-semibold text-lg mb-2">Open Source</h3>
+              <p className="text-sm text-muted-foreground">
+                Código 100% aberto no GitHub. Transparência total, audite e contribua com o projeto.
+              </p>
+            </Card>
+
             <Card className="glass p-6 border-primary/20 hover:border-primary/50 transition-all duration-300 group">
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Sparkles className="h-6 w-6 text-primary" />
@@ -301,9 +324,22 @@ const Index = () => {
                 <Download className="h-6 w-6 mr-2 group-hover:animate-bounce" />
                 Download para Windows
               </Button>
+              <Button 
+                size="lg"
+                variant="outline"
+                onClick={() => window.open('https://github.com/seu-usuario/anidock', '_blank')}
+                className="border-primary/20 hover:border-primary/50 hover:bg-primary/10 font-semibold px-10 text-lg group"
+              >
+                <Github className="h-6 w-6 mr-2 group-hover:rotate-12 transition-transform" />
+                GitHub
+              </Button>
             </div>
 
             <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <Code className="h-4 w-4" />
+                <span>Open Source</span>
+              </div>
               <div className="flex items-center gap-2">
                 <Zap className="h-4 w-4" />
                 <span>Gratuito</span>
@@ -326,9 +362,18 @@ const Index = () => {
                 <Cpu className="h-6 w-6 text-primary" />
                 <span className="font-display font-bold text-xl">AniDock</span>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Indexador inteligente de animes. 100% local e privado.
+              <p className="text-sm text-muted-foreground mb-3">
+                Indexador inteligente de animes. 100% local, privado e open source.
               </p>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => window.open('https://github.com/seu-usuario/anidock', '_blank')}
+                className="gap-2"
+              >
+                <Github className="h-4 w-4" />
+                <span>GitHub</span>
+              </Button>
             </div>
             
             <div>
