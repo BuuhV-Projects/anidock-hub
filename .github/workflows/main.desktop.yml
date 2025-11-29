@@ -91,7 +91,7 @@ jobs:
         run: yarn version:desktop
 
       - name: Push tags
-        run: git push --tags
+        run: git push --follow-tags origin main
 
       - name: Build desktop assets
         working-directory: src/apps/desktop
