@@ -4,8 +4,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { AnimeIndex, db, Driver, LocalAnime, LocalEpisode } from '../lib/indexedDB';
+import { useTranslation } from 'react-i18next';
 
 const EditIndexedAnime = () => {
+  const { t } = useTranslation();
   const { driverId } = useParams();
   const [searchParams] = useSearchParams();
   const animeId = searchParams.get('animeId');
@@ -52,7 +54,7 @@ const EditIndexedAnime = () => {
 
       const driverData = await db.getDriver(driverId!);
       if (!driverData) {
-        toast.error('Driver não encontrado');
+        toast.error(t('editIndexedAnime.notFound'));
         navigate('/drivers');
         return;
       }
@@ -73,12 +75,12 @@ const EditIndexedAnime = () => {
       }
     } catch (error: any) {
       console.error('Error fetching driver:', error);
-      toast.error('Erro ao carregar driver');
+      toast.error(t('editIndexedAnime.loadError'));
       navigate('/drivers');
     } finally {
       setIsLoading(false);
     }
-  }, [driverId, navigate, animeId]);
+  }, [driverId, navigate, animeId, t]);
 
   const addEpisode = () => {
     setEpisodes([...episodes, {
@@ -126,11 +128,11 @@ const EditIndexedAnime = () => {
         }
       }
 
-      toast.success('Anime atualizado com sucesso!');
+      toast.success(t('editIndexedAnime.saveSuccess'));
       navigate('/drivers');
     } catch (error: any) {
       console.error('Error saving anime:', error);
-      toast.error('Erro ao salvar anime');
+      toast.error(t('editIndexedAnime.saveError'));
     } finally {
       setIsSaving(false);
     }
@@ -155,18 +157,18 @@ const EditIndexedAnime = () => {
           <div className="flex items-center justify-between">
             <Button variant="ghost" onClick={() => navigate('/drivers')} className="gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Voltar
+              {t('editIndexedAnime.back')}
             </Button>
             <Button onClick={handleSave} disabled={isSaving || !selectedAnime} className="gap-2">
               {isSaving ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Salvando...
+                  {t('editIndexedAnime.saving')}
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4" />
-                  Salvar
+                  {t('editIndexedAnime.save')}
                 </>
               )}
             </Button>
@@ -175,14 +177,14 @@ const EditIndexedAnime = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <h2 className="text-3xl font-bold mb-6">Editar Anime Indexado</h2>
+        <h2 className="text-3xl font-bold mb-6">{t('editIndexedAnime.title')}</h2>
 
         {animes.length > 0 && (
           <Card className="p-6 mb-6">
-            <Label htmlFor="animeSelect">Selecione um Anime</Label>
+            <Label htmlFor="animeSelect">{t('editIndexedAnime.selectAnime')}</Label>
             <Select value={selectedAnimeId} onValueChange={setSelectedAnimeId}>
               <SelectTrigger className="mt-2">
-                <SelectValue placeholder="Escolha um anime" />
+                <SelectValue placeholder={t('editIndexedAnime.chooseAnime')} />
               </SelectTrigger>
               <SelectContent>
                 {animes.map((anime) => (
@@ -198,10 +200,10 @@ const EditIndexedAnime = () => {
         {selectedAnime && (
           <>
             <Card className="p-6 mb-6">
-              <h3 className="text-xl font-semibold mb-4">Informações do Anime</h3>
+              <h3 className="text-xl font-semibold mb-4">{t('editIndexedAnime.animeInfo')}</h3>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="title">Título *</Label>
+                  <Label htmlFor="title">{t('editIndexedAnime.animeTitle')} {t('editIndexedAnime.required')}</Label>
                   <Input
                     id="title"
                     value={animeForm.title}
@@ -211,7 +213,7 @@ const EditIndexedAnime = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="synopsis">Sinopse</Label>
+                  <Label htmlFor="synopsis">{t('editIndexedAnime.animeSynopsis')}</Label>
                   <Textarea
                     id="synopsis"
                     value={animeForm.synopsis}
@@ -220,7 +222,7 @@ const EditIndexedAnime = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="coverUrl">URL da Capa</Label>
+                  <Label htmlFor="coverUrl">{t('editIndexedAnime.animeCover')}</Label>
                   <Input
                     id="coverUrl"
                     type="url"
@@ -234,10 +236,10 @@ const EditIndexedAnime = () => {
 
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold">Episódios</h3>
+                <h3 className="text-xl font-semibold">{t('editIndexedAnime.episodes')}</h3>
                 <Button onClick={addEpisode} size="sm" className="gap-2">
                   <Plus className="h-4 w-4" />
-                  Adicionar Episódio
+                  {t('editIndexedAnime.addEpisode')}
                 </Button>
               </div>
 
@@ -248,7 +250,7 @@ const EditIndexedAnime = () => {
                       <div className="flex-1 space-y-3">
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <Label>Número *</Label>
+                            <Label>{t('editIndexedAnime.episodeNumber')} {t('editIndexedAnime.required')}</Label>
                             <Input
                               type="number"
                               value={episode.episodeNumber || ''}
@@ -257,7 +259,7 @@ const EditIndexedAnime = () => {
                             />
                           </div>
                           <div>
-                            <Label>Título</Label>
+                            <Label>{t('editIndexedAnime.episodeTitle')}</Label>
                             <Input
                               value={episode.title || ''}
                               onChange={(e) => updateEpisode(episode.id, 'title', e.target.value)}
@@ -266,7 +268,7 @@ const EditIndexedAnime = () => {
                           </div>
                         </div>
                         <div>
-                          <Label>URL do Episódio *</Label>
+                          <Label>{t('editIndexedAnime.episodeUrl')} {t('editIndexedAnime.required')}</Label>
                           <Input
                             type="url"
                             value={episode.sourceUrl}
