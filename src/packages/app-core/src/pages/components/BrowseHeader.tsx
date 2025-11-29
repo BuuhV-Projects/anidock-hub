@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@anidock/shared-ui';
 import { useNavigate } from 'react-router-dom';
-import { Cpu, Upload, Clock, LogOut } from 'lucide-react';
+import { Cpu, Upload, Clock, LogOut, Settings } from 'lucide-react';
 import { useElectronApi } from '../../hooks/useElectronApi';
 
 type BrowseHeaderProps = {
@@ -59,6 +59,14 @@ export const BrowseHeader = ({ isDesktop }: BrowseHeaderProps) => {
             >
               <Cpu className="h-4 w-4" />
               Meus Drivers
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/settings')}
+              className="text-muted-foreground hover:text-foreground gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Configurações
             </Button>
             {isDesktop && <DesktopCloseButton />}
           </div>

@@ -14,6 +14,7 @@ import {
     NotFound,
     Player
 } from "@anidock/app-core";
+import Settings from "../pages/Settings";
 import { Route, Routes } from "react-router-dom";
 
 const RouterAppCore = () => {
@@ -31,10 +32,11 @@ const RouterAppCore = () => {
             <Route path="/drivers/:driverId/index-manual" element={<IndexManual />} />
             <Route path="/drivers/:driverId/edit-anime" element={<EditIndexedAnime />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/backup" element={<Backup />} />
-            <Route path="*" element={<NotFound />} />
-        </Routes>
-    );
+      <Route path="/backup" element={<Backup />} />
+      <Route path="/settings" element={<Settings />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
 };
 
 export default RouterAppCore;

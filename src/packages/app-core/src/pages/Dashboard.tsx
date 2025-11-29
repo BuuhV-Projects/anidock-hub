@@ -1,7 +1,7 @@
 import { Button, Card, Skeleton } from '@anidock/shared-ui';
-import { Cpu, Database, Download, Plus, Zap } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Cpu, Plus, Database, Zap, Download, Settings as SettingsIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { db } from '../lib/indexedDB';
 
@@ -131,6 +131,14 @@ const Dashboard = () => {
               >
                 <Download className="h-4 w-4 mr-2" />
                 Backup e Restauração
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => navigate('/settings')}
+              >
+                <SettingsIcon className="h-4 w-4 mr-2" />
+                Configurações
               </Button>
             </div>
           </Card>
