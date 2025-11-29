@@ -312,6 +312,62 @@ class IndexedDBManager {
       transaction.onerror = () => reject(transaction.error);
     });
   }
+
+  // Export/Import operations
+  async exportAllData(): Promise<{
+    drivers: Driver[];
+    indexes: AnimeIndex[];
+    watchHistory: WatchHistoryEntry[];
+    exportDate: string;
+    version: string;
+  }> {
+    const [drivers, indexes, watchHistory] = await Promise.all([
+      this.getAllDrivers(),
+      this.getAllIndexes(),
+      this.getWatchHistory(),
+    ]);
+
+    return {
+      drivers,
+      indexes,
+      watchHistory,
+      exportDate: new Date().toISOString(),
+      version: '1.0',
+    };
+  }
+
+  async importAllData(data: {
+    drivers?: Driver[];
+    indexes?: AnimeIndex[];
+    watchHistory?: WatchHistoryEntry[];
+  }): Promise<void> {
+    const db = this.ensureDB();
+    
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['drivers', 'indexes', 'watchHistory'], 'readwrite');
+
+      // Import drivers
+      if (data.drivers) {
+        const driverStore = transaction.objectStore('drivers');
+        data.drivers.forEach(driver => driverStore.put(driver));
+      }
+
+      // Import indexes
+      if (data.indexes) {
+        const indexStore = transaction.objectStore('indexes');
+        data.indexes.forEach(index => indexStore.put(index));
+      }
+
+      // Import watch history
+      if (data.watchHistory) {
+        const historyStore = transaction.objectStore('watchHistory');
+        data.watchHistory.forEach(entry => historyStore.put(entry));
+      }
+
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+  }
 }
 
 export const db = new IndexedDBManager();
