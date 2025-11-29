@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Input, Label, Progress, Alert, AlertDescription } from '@anidock/shared-ui';
 import { Sparkles, ArrowLeft, Loader2, CheckCircle2, Cpu } from 'lucide-react';
@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { db, Driver } from '../lib/indexedDB';
 import { generateDriverWithAI, validateAPIKey, type AIConfig, type AIProvider } from '../lib/aiDriver';
 import { crawlWithDriver } from '../lib/clientCrawler';
+import { getAIKey, saveAIKey } from '../lib/localStorage';
 
 const CreateDriver = () => {
   const [url, setUrl] = useState('');
@@ -21,6 +22,18 @@ const CreateDriver = () => {
   const [indexStatus, setIndexStatus] = useState('');
   const [totalAnimes, setTotalAnimes] = useState(0);
   const navigate = useNavigate();
+
+  // Load saved API key on mount and when provider changes
+  useEffect(() => {
+    const savedKey = getAIKey(aiProvider);
+    if (savedKey) {
+      setApiKey(savedKey);
+      setKeyValidated(true);
+    } else {
+      setApiKey('');
+      setKeyValidated(false);
+    }
+  }, [aiProvider]);
 
   const handleValidateKey = async () => {
     if (!apiKey.trim()) {
@@ -40,8 +53,7 @@ const CreateDriver = () => {
       if (isValid) {
         setKeyValidated(true);
         toast.success('API key validada com sucesso!');
-        // Save to localStorage for future use
-        localStorage.setItem(`anidock_${aiProvider}_key`, apiKey.trim());
+        saveAIKey(aiProvider, apiKey.trim());
       } else {
         toast.error('API key inválida');
       }
@@ -173,7 +185,7 @@ const CreateDriver = () => {
           <Sparkles className="h-4 w-4" />
           <AlertDescription>
             Use sua própria API key do OpenAI ou Google Gemini para gerar drivers automaticamente.
-            Sua chave é armazenada localmente e nunca é enviada para nossos servidores.
+            Sua chave é armazenada localmente no navegador para uso futuro e nunca é enviada para nossos servidores.
           </AlertDescription>
         </Alert>
 

@@ -460,3 +460,29 @@ export const deleteHistoryItem = (itemId: string): void => {
   }
 };
 
+// ========== AI API KEYS MANAGEMENT ==========
+export const saveAIKey = (provider: 'openai' | 'gemini', apiKey: string): void => {
+  try {
+    localStorage.setItem(`anidock_${provider}_key`, apiKey.trim());
+  } catch (error) {
+    console.error('Error saving AI key:', error);
+  }
+};
+
+export const getAIKey = (provider: 'openai' | 'gemini'): string | null => {
+  try {
+    return localStorage.getItem(`anidock_${provider}_key`);
+  } catch (error) {
+    console.error('Error loading AI key:', error);
+    return null;
+  }
+};
+
+export const deleteAIKey = (provider: 'openai' | 'gemini'): void => {
+  try {
+    localStorage.removeItem(`anidock_${provider}_key`);
+  } catch (error) {
+    console.error('Error deleting AI key:', error);
+  }
+};
+
