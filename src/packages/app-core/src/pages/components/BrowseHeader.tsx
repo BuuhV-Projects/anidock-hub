@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@anidock/shared-ui';
 import { useNavigate } from 'react-router-dom';
-import { Cpu, Upload, Clock, LogOut, Settings } from 'lucide-react';
+import { Cpu, LogOut, LayoutDashboard } from 'lucide-react';
 import { useElectronApi } from '../../hooks/useElectronApi';
 import { LanguageSelector } from '../../components/LanguageSelector';
 import { useTranslation } from 'react-i18next';
@@ -43,35 +43,11 @@ export const BrowseHeader = ({ isDesktop }: BrowseHeaderProps) => {
             <LanguageSelector />
             <Button
               variant="ghost"
-              onClick={() => navigate('/drivers/import')}
+              onClick={() => navigate('/dashboard')}
               className="text-muted-foreground hover:text-foreground gap-2"
             >
-              <Upload className="h-4 w-4" />
-              {t('drivers.importDriver')}
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/history')}
-              className="text-muted-foreground hover:text-foreground gap-2"
-            >
-              <Clock className="h-4 w-4" />
-              Histórico
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/drivers')}
-              className="text-muted-foreground hover:text-foreground gap-2"
-            >
-              <Cpu className="h-4 w-4" />
-              {t('drivers.title')}
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/settings')}
-              className="text-muted-foreground hover:text-foreground gap-2"
-            >
-              <Settings className="h-4 w-4" />
-              {t('common.settings')}
+              <LayoutDashboard className="h-4 w-4" />
+              {t('dashboard.title')}
             </Button>
             {isDesktop && <DesktopCloseButton />}
           </div>
