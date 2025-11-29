@@ -7,8 +7,10 @@ import { db, Driver } from '../lib/indexedDB';
 import { generateDriverWithAI, validateAPIKey, type AIConfig, type AIProvider } from '../lib/aiDriver';
 import { crawlWithDriver } from '../lib/clientCrawler';
 import { getAIKey, saveAIKey } from '../lib/localStorage';
+import { useTranslation } from 'react-i18next';
 
 const CreateDriver = () => {
+  const { t } = useTranslation();
   const [url, setUrl] = useState('');
   const [catalogUrl, setCatalogUrl] = useState('');
   const [aiProvider, setAiProvider] = useState<AIProvider>('gemini');
@@ -23,7 +25,6 @@ const CreateDriver = () => {
   const [totalAnimes, setTotalAnimes] = useState(0);
   const navigate = useNavigate();
 
-  // Load saved API key on mount and when provider changes
   useEffect(() => {
     const savedKey = getAIKey(aiProvider);
     if (savedKey) {
@@ -37,7 +38,7 @@ const CreateDriver = () => {
 
   const handleValidateKey = async () => {
     if (!apiKey.trim()) {
-      toast.error('Insira a API key');
+      toast.error(t('createDriver.errorInsertKey'));
       return;
     }
 
@@ -52,14 +53,14 @@ const CreateDriver = () => {
       
       if (isValid) {
         setKeyValidated(true);
-        toast.success('API key validada com sucesso!');
+        toast.success(t('settings.saveSuccess', { provider: aiProvider === 'openai' ? 'OpenAI' : 'Gemini' }));
         saveAIKey(aiProvider, apiKey.trim());
       } else {
-        toast.error('API key inválida');
+        toast.error(t('createDriver.keyInvalid'));
       }
     } catch (error) {
       console.error('Error validating key:', error);
-      toast.error('Erro ao validar API key');
+      toast.error(t('createDriver.errorValidatingKey'));
     } finally {
       setIsValidatingKey(false);
     }
@@ -67,17 +68,17 @@ const CreateDriver = () => {
 
   const handleGenerate = async () => {
     if (!url.trim()) {
-      toast.error('Cole a URL do site de anime');
+      toast.error(t('createDriver.errorUrl'));
       return;
     }
 
     if (!catalogUrl.trim()) {
-      toast.error('A URL do catálogo é obrigatória');
+      toast.error(t('createDriver.errorCatalogUrl'));
       return;
     }
 
     if (!keyValidated) {
-      toast.error('Valide a API key primeiro');
+      toast.error(t('createDriver.errorValidateKey'));
       return;
     }
 
@@ -89,25 +90,20 @@ const CreateDriver = () => {
         apiKey: apiKey.trim(),
       };
 
-      // Generate driver with AI
       const driver = await generateDriverWithAI(catalogUrl.trim(), config, setGenerationStatus);
       
-      // Initialize IndexedDB
       await db.init();
-      
-      // Save driver locally
       await db.saveDriver(driver);
       
-      toast.success('Driver gerado com sucesso!');
+      toast.success(t('createDriver.successGenerated'));
       setGenerationStatus('');
       
-      // Start indexing
       setIsIndexing(true);
       await generateIndexFromDriver(driver);
       
     } catch (error: any) {
       console.error('Error generating driver:', error);
-      toast.error(error.message || 'Erro ao gerar driver');
+      toast.error(error.message || t('createDriver.errorGenerating'));
     } finally {
       setIsGenerating(false);
     }
@@ -132,11 +128,10 @@ const CreateDriver = () => {
       }
 
       if (result.animes.length === 0) {
-        toast.error('Nenhum anime encontrado');
+        toast.error(t('createDriver.noAnimesFound'));
         return;
       }
 
-      // Save index to IndexedDB
       const animeIndex = {
         id: crypto.randomUUID(),
         driverId: driver.id,
@@ -151,14 +146,14 @@ const CreateDriver = () => {
       await db.saveIndex(animeIndex);
 
       setTotalAnimes(result.animes.length);
-      toast.success(`Driver criado com ${result.animes.length} animes indexados!`);
+      toast.success(t('createDriver.successIndexed', { count: result.animes.length }));
       
       setTimeout(() => {
         navigate('/drivers');
       }, 2000);
     } catch (error: any) {
       console.error('Error indexing:', error);
-      toast.error('Erro ao indexar animes');
+      toast.error(t('createDriver.errorIndexing'));
     } finally {
       setIsIndexing(false);
     }
@@ -174,7 +169,7 @@ const CreateDriver = () => {
             </Button>
             <Cpu className="h-8 w-8 text-primary animate-pulse-glow" />
             <h1 className="font-display text-2xl font-bold text-gradient-primary">
-              Criar Driver com IA
+              {t('createDriver.title')}
             </h1>
           </div>
         </div>
@@ -184,15 +179,14 @@ const CreateDriver = () => {
         <Alert className="mb-6">
           <Sparkles className="h-4 w-4" />
           <AlertDescription>
-            Use sua própria API key do OpenAI ou Google Gemini para gerar drivers automaticamente.
-            Sua chave é armazenada localmente no navegador para uso futuro e nunca é enviada para nossos servidores.
+            {t('createDriver.alertDescription')}
           </AlertDescription>
         </Alert>
 
         <Card className="p-6 mb-6">
           <div className="space-y-4">
             <div>
-              <Label>Provedor de IA</Label>
+              <Label>{t('createDriver.aiProvider')}</Label>
               <div className="flex gap-4 mt-2">
                 <Button
                   variant={aiProvider === 'openai' ? 'default' : 'outline'}
@@ -212,11 +206,11 @@ const CreateDriver = () => {
             </div>
 
             <div>
-              <Label>API Key</Label>
+              <Label>{t('settings.apiKey')}</Label>
               <div className="flex gap-2 mt-2">
                 <Input
                   type="password"
-                  placeholder={`Sua ${aiProvider === 'openai' ? 'OpenAI' : 'Gemini'} API key`}
+                  placeholder={`${aiProvider === 'openai' ? 'OpenAI' : 'Gemini'} API key`}
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   disabled={isGenerating || keyValidated}
@@ -231,12 +225,12 @@ const CreateDriver = () => {
                   ) : keyValidated ? (
                     <CheckCircle2 className="h-4 w-4" />
                   ) : (
-                    'Validar'
+                    t('createDriver.validate')
                   )}
                 </Button>
               </div>
               {keyValidated && (
-                <p className="text-sm text-green-600 mt-1">✓ API key validada</p>
+                <p className="text-sm text-green-600 mt-1">✓ {t('createDriver.validated')}</p>
               )}
             </div>
           </div>
@@ -245,7 +239,7 @@ const CreateDriver = () => {
         <Card className="p-6">
           <div className="space-y-6">
             <div>
-              <Label htmlFor="url">URL do Site *</Label>
+              <Label htmlFor="url">{t('createDriver.siteUrl')} *</Label>
               <Input
                 id="url"
                 type="url"
@@ -258,7 +252,7 @@ const CreateDriver = () => {
             </div>
 
             <div>
-              <Label htmlFor="catalogUrl">URL do Catálogo *</Label>
+              <Label htmlFor="catalogUrl">{t('createDriver.catalogUrl')} *</Label>
               <Input
                 id="catalogUrl"
                 type="url"
@@ -269,7 +263,7 @@ const CreateDriver = () => {
                 className="mt-2"
               />
               <p className="text-sm text-muted-foreground mt-1">
-                URL da página que lista os animes
+                {t('createDriver.catalogUrlHint')}
               </p>
             </div>
 
@@ -285,7 +279,7 @@ const CreateDriver = () => {
                   <div className="space-y-2">
                     <Progress value={indexProgress} className="h-2" />
                     <p className="text-sm text-center text-muted-foreground">
-                      {totalAnimes > 0 && `${totalAnimes} animes indexados`}
+                      {totalAnimes > 0 && `${totalAnimes} ${t('createDriver.animesIndexed')}`}
                     </p>
                   </div>
                 )}
@@ -301,12 +295,12 @@ const CreateDriver = () => {
               {isGenerating || isIndexing ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  Gerando...
+                  {t('createDriver.generating')}
                 </>
               ) : (
                 <>
                   <Sparkles className="h-5 w-5" />
-                  Gerar Driver com IA
+                  {t('createDriver.generateWithAI')}
                 </>
               )}
             </Button>
