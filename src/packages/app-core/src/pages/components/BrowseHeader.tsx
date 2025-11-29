@@ -3,6 +3,8 @@ import { Button } from '@anidock/shared-ui';
 import { useNavigate } from 'react-router-dom';
 import { Cpu, Upload, Clock, LogOut, Settings } from 'lucide-react';
 import { useElectronApi } from '../../hooks/useElectronApi';
+import { LanguageSelector } from '../../components/LanguageSelector';
+import { useTranslation } from 'react-i18next';
 
 type BrowseHeaderProps = {
   isDesktop: boolean;
@@ -10,6 +12,7 @@ type BrowseHeaderProps = {
 
 const DesktopCloseButton = () => {
   const { closeWindow } = useElectronApi();
+  const { t } = useTranslation();
 
   return (
     <Button
@@ -18,13 +21,14 @@ const DesktopCloseButton = () => {
       className="text-muted-foreground hover:text-foreground gap-2"
     >
       <LogOut className="h-4 w-4" />
-      Fechar
+      {t('common.back')}
     </Button>
   );
 };
 
 export const BrowseHeader = ({ isDesktop }: BrowseHeaderProps) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <header className="border-b border-border/50 sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
@@ -36,13 +40,14 @@ export const BrowseHeader = ({ isDesktop }: BrowseHeaderProps) => {
           </div>
 
           <div className="flex items-center gap-4">
+            <LanguageSelector />
             <Button
               variant="ghost"
               onClick={() => navigate('/drivers/import')}
               className="text-muted-foreground hover:text-foreground gap-2"
             >
               <Upload className="h-4 w-4" />
-              Importar Driver
+              {t('drivers.importDriver')}
             </Button>
             <Button
               variant="ghost"
@@ -58,7 +63,7 @@ export const BrowseHeader = ({ isDesktop }: BrowseHeaderProps) => {
               className="text-muted-foreground hover:text-foreground gap-2"
             >
               <Cpu className="h-4 w-4" />
-              Meus Drivers
+              {t('drivers.title')}
             </Button>
             <Button
               variant="ghost"
@@ -66,7 +71,7 @@ export const BrowseHeader = ({ isDesktop }: BrowseHeaderProps) => {
               className="text-muted-foreground hover:text-foreground gap-2"
             >
               <Settings className="h-4 w-4" />
-              Configurações
+              {t('common.settings')}
             </Button>
             {isDesktop && <DesktopCloseButton />}
           </div>

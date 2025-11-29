@@ -33,11 +33,7 @@ const Backup = () => {
       });
     } catch (error) {
       console.error('Error loading stats:', error);
-      toast({
-        title: 'Erro ao carregar estatísticas',
-        description: 'Não foi possível carregar as estatísticas da biblioteca.',
-        variant: 'destructive',
-      });
+      toast.error('Erro ao carregar estatísticas');
     }
   };
 
@@ -57,17 +53,10 @@ const Backup = () => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast({
-        title: 'Backup criado com sucesso',
-        description: `Exportados: ${data.drivers.length} drivers, ${data.indexes.length} índices, ${data.watchHistory.length} históricos`,
-      });
+      toast.success('Backup criado com sucesso!');
     } catch (error) {
       console.error('Error exporting data:', error);
-      toast({
-        title: 'Erro ao exportar',
-        description: 'Não foi possível criar o backup. Tente novamente.',
-        variant: 'destructive',
-      });
+      toast.error('Erro ao exportar o backup');
     } finally {
       setIsExporting(false);
     }
@@ -90,17 +79,10 @@ const Backup = () => {
       await db.importAllData(data);
       await loadStats();
 
-      toast({
-        title: 'Backup restaurado com sucesso',
-        description: `Importados: ${data.drivers?.length || 0} drivers, ${data.indexes?.length || 0} índices, ${data.watchHistory?.length || 0} históricos`,
-      });
+      toast.success('Backup restaurado com sucesso!');
     } catch (error) {
       console.error('Error importing data:', error);
-      toast({
-        title: 'Erro ao importar',
-        description: error instanceof Error ? error.message : 'Arquivo de backup inválido ou corrompido.',
-        variant: 'destructive',
-      });
+      toast.error('Erro ao importar o backup');
     } finally {
       setIsImporting(false);
       // Reset file input
@@ -116,17 +98,10 @@ const Backup = () => {
     try {
       await db.clearAllData();
       await loadStats();
-      toast({
-        title: 'Dados apagados',
-        description: 'Todos os dados locais foram removidos.',
-      });
+      toast.success('Todos os dados locais foram removidos');
     } catch (error) {
       console.error('Error clearing data:', error);
-      toast({
-        title: 'Erro ao limpar dados',
-        description: 'Não foi possível apagar os dados. Tente novamente.',
-        variant: 'destructive',
-      });
+      toast.error('Erro ao limpar os dados');
     }
   };
 

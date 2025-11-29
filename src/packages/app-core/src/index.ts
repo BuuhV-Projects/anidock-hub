@@ -19,6 +19,7 @@ export { default as LGPD } from './pages/LGPD';
 export { default as Copyright } from './pages/Copyright';
 export { default as Index } from './pages/Index';
 export { UpdateNotification } from './components/UpdateNotification';
+export { LanguageSelector } from './components/LanguageSelector';
 
 // Export router
 export { default as RouterAppCore } from './router/RouterAppCore';
