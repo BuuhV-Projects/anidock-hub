@@ -6,8 +6,7 @@ const Index = () => {
   const navigate = useNavigate();
 
   const handleDownload = () => {
-    // TODO: Link para download quando o Electron build estiver pronto
-    window.open('https://github.com/seu-repo/anidock/releases', '_blank');
+    window.open('https://github.com/BuuhV-Projects/anidock-hub/releases', '_blank');
   };
 
   return (
@@ -61,7 +60,7 @@ const Index = () => {
                 <Button 
                   size="lg" 
                   variant="outline"
-                  onClick={() => window.open('https://github.com/seu-usuario/anidock', '_blank')}
+                  onClick={() => window.open('https://github.com/BuuhV-Projects/anidock-hub', '_blank')}
                   className="border-primary/20 hover:border-primary/50 hover:bg-primary/10 font-semibold px-8 transition-all duration-300 gap-2 group"
                 >
                   <Github className="h-5 w-5 group-hover:rotate-12 transition-transform" />
@@ -327,7 +326,7 @@ const Index = () => {
               <Button 
                 size="lg"
                 variant="outline"
-                onClick={() => window.open('https://github.com/seu-usuario/anidock', '_blank')}
+                onClick={() => window.open('https://github.com/BuuhV-Projects/anidock-hub', '_blank')}
                 className="border-primary/20 hover:border-primary/50 hover:bg-primary/10 font-semibold px-10 text-lg group"
               >
                 <Github className="h-6 w-6 mr-2 group-hover:rotate-12 transition-transform" />
@@ -368,7 +367,7 @@ const Index = () => {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => window.open('https://github.com/seu-usuario/anidock', '_blank')}
+                onClick={() => window.open('https://github.com/BuuhV-Projects/anidock-hub', '_blank')}
                 className="gap-2"
               >
                 <Github className="h-4 w-4" />
