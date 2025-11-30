@@ -27,37 +27,35 @@ interface GeminiResponse {
     }>;
 }
 
-// Fetch HTML using AI (OpenAI or Gemini)
-async function fetchHTMLWithAI(url: string, config: AIConfig): Promise<string> {
-    const prompt = `You are a web scraper. Your task is to fetch the complete HTML content from this URL: ${url}
+// Fetch HTML helper with multiple CORS proxy fallbacks
+async function fetchHTML(url: string): Promise<string> {
+    const proxies = [
+        'https://corsproxy.io/?',
+        'https://api.allorigins.win/raw?url=',
+        'https://cors-anywhere.herokuapp.com/',
+    ];
 
-CRITICAL INSTRUCTIONS:
-1. Fetch the full HTML content of the page
-2. Return ONLY the raw HTML source code
-3. Do NOT add any explanations, comments, or markdown formatting
-4. Do NOT wrap the HTML in code blocks
-5. Return the HTML exactly as it appears in the page source
-6. Include all tags, attributes, and content
+    for (let i = 0; i < proxies.length; i++) {
+        try {
+            const proxyUrl = proxies[i] + encodeURIComponent(url);
+            const response = await fetch(proxyUrl);
 
-URL to fetch: ${url}`;
+            if (!response.ok) {
+                if (i === proxies.length - 1) {
+                    throw new Error(`Failed to fetch: ${response.status}`);
+                }
+                continue;
+            }
 
-    try {
-        const aiCall = config.provider === 'openai' ? callOpenAI : callGemini;
-        const html = await aiCall(config, prompt);
-        
-        // Remove any markdown formatting if present
-        let cleanHtml = html.trim();
-        if (cleanHtml.startsWith('```html')) {
-            cleanHtml = cleanHtml.replace(/```html\n?/g, '').replace(/```\n?/g, '');
-        } else if (cleanHtml.startsWith('```')) {
-            cleanHtml = cleanHtml.replace(/```\n?/g, '');
+            return await response.text();
+        } catch (error) {
+            if (i === proxies.length - 1) {
+                throw new Error(`Failed to fetch HTML: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            }
         }
-        
-        return cleanHtml;
-    } catch (error) {
-        console.error('Error fetching HTML with AI:', error);
-        throw new Error(`Failed to fetch HTML: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
+
+    throw new Error('All CORS proxies failed');
 }
 
 // Call OpenAI API
@@ -138,10 +136,10 @@ export async function generateDriverWithAI(
     config: AIConfig,
     onProgress?: (status: string) => void
 ): Promise<Driver> {
-    onProgress?.('Fetching website HTML with AI...');
+    onProgress?.('Fetching website HTML...');
 
-    // Fetch HTML using the configured AI
-    const html = await fetchHTMLWithAI(url, config);
+    // Fetch HTML
+    const html = await fetchHTML(url);
 
     onProgress?.('Analyzing HTML structure with AI...');
 
