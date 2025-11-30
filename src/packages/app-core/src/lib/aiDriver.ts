@@ -130,16 +130,20 @@ async function callGemini(config: AIConfig, prompt: string): Promise<string> {
     return data.candidates[0].content.parts[0].text;
 }
 
+export type FetchHTMLFunction = (url: string) => Promise<string>;
+
 // Generate driver using AI
 export async function generateDriverWithAI(
     url: string,
     config: AIConfig,
-    onProgress?: (status: string) => void
+    onProgress?: (status: string) => void,
+    customFetchHTML?: FetchHTMLFunction
 ): Promise<Driver> {
     onProgress?.('Fetching website HTML...');
 
-    // Fetch HTML
-    const html = await fetchHTML(url);
+    // Fetch HTML using custom function (Puppeteer) or fallback to CORS proxies
+    const fetchFn = customFetchHTML || fetchHTML;
+    const html = await fetchFn(url);
 
     onProgress?.('Analyzing HTML structure with AI...');
 
