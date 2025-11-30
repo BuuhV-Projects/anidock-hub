@@ -27,20 +27,35 @@ interface GeminiResponse {
     }>;
 }
 
-// Fetch HTML helper
+// Fetch HTML helper with multiple CORS proxy fallbacks
 async function fetchHTML(url: string): Promise<string> {
-    try {
-        const corsProxy = 'https://api.allorigins.win/raw?url=';
-        const response = await fetch(corsProxy + encodeURIComponent(url));
+    const proxies = [
+        'https://corsproxy.io/?',
+        'https://api.allorigins.win/raw?url=',
+        'https://cors-anywhere.herokuapp.com/',
+    ];
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch: ${response.status}`);
+    for (let i = 0; i < proxies.length; i++) {
+        try {
+            const proxyUrl = proxies[i] + encodeURIComponent(url);
+            const response = await fetch(proxyUrl);
+
+            if (!response.ok) {
+                if (i === proxies.length - 1) {
+                    throw new Error(`Failed to fetch: ${response.status}`);
+                }
+                continue;
+            }
+
+            return await response.text();
+        } catch (error) {
+            if (i === proxies.length - 1) {
+                throw new Error(`Failed to fetch HTML: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            }
         }
-
-        return await response.text();
-    } catch (error) {
-        throw new Error(`Failed to fetch HTML: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
+
+    throw new Error('All CORS proxies failed');
 }
 
 // Call OpenAI API
