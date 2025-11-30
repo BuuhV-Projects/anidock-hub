@@ -93,7 +93,12 @@ const CreateDriver = () => {
                 apiKey: apiKey.trim(),
             };
 
-            const driver = await generateDriverWithAI(catalogUrl.trim(), config, setGenerationStatus);
+            const driver = await generateDriverWithAI(
+                catalogUrl.trim(), 
+                config, 
+                setGenerationStatus,
+                crawler?.fetchHTML
+            );
 
             await db.init();
             await db.saveDriver(driver);
