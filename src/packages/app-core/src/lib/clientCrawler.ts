@@ -34,8 +34,20 @@ function removeAnidockHostFromCrawledUrl(driverBaseUrl: string, url?: string | n
     return url;
 }
 
-// Fetch HTML from URL with CORS proxy fallbacks
-export async function fetchHTML(url: string): Promise<string> {
+// Fetch HTML from URL with CORS proxy fallbacks (web) or Puppeteer (desktop)
+export async function fetchHTML(url: string, usePuppeteer?: () => Promise<string>): Promise<string> {
+    // If Puppeteer is available (desktop), use it
+    if (usePuppeteer) {
+        try {
+            console.log('Using Puppeteer to fetch HTML');
+            return await usePuppeteer();
+        } catch (error) {
+            console.error('Puppeteer failed:', error);
+            throw error;
+        }
+    }
+
+    // Otherwise, use CORS proxies (web)
     const proxies = [
         'https://corsproxy.io/?',
         'https://api.allorigins.win/raw?url=',
@@ -75,7 +87,8 @@ export async function fetchHTML(url: string): Promise<string> {
 export async function crawlWithDriver(
     url: string,
     driver: Driver,
-    onProgress?: (progress: CrawlProgress) => void
+    onProgress?: (progress: CrawlProgress) => void,
+    crawlerFetchHTML?: (url: string) => Promise<string>
 ): Promise<CrawlResult> {
     const errors: string[] = [];
     const animes: LocalAnime[] = [];
@@ -85,7 +98,7 @@ export async function crawlWithDriver(
         logger.info(`Iniciando crawler para ${url}`);
         onProgress?.({ current: 0, total: 1, status: 'Fetching catalog page...' });
 
-        const html = await fetchHTML(url);
+        const html = await fetchHTML(url, crawlerFetchHTML);
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 
@@ -166,7 +179,8 @@ export async function crawlWithDriver(
 export async function crawlEpisodes(
     animeUrl: string,
     driver: Driver,
-    onProgress?: (progress: CrawlProgress) => void
+    onProgress?: (progress: CrawlProgress) => void,
+    crawlerFetchHTML?: (url: string) => Promise<string>
 ): Promise<{ episodes: LocalEpisode[]; errors: string[] }> {
     const errors: string[] = [];
     const episodes: LocalEpisode[] = [];
@@ -174,7 +188,7 @@ export async function crawlEpisodes(
     try {
         onProgress?.({ current: 0, total: 1, status: 'Fetching anime page...' });
 
-        const html = await fetchHTML(animeUrl);
+        const html = await fetchHTML(animeUrl, crawlerFetchHTML);
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 
@@ -237,10 +251,11 @@ export async function crawlEpisodes(
 // Extract video URL from episode page
 export async function extractVideoUrl(
     episodeUrl: string,
-    driver: Driver
+    driver: Driver,
+    crawlerFetchHTML?: (url: string) => Promise<string>
 ): Promise<{ videoUrl: string | null; videoType: 'iframe' | 'video' | 'external' }> {
     try {
-        const html = await fetchHTML(episodeUrl);
+        const html = await fetchHTML(episodeUrl, crawlerFetchHTML);
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 

@@ -9,9 +9,11 @@ import { generateDriverWithAI, validateAPIKey, type AIConfig, type AIProvider } 
 import { crawlWithDriver } from '../lib/clientCrawler';
 import { getAIKey, saveAIKey } from '../lib/localStorage';
 import { useTranslation } from 'react-i18next';
+import { usePlataform } from '../contexts/plataform/usePlataform';
 
 const CreateDriver = () => {
     const { t } = useTranslation();
+    const { crawler } = usePlataform();
     const [url, setUrl] = useState('');
     const [catalogUrl, setCatalogUrl] = useState('');
     const [aiProvider, setAiProvider] = useState<AIProvider>('gemini');
@@ -121,7 +123,8 @@ const CreateDriver = () => {
                     const percent = Math.round((progress.current / progress.total) * 100);
                     setIndexProgress(percent);
                     setIndexStatus(progress.status);
-                }
+                },
+                crawler?.fetchHTML ? () => crawler.fetchHTML(urlToIndex) : undefined
             );
 
             if (result.errors.length > 0) {
