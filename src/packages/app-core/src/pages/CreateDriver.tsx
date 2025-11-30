@@ -1,8 +1,8 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Input, Label, Progress, Alert, AlertDescription } from '@anidock/shared-ui';
-import { Sparkles, ArrowLeft, Loader2, CheckCircle2, Cpu } from 'lucide-react';
+import { Button, Card, Input, Label, Progress, Alert, AlertDescription, Badge } from '@anidock/shared-ui';
+import { Sparkles, ArrowLeft, Loader2, CheckCircle2, Cpu, Edit, Save, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { db, Driver } from '../lib/indexedDB';
 import { generateDriverWithAI, validateAPIKey, type AIConfig, type AIProvider } from '../lib/aiDriver';
@@ -26,6 +26,10 @@ const CreateDriver = () => {
     const [indexProgress, setIndexProgress] = useState(0);
     const [indexStatus, setIndexStatus] = useState('');
     const [totalAnimes, setTotalAnimes] = useState(0);
+    const [generatedDriver, setGeneratedDriver] = useState<Driver | null>(null);
+    const [selectorValidation, setSelectorValidation] = useState<Record<string, number>>({});
+    const [isValidatingSelectors, setIsValidatingSelectors] = useState(false);
+    const [editableSelectors, setEditableSelectors] = useState<Record<string, string>>({});
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -100,20 +104,93 @@ const CreateDriver = () => {
                 crawler?.fetchHTML
             );
 
-            await db.init();
-            await db.saveDriver(driver);
-
-            toast.success(t('createDriver.successGenerated'));
+            setGeneratedDriver(driver);
+            setEditableSelectors(driver.config.selectors as Record<string, string>);
             setGenerationStatus('');
-
-            setIsIndexing(true);
-            await generateIndexFromDriver(driver);
+            
+            // Validate selectors automatically
+            await validateSelectors(driver);
 
         } catch (error: any) {
             console.error('Error generating driver:', error);
             toast.error(error.message || t('createDriver.errorGenerating'));
         } finally {
             setIsGenerating(false);
+        }
+    };
+
+    const validateSelectors = async (driver: Driver) => {
+        if (!crawler?.fetchHTML) return;
+        
+        setIsValidatingSelectors(true);
+        try {
+            const html = await crawler.fetchHTML(driver.catalogUrl || driver.sourceUrl || driver.config.baseUrl);
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+
+            const validation: Record<string, number> = {};
+            const selectors = driver.config.selectors;
+
+            if (selectors.animeList) {
+                validation.animeList = doc.querySelectorAll(selectors.animeList).length;
+            }
+            if (selectors.animeTitle) {
+                validation.animeTitle = doc.querySelectorAll(selectors.animeTitle).length;
+            }
+            if (selectors.animeUrl) {
+                validation.animeUrl = doc.querySelectorAll(selectors.animeUrl).length;
+            }
+            if (selectors.animeImage) {
+                validation.animeImage = doc.querySelectorAll(selectors.animeImage).length;
+            }
+
+            setSelectorValidation(validation);
+        } catch (error) {
+            console.error('Error validating selectors:', error);
+            toast.error(t('createDriver.errorValidatingSelectors'));
+        } finally {
+            setIsValidatingSelectors(false);
+        }
+    };
+
+    const handleRevalidate = async () => {
+        if (!generatedDriver) return;
+        
+        const updatedDriver = {
+            ...generatedDriver,
+            config: {
+                ...generatedDriver.config,
+                selectors: editableSelectors
+            }
+        };
+        
+        setGeneratedDriver(updatedDriver);
+        await validateSelectors(updatedDriver);
+    };
+
+    const handleConfirmDriver = async () => {
+        if (!generatedDriver) return;
+
+        try {
+            await db.init();
+            
+            const finalDriver = {
+                ...generatedDriver,
+                config: {
+                    ...generatedDriver.config,
+                    selectors: editableSelectors
+                }
+            };
+            
+            await db.saveDriver(finalDriver);
+            toast.success(t('createDriver.successGenerated'));
+
+            setIsIndexing(true);
+            await generateIndexFromDriver(finalDriver);
+
+        } catch (error: any) {
+            console.error('Error saving driver:', error);
+            toast.error(error.message || t('createDriver.errorGenerating'));
         }
     };
 
@@ -295,26 +372,99 @@ const CreateDriver = () => {
                             </div>
                         )}
 
-                        <Button
-                            onClick={handleGenerate}
-                            disabled={isGenerating || isIndexing || !keyValidated}
-                            className="w-full gap-2"
-                            size="lg"
-                        >
-                            {isGenerating || isIndexing ? (
-                                <>
-                                    <Loader2 className="h-5 w-5 animate-spin" />
-                                    {t('createDriver.generating')}
-                                </>
-                            ) : (
-                                <>
-                                    <Sparkles className="h-5 w-5" />
-                                    {t('createDriver.generateWithAI')}
-                                </>
-                            )}
-                        </Button>
+                        {!generatedDriver ? (
+                            <Button
+                                onClick={handleGenerate}
+                                disabled={isGenerating || isIndexing || !keyValidated}
+                                className="w-full gap-2"
+                                size="lg"
+                            >
+                                {isGenerating || isIndexing ? (
+                                    <>
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                        {t('createDriver.generating')}
+                                    </>
+                                ) : (
+                                    <>
+                                        <Sparkles className="h-5 w-5" />
+                                        {t('createDriver.generateWithAI')}
+                                    </>
+                                )}
+                            </Button>
+                        ) : null}
                     </div>
                 </Card>
+
+                {generatedDriver && !isIndexing && (
+                    <Card className="p-6 mt-6">
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-xl font-bold">{t('createDriver.validateSelectors')}</h2>
+                                <Button
+                                    onClick={handleRevalidate}
+                                    disabled={isValidatingSelectors}
+                                    variant="outline"
+                                    size="sm"
+                                >
+                                    {isValidatingSelectors ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        t('createDriver.revalidate')
+                                    )}
+                                </Button>
+                            </div>
+
+                            <Alert>
+                                <AlertTriangle className="h-4 w-4" />
+                                <AlertDescription>
+                                    {t('createDriver.validateSelectorsDescription')}
+                                </AlertDescription>
+                            </Alert>
+
+                            <div className="space-y-3">
+                                {Object.entries(editableSelectors).map(([key, value]) => (
+                                    <div key={key} className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <Label className="text-sm font-mono">{key}</Label>
+                                            {selectorValidation[key] !== undefined && (
+                                                <Badge variant={selectorValidation[key] > 0 ? "default" : "destructive"}>
+                                                    {selectorValidation[key]} {t('createDriver.elementsFound')}
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <Input
+                                            value={value || ''}
+                                            onChange={(e) => setEditableSelectors({
+                                                ...editableSelectors,
+                                                [key]: e.target.value
+                                            })}
+                                            placeholder={`CSS selector for ${key}`}
+                                            className="font-mono text-sm"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex gap-3">
+                                <Button
+                                    onClick={() => setGeneratedDriver(null)}
+                                    variant="outline"
+                                    className="flex-1"
+                                >
+                                    {t('createDriver.cancel')}
+                                </Button>
+                                <Button
+                                    onClick={handleConfirmDriver}
+                                    className="flex-1 gap-2"
+                                    disabled={selectorValidation.animeList === 0}
+                                >
+                                    <Save className="h-4 w-4" />
+                                    {t('createDriver.confirmAndIndex')}
+                                </Button>
+                            </div>
+                        </div>
+                    </Card>
+                )}
             </main>
         </div>
     );
