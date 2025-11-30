@@ -1,7 +1,9 @@
 import { electronApp, optimizer } from '@electron-toolkit/utils';
-import { app, BrowserWindow, globalShortcut } from 'electron';
+import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron';
 import { registerIpcHandlers } from '../common/ipc';
 import { WindowManager } from './windowManager';
+import { IPC_CHANNELS } from '../common/ipc/channels';
+import * as puppeteerCrawler from './puppeteerCrawler';
 
 const windowManager = new WindowManager();
 
@@ -35,6 +37,31 @@ app.whenReady().then(() => {
 
   registerIpcHandlers(windowManager, app);
   
+  // Register Puppeteer crawler IPC handlers
+  ipcMain.handle(IPC_CHANNELS.crawler.fetchHTML, async (_, url: string) => {
+    try {
+      return await puppeteerCrawler.fetchHTML(url);
+    } catch (error) {
+      throw error;
+    }
+  });
+
+  ipcMain.handle(IPC_CHANNELS.crawler.extractData, async (_, url: string, selectors: any) => {
+    try {
+      return await puppeteerCrawler.extractData(url, selectors);
+    } catch (error) {
+      throw error;
+    }
+  });
+
+  ipcMain.handle(IPC_CHANNELS.crawler.extractVideoUrl, async (_, url: string, selectors: any) => {
+    try {
+      return await puppeteerCrawler.extractVideoUrl(url, selectors);
+    } catch (error) {
+      throw error;
+    }
+  });
+  
   createWindow();
 
   app.on('activate', function () {
@@ -47,10 +74,15 @@ app.whenReady().then(() => {
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
+  await puppeteerCrawler.closeBrowser();
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+app.on('before-quit', async () => {
+  await puppeteerCrawler.closeBrowser();
 });
 
 // In this file you can include the rest of your app"s specific main process

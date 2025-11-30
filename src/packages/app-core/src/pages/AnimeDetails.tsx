@@ -5,12 +5,14 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { crawlEpisodes, extractVideoUrl } from '../lib/clientCrawler';
 import { db, Driver, LocalAnime, LocalEpisode, WatchHistoryEntry } from '../lib/indexedDB';
+import { usePlataform } from '../contexts/plataform/usePlataform';
 
 const AnimeDetails = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const animeUrl = searchParams.get('url');
   const driverId = searchParams.get('driverId');
+  const { crawler } = usePlataform();
   
   const [anime, setAnime] = useState<LocalAnime | null>(null);
   const [driver, setDriver] = useState<Driver | null>(null);
@@ -70,7 +72,12 @@ const AnimeDetails = () => {
 
       // Crawl episodes
       setIsCrawling(true);
-      const result = await crawlEpisodes(animeUrl, driverData);
+      const result = await crawlEpisodes(
+        animeUrl, 
+        driverData,
+        undefined,
+        crawler?.fetchHTML ? () => crawler.fetchHTML(animeUrl) : undefined
+      );
       
       if (result.errors.length > 0) {
         console.warn('Episode crawl errors:', result.errors);
@@ -113,7 +120,11 @@ const AnimeDetails = () => {
     toast.loading('Carregando vídeo...');
 
     try {
-      const result = await extractVideoUrl(episode.sourceUrl, driver);
+      const result = await extractVideoUrl(
+        episode.sourceUrl, 
+        driver,
+        crawler?.fetchHTML ? () => crawler.fetchHTML(episode.sourceUrl) : undefined
+      );
 
       toast.dismiss();
 
