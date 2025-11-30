@@ -27,9 +27,9 @@ interface GeminiResponse {
     }>;
 }
 
-// Fetch HTML from URL using backend function
+// Fetch HTML from URL using Lovable AI backend
 async function fetchHTML(url: string): Promise<string> {
-    const FETCH_HTML_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-html`;
+    const FETCH_HTML_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-html-ai`;
 
     try {
         const response = await fetch(FETCH_HTML_URL, {
@@ -42,7 +42,8 @@ async function fetchHTML(url: string): Promise<string> {
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to fetch HTML: ${response.status}`);
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Failed to fetch HTML: ${response.status}`);
         }
 
         const data = await response.json();
