@@ -34,52 +34,30 @@ function removeAnidockHostFromCrawledUrl(driverBaseUrl: string, url?: string | n
     return url;
 }
 
-// Fetch HTML from URL with CORS proxy fallbacks
+// Fetch HTML from URL using backend function
 export async function fetchHTML(url: string): Promise<string> {
-    const proxies = [
-        'https://corsproxy.io/?',
-        'https://api.allorigins.win/raw?url=',
-        'https://cors-anywhere.herokuapp.com/',
-    ];
+    const FETCH_HTML_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-html`;
 
-    // Try direct fetch first
     try {
-        const response = await fetch(url, {
+        const response = await fetch(FETCH_HTML_URL, {
+            method: 'POST',
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
             },
+            body: JSON.stringify({ url }),
         });
 
-        if (response.ok) {
-            return await response.text();
+        if (!response.ok) {
+            throw new Error(`Failed to fetch HTML: ${response.status}`);
         }
+
+        const data = await response.json();
+        return data.html;
     } catch (error) {
-        console.log('Direct fetch failed, trying proxies...');
+        console.error('Error fetching HTML:', error);
+        throw new Error(`Failed to fetch HTML: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-
-    // Try each proxy
-    for (let i = 0; i < proxies.length; i++) {
-        try {
-            const proxyUrl = proxies[i] + encodeURIComponent(url);
-            const response = await fetch(proxyUrl);
-
-            if (!response.ok) {
-                if (i === proxies.length - 1) {
-                    throw new Error(`Failed to fetch: ${response.status}`);
-                }
-                continue;
-            }
-
-            return await response.text();
-        } catch (error) {
-            if (i === proxies.length - 1) {
-                throw new Error(`All CORS proxies failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-            }
-        }
-    }
-
-    throw new Error('Failed to fetch HTML from all sources');
 }
 
 // Parse HTML and extract anime data using driver selectors

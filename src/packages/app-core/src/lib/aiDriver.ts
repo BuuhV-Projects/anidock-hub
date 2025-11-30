@@ -27,35 +27,30 @@ interface GeminiResponse {
     }>;
 }
 
-// Fetch HTML helper with multiple CORS proxy fallbacks
+// Fetch HTML from URL using backend function
 async function fetchHTML(url: string): Promise<string> {
-    const proxies = [
-        'https://corsproxy.io/?',
-        'https://api.allorigins.win/raw?url=',
-        'https://cors-anywhere.herokuapp.com/',
-    ];
+    const FETCH_HTML_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-html`;
 
-    for (let i = 0; i < proxies.length; i++) {
-        try {
-            const proxyUrl = proxies[i] + encodeURIComponent(url);
-            const response = await fetch(proxyUrl);
+    try {
+        const response = await fetch(FETCH_HTML_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ url }),
+        });
 
-            if (!response.ok) {
-                if (i === proxies.length - 1) {
-                    throw new Error(`Failed to fetch: ${response.status}`);
-                }
-                continue;
-            }
-
-            return await response.text();
-        } catch (error) {
-            if (i === proxies.length - 1) {
-                throw new Error(`Failed to fetch HTML: ${error instanceof Error ? error.message : 'Unknown error'}`);
-            }
+        if (!response.ok) {
+            throw new Error(`Failed to fetch HTML: ${response.status}`);
         }
-    }
 
-    throw new Error('All CORS proxies failed');
+        const data = await response.json();
+        return data.html;
+    } catch (error) {
+        console.error('Error fetching HTML:', error);
+        throw new Error(`Failed to fetch HTML: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
 }
 
 // Call OpenAI API
