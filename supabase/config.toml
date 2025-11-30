@@ -1,1 +1,4 @@
 project_id = "btieehbdvyghccpzftge"
+
+[functions.fetch-html-ai]
+verify_jwt = false
