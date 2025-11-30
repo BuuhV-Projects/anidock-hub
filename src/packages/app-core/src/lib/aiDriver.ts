@@ -147,37 +147,50 @@ export async function generateDriverWithAI(
 
     onProgress?.('Analyzing HTML structure with AI...');
 
-    // Create prompt for AI
+    // Create prompt for AI with more detailed instructions
     const prompt = `Analyze this HTML from an anime website catalog page and extract CSS selectors for scraping.
 
 Website URL: ${url}
 HTML Content (first 50000 chars):
 ${html.substring(0, 50000)}
 
+CRITICAL INSTRUCTIONS:
+1. Look for repeating elements that represent individual anime entries
+2. The "animeList" selector must return MULTIPLE elements (one for each anime)
+3. Test selectors mentally: querySelectorAll(animeList) should return 5-50+ elements
+4. Use only classes/IDs that ACTUALLY exist in the HTML above
+5. Prefer class selectors over tag names when possible
+6. All other selectors (animeTitle, animeUrl, etc.) are RELATIVE to each animeList item
+
+COMMON PATTERNS TO LOOK FOR:
+- Anime cards/items often have classes like: .card, .item, .anime, .post, .entry, .grid-item
+- Links usually have href attributes
+- Images often have src or data-src attributes
+- Titles are usually in h2, h3, h4, or span/div with specific classes
+
 Return a JSON object with these selectors:
 {
-  "animeList": "CSS selector for each anime item container",
-  "animeTitle": "CSS selector for anime title (relative to animeList item)",
-  "animeUrl": "CSS selector for anime page link (relative to animeList item)",
-  "animeImage": "CSS selector for anime cover image (relative to animeList item)",
-  "animeSynopsis": "CSS selector for anime description (optional, relative to animeList item)",
-  "episodeList": "CSS selector for episode list items on anime page",
-  "episodeNumber": "CSS selector for episode number (relative to episodeList item)",
-  "episodeUrl": "CSS selector for episode page link (relative to episodeList item)",
-  "episodeTitle": "CSS selector for episode title (optional, relative to episodeList item)",
-  "videoPlayer": "CSS selector for video iframe or video element on episode page",
-  "externalLinkSelector": "CSS selector for external video link if not embedded (optional)",
+  "animeList": "CSS selector that returns MULTIPLE anime containers (e.g., '.anime-card')",
+  "animeTitle": "CSS selector for title RELATIVE to animeList item (e.g., 'h3', '.title')",
+  "animeUrl": "CSS selector for link RELATIVE to animeList item (e.g., 'a', '.link')",
+  "animeImage": "CSS selector for image RELATIVE to animeList item (e.g., 'img', '.cover img')",
+  "animeSynopsis": "CSS selector for synopsis RELATIVE to animeList (optional, e.g., '.description')",
+  "episodeList": "CSS selector for episode items on anime detail page",
+  "episodeNumber": "CSS selector for episode number RELATIVE to episodeList",
+  "episodeUrl": "CSS selector for episode link RELATIVE to episodeList",
+  "episodeTitle": "CSS selector for episode title RELATIVE to episodeList (optional)",
+  "videoPlayer": "CSS selector for video player (e.g., 'iframe', 'video')",
+  "externalLinkSelector": "CSS selector for external video link (optional)",
   "baseUrl": "Base URL of the website (e.g., https://example.com)",
   "requiresExternalLink": true or false (whether episodes open in external player)
 }
 
-IMPORTANT RULES:
-1. Use only existing HTML classes and tags from the provided HTML
-2. Prefer simple, stable selectors (avoid nth-child if possible)
-3. For elements without classes, use just the tag name (e.g., "a" not "a.link" if no link class exists)
-4. Test mentally if the selector would match the correct elements
-5. DO NOT invent class names that don't exist in the HTML
-6. Return ONLY valid JSON, no markdown formatting`;
+VALIDATION:
+- animeList must match multiple elements (5+ expected)
+- If you see 10 anime cards, animeList should match all 10
+- Test each selector mentally against the HTML
+
+Return ONLY valid JSON, no markdown code blocks, no explanations.`;
 
     // Call AI provider
     const aiCall = config.provider === 'openai' ? callOpenAI : callGemini;
@@ -195,7 +208,12 @@ IMPORTANT RULES:
         jsonStr = jsonStr.replace(/```\n?/g, '');
     }
 
+    console.log('🤖 AI Response:', jsonStr);
+    
     const selectors = JSON.parse(jsonStr);
+    
+    // Log the generated selectors for debugging
+    console.log('🎯 Generated selectors:', selectors);
 
     // Extract domain from URL
     const urlObj = new URL(url);

@@ -35,12 +35,12 @@ function removeAnidockHostFromCrawledUrl(driverBaseUrl: string, url?: string | n
 }
 
 // Fetch HTML from URL with CORS proxy fallbacks (web) or Puppeteer (desktop)
-export async function fetchHTML(url: string, usePuppeteer?: () => Promise<string>): Promise<string> {
+export async function fetchHTML(url: string, usePuppeteer?: (url: string) => Promise<string>): Promise<string> {
     // If Puppeteer is available (desktop), use it
     if (usePuppeteer) {
         try {
             console.log('Using Puppeteer to fetch HTML');
-            return await usePuppeteer();
+            return await usePuppeteer(url);
         } catch (error) {
             console.error('Puppeteer failed:', error);
             throw error;
