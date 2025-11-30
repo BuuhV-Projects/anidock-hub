@@ -1,10 +1,11 @@
-import { Button, Card, Input, Label } from '@anidock/shared-ui';
-import { ArrowLeft, Loader2, Save } from 'lucide-react';
+import { Button, Card, Input, Label, Badge } from '@anidock/shared-ui';
+import { ArrowLeft, Loader2, Save, RefreshCw, CheckCircle2, XCircle } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { db, Driver } from '../lib/indexedDB';
 import { useTranslation } from 'react-i18next';
+import { fetchHTML } from '../lib/clientCrawler';
 
 const EditDriver = () => {
   const { t } = useTranslation();
@@ -14,6 +15,8 @@ const EditDriver = () => {
   const [driver, setDriver] = useState<Driver | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationHtml, setValidationHtml] = useState<string>('');
 
   const [selectors, setSelectors] = useState({
     animeList: '',
@@ -27,6 +30,8 @@ const EditDriver = () => {
     episodeTitle: '',
     episodeUrl: '',
   });
+
+  const [selectorCounts, setSelectorCounts] = useState<Record<string, number>>({});
 
   const loadDriver = useCallback(async () => {
     if (!driverId) return;
@@ -64,6 +69,42 @@ const EditDriver = () => {
       setIsLoading(false);
     }
   }, [driverId, navigate, t]);
+
+  const validateSelectors = useCallback(async () => {
+    if (!driver?.sourceUrl) {
+      toast.error(t('createDriver.validation.noUrl'));
+      return;
+    }
+
+    setIsValidating(true);
+    try {
+      const html = await fetchHTML(driver.sourceUrl);
+      setValidationHtml(html);
+
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+
+      const counts: Record<string, number> = {};
+      Object.entries(selectors).forEach(([key, selector]) => {
+        if (selector) {
+          try {
+            const elements = doc.querySelectorAll(selector);
+            counts[key] = elements.length;
+          } catch {
+            counts[key] = 0;
+          }
+        }
+      });
+
+      setSelectorCounts(counts);
+      toast.success(t('createDriver.validation.success'));
+    } catch (error) {
+      console.error('Validation error:', error);
+      toast.error(t('createDriver.validation.error'));
+    } finally {
+      setIsValidating(false);
+    }
+  }, [driver?.sourceUrl, selectors, t]);
 
   const handleSave = async () => {
     if (!driver) return;
@@ -142,50 +183,121 @@ const EditDriver = () => {
           <p className="text-muted-foreground">{driver.domain}</p>
         </div>
 
+        <Card className="p-6 mb-6 bg-primary/5 border-primary/20">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold mb-2">{t('createDriver.validation.title')}</h3>
+              <p className="text-sm text-muted-foreground">{t('createDriver.validation.description')}</p>
+            </div>
+            <Button
+              onClick={validateSelectors}
+              disabled={isValidating}
+              variant="outline"
+              className="gap-2 shrink-0"
+            >
+              {isValidating ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t('createDriver.validation.validating')}
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4" />
+                  {t('createDriver.validation.validate')}
+                </>
+              )}
+            </Button>
+          </div>
+        </Card>
+
         <div className="space-y-6">
           <Card className="p-6">
             <h3 className="text-xl font-semibold mb-4">{t('editDriver.animeListSelectors')}</h3>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="animeList">{t('editDriver.animeContainer')}</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label htmlFor="animeList">{t('editDriver.animeContainer')}</Label>
+                  {selectorCounts.animeList !== undefined && (
+                    <Badge variant={selectorCounts.animeList > 0 ? "default" : "destructive"} className="gap-1">
+                      {selectorCounts.animeList > 0 ? (
+                        <CheckCircle2 className="h-3 w-3" />
+                      ) : (
+                        <XCircle className="h-3 w-3" />
+                      )}
+                      {selectorCounts.animeList} {t('createDriver.validation.elementsFound')}
+                    </Badge>
+                  )}
+                </div>
                 <Input
                   id="animeList"
                   value={selectors.animeList}
                   onChange={(e) => setSelectors({ ...selectors, animeList: e.target.value })}
                   placeholder=".anime-item, article.anime"
-                  className="mt-2"
                 />
               </div>
               <div>
-                <Label htmlFor="animeTitle">{t('editDriver.animeTitle')} {t('editDriver.required')}</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label htmlFor="animeTitle">{t('editDriver.animeTitle')} {t('editDriver.required')}</Label>
+                  {selectorCounts.animeTitle !== undefined && (
+                    <Badge variant={selectorCounts.animeTitle > 0 ? "default" : "destructive"} className="gap-1">
+                      {selectorCounts.animeTitle > 0 ? (
+                        <CheckCircle2 className="h-3 w-3" />
+                      ) : (
+                        <XCircle className="h-3 w-3" />
+                      )}
+                      {selectorCounts.animeTitle} {t('createDriver.validation.elementsFound')}
+                    </Badge>
+                  )}
+                </div>
                 <Input
                   id="animeTitle"
                   value={selectors.animeTitle}
                   onChange={(e) => setSelectors({ ...selectors, animeTitle: e.target.value })}
                   placeholder="h2.title, .anime-title"
-                  className="mt-2"
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="animeUrl">{t('editDriver.animeUrl')} {t('editDriver.required')}</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label htmlFor="animeUrl">{t('editDriver.animeUrl')} {t('editDriver.required')}</Label>
+                  {selectorCounts.animeUrl !== undefined && (
+                    <Badge variant={selectorCounts.animeUrl > 0 ? "default" : "destructive"} className="gap-1">
+                      {selectorCounts.animeUrl > 0 ? (
+                        <CheckCircle2 className="h-3 w-3" />
+                      ) : (
+                        <XCircle className="h-3 w-3" />
+                      )}
+                      {selectorCounts.animeUrl} {t('createDriver.validation.elementsFound')}
+                    </Badge>
+                  )}
+                </div>
                 <Input
                   id="animeUrl"
                   value={selectors.animeUrl}
                   onChange={(e) => setSelectors({ ...selectors, animeUrl: e.target.value })}
                   placeholder="a, .anime-link"
-                  className="mt-2"
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="animeImage">{t('editDriver.animeImage')}</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label htmlFor="animeImage">{t('editDriver.animeImage')}</Label>
+                  {selectorCounts.animeImage !== undefined && (
+                    <Badge variant={selectorCounts.animeImage > 0 ? "default" : "destructive"} className="gap-1">
+                      {selectorCounts.animeImage > 0 ? (
+                        <CheckCircle2 className="h-3 w-3" />
+                      ) : (
+                        <XCircle className="h-3 w-3" />
+                      )}
+                      {selectorCounts.animeImage} {t('createDriver.validation.elementsFound')}
+                    </Badge>
+                  )}
+                </div>
                 <Input
                   id="animeImage"
                   value={selectors.animeImage}
                   onChange={(e) => setSelectors({ ...selectors, animeImage: e.target.value })}
                   placeholder="img.cover, .anime-image"
-                  className="mt-2"
                 />
               </div>
             </div>
@@ -195,35 +307,68 @@ const EditDriver = () => {
             <h3 className="text-xl font-semibold mb-4">{t('editDriver.episodeSelectors')}</h3>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="episodeList">{t('editDriver.episodeContainer')} {t('editDriver.required')}</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label htmlFor="episodeList">{t('editDriver.episodeContainer')} {t('editDriver.required')}</Label>
+                  {selectorCounts.episodeList !== undefined && (
+                    <Badge variant={selectorCounts.episodeList > 0 ? "default" : "destructive"} className="gap-1">
+                      {selectorCounts.episodeList > 0 ? (
+                        <CheckCircle2 className="h-3 w-3" />
+                      ) : (
+                        <XCircle className="h-3 w-3" />
+                      )}
+                      {selectorCounts.episodeList} {t('createDriver.validation.elementsFound')}
+                    </Badge>
+                  )}
+                </div>
                 <Input
                   id="episodeList"
                   value={selectors.episodeList}
                   onChange={(e) => setSelectors({ ...selectors, episodeList: e.target.value })}
                   placeholder=".episode, .ep-item"
-                  className="mt-2"
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="episodeNumber">{t('editDriver.episodeNumber')} {t('editDriver.required')}</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label htmlFor="episodeNumber">{t('editDriver.episodeNumber')} {t('editDriver.required')}</Label>
+                  {selectorCounts.episodeNumber !== undefined && (
+                    <Badge variant={selectorCounts.episodeNumber > 0 ? "default" : "destructive"} className="gap-1">
+                      {selectorCounts.episodeNumber > 0 ? (
+                        <CheckCircle2 className="h-3 w-3" />
+                      ) : (
+                        <XCircle className="h-3 w-3" />
+                      )}
+                      {selectorCounts.episodeNumber} {t('createDriver.validation.elementsFound')}
+                    </Badge>
+                  )}
+                </div>
                 <Input
                   id="episodeNumber"
                   value={selectors.episodeNumber}
                   onChange={(e) => setSelectors({ ...selectors, episodeNumber: e.target.value })}
                   placeholder=".ep-number, .number"
-                  className="mt-2"
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="episodeUrl">{t('editDriver.episodeUrl')} {t('editDriver.required')}</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label htmlFor="episodeUrl">{t('editDriver.episodeUrl')} {t('editDriver.required')}</Label>
+                  {selectorCounts.episodeUrl !== undefined && (
+                    <Badge variant={selectorCounts.episodeUrl > 0 ? "default" : "destructive"} className="gap-1">
+                      {selectorCounts.episodeUrl > 0 ? (
+                        <CheckCircle2 className="h-3 w-3" />
+                      ) : (
+                        <XCircle className="h-3 w-3" />
+                      )}
+                      {selectorCounts.episodeUrl} {t('createDriver.validation.elementsFound')}
+                    </Badge>
+                  )}
+                </div>
                 <Input
                   id="episodeUrl"
                   value={selectors.episodeUrl}
                   onChange={(e) => setSelectors({ ...selectors, episodeUrl: e.target.value })}
                   placeholder="a, .ep-link"
-                  className="mt-2"
                   required
                 />
               </div>
