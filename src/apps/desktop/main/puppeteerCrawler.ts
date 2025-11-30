@@ -34,12 +34,41 @@ export async function fetchHTML(url: string): Promise<string> {
   const page = await browserInstance.newPage();
   
   try {
+    // Set realistic browser properties
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    await page.setViewport({ width: 1920, height: 1080 });
+    
+    // Set extra headers to look more like a real browser
+    await page.setExtraHTTPHeaders({
+      'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Connection': 'keep-alive',
+      'Upgrade-Insecure-Requests': '1'
+    });
+    
+    // Block redirects to google.com or other unwanted domains
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
+      const requestUrl = request.url();
+      
+      // Block redirects to Google and other common redirect targets
+      if (requestUrl.includes('google.com') || 
+          requestUrl.includes('captcha') ||
+          requestUrl.includes('recaptcha')) {
+        request.abort();
+      } else {
+        request.continue();
+      }
+    });
     
     await page.goto(url, {
-      waitUntil: 'networkidle2',
+      waitUntil: 'domcontentloaded',
       timeout: 30000
     });
+    
+    // Wait a bit for any JS to execute
+    await page.waitForTimeout(2000);
     
     const html = await page.content();
     return html;
@@ -70,11 +99,30 @@ export async function extractData(
   
   try {
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
+    await page.setViewport({ width: 1920, height: 1080 });
+    
+    await page.setExtraHTTPHeaders({
+      'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    });
+    
+    // Block redirects
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
+      const requestUrl = request.url();
+      if (requestUrl.includes('google.com') || requestUrl.includes('captcha')) {
+        request.abort();
+      } else {
+        request.continue();
+      }
+    });
     
     await page.goto(url, {
-      waitUntil: 'networkidle2',
+      waitUntil: 'domcontentloaded',
       timeout: 30000
     });
+    
+    await page.waitForTimeout(2000);
     
     // Extract data using selectors
     const data = await page.evaluate((config) => {
@@ -142,11 +190,30 @@ export async function extractVideoUrl(
   
   try {
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
+    await page.setViewport({ width: 1920, height: 1080 });
+    
+    await page.setExtraHTTPHeaders({
+      'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    });
+    
+    // Block redirects
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
+      const requestUrl = request.url();
+      if (requestUrl.includes('google.com') || requestUrl.includes('captcha')) {
+        request.abort();
+      } else {
+        request.continue();
+      }
+    });
     
     await page.goto(url, {
-      waitUntil: 'networkidle2',
+      waitUntil: 'domcontentloaded',
       timeout: 30000
     });
+    
+    await page.waitForTimeout(2000);
     
     const result = await page.evaluate((config) => {
       // Strategy 1: Look for iframe with video player
