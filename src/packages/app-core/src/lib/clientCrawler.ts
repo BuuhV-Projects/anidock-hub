@@ -42,37 +42,26 @@ export async function fetchHTML(url: string): Promise<string> {
         'https://cors-anywhere.herokuapp.com/',
     ];
 
-    // Try direct fetch first
-    try {
-        const response = await fetch(url, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            },
-        });
-
-        if (response.ok) {
-            return await response.text();
-        }
-    } catch (error) {
-        console.log('Direct fetch failed, trying proxies...');
-    }
-
-    // Try each proxy
+    // Try each proxy (skip direct fetch due to CORS)
     for (let i = 0; i < proxies.length; i++) {
         try {
             const proxyUrl = proxies[i] + encodeURIComponent(url);
+            console.log(`Attempting proxy ${i + 1}/${proxies.length}: ${proxies[i]}`);
+            
             const response = await fetch(proxyUrl);
 
             if (!response.ok) {
+                console.warn(`Proxy ${i + 1} failed with status ${response.status}`);
                 if (i === proxies.length - 1) {
                     throw new Error(`Failed to fetch: ${response.status}`);
                 }
                 continue;
             }
 
+            console.log(`Proxy ${i + 1} succeeded!`);
             return await response.text();
         } catch (error) {
+            console.error(`Proxy ${i + 1} error:`, error);
             if (i === proxies.length - 1) {
                 throw new Error(`All CORS proxies failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
             }
