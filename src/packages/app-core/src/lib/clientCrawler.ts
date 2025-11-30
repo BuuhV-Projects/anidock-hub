@@ -34,10 +34,16 @@ function removeAnidockHostFromCrawledUrl(driverBaseUrl: string, url?: string | n
     return url;
 }
 
-// Fetch HTML from URL with CORS proxy if needed
+// Fetch HTML from URL with CORS proxy fallbacks
 export async function fetchHTML(url: string): Promise<string> {
+    const proxies = [
+        'https://corsproxy.io/?',
+        'https://api.allorigins.win/raw?url=',
+        'https://cors-anywhere.herokuapp.com/',
+    ];
+
+    // Try direct fetch first
     try {
-        // Try direct fetch first
         const response = await fetch(url, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -45,23 +51,35 @@ export async function fetchHTML(url: string): Promise<string> {
             },
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+        if (response.ok) {
+            return await response.text();
         }
-
-        return await response.text();
     } catch (error) {
-        console.error('Failed to fetch HTML:', error);
-        // If direct fetch fails, use CORS proxy
-        const corsProxy = 'https://api.allorigins.win/raw?url=';
-        const response = await fetch(corsProxy + encodeURIComponent(url));
-
-        if (!response.ok) {
-            throw new Error(`Failed to fetch: ${response.status}`);
-        }
-
-        return await response.text();
+        console.log('Direct fetch failed, trying proxies...');
     }
+
+    // Try each proxy
+    for (let i = 0; i < proxies.length; i++) {
+        try {
+            const proxyUrl = proxies[i] + encodeURIComponent(url);
+            const response = await fetch(proxyUrl);
+
+            if (!response.ok) {
+                if (i === proxies.length - 1) {
+                    throw new Error(`Failed to fetch: ${response.status}`);
+                }
+                continue;
+            }
+
+            return await response.text();
+        } catch (error) {
+            if (i === proxies.length - 1) {
+                throw new Error(`All CORS proxies failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            }
+        }
+    }
+
+    throw new Error('Failed to fetch HTML from all sources');
 }
 
 // Parse HTML and extract anime data using driver selectors
