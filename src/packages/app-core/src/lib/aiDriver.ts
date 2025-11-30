@@ -27,29 +27,35 @@ interface GeminiResponse {
     }>;
 }
 
-// Fetch HTML from URL using Lovable AI backend
-async function fetchHTML(url: string): Promise<string> {
-    const FETCH_HTML_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-html-ai`;
+// Fetch HTML using AI (OpenAI or Gemini)
+async function fetchHTMLWithAI(url: string, config: AIConfig): Promise<string> {
+    const prompt = `You are a web scraper. Your task is to fetch the complete HTML content from this URL: ${url}
+
+CRITICAL INSTRUCTIONS:
+1. Fetch the full HTML content of the page
+2. Return ONLY the raw HTML source code
+3. Do NOT add any explanations, comments, or markdown formatting
+4. Do NOT wrap the HTML in code blocks
+5. Return the HTML exactly as it appears in the page source
+6. Include all tags, attributes, and content
+
+URL to fetch: ${url}`;
 
     try {
-        const response = await fetch(FETCH_HTML_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            },
-            body: JSON.stringify({ url }),
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || `Failed to fetch HTML: ${response.status}`);
+        const aiCall = config.provider === 'openai' ? callOpenAI : callGemini;
+        const html = await aiCall(config, prompt);
+        
+        // Remove any markdown formatting if present
+        let cleanHtml = html.trim();
+        if (cleanHtml.startsWith('```html')) {
+            cleanHtml = cleanHtml.replace(/```html\n?/g, '').replace(/```\n?/g, '');
+        } else if (cleanHtml.startsWith('```')) {
+            cleanHtml = cleanHtml.replace(/```\n?/g, '');
         }
-
-        const data = await response.json();
-        return data.html;
+        
+        return cleanHtml;
     } catch (error) {
-        console.error('Error fetching HTML:', error);
+        console.error('Error fetching HTML with AI:', error);
         throw new Error(`Failed to fetch HTML: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
@@ -132,10 +138,10 @@ export async function generateDriverWithAI(
     config: AIConfig,
     onProgress?: (status: string) => void
 ): Promise<Driver> {
-    onProgress?.('Fetching website HTML...');
+    onProgress?.('Fetching website HTML with AI...');
 
-    // Fetch HTML
-    const html = await fetchHTML(url);
+    // Fetch HTML using the configured AI
+    const html = await fetchHTMLWithAI(url, config);
 
     onProgress?.('Analyzing HTML structure with AI...');
 
