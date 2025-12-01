@@ -156,11 +156,14 @@ const CreateDriver = () => {
     const handleRevalidate = async () => {
         if (!generatedDriver) return;
         
-        const updatedDriver = {
+        const updatedDriver: Driver = {
             ...generatedDriver,
             config: {
                 ...generatedDriver.config,
-                selectors: editableSelectors
+                selectors: {
+                    ...generatedDriver.config.selectors,
+                    ...editableSelectors
+                }
             }
         };
         
@@ -174,11 +177,14 @@ const CreateDriver = () => {
         try {
             await db.init();
             
-            const finalDriver = {
+            const finalDriver: Driver = {
                 ...generatedDriver,
                 config: {
                     ...generatedDriver.config,
-                    selectors: editableSelectors
+                    selectors: {
+                        ...generatedDriver.config.selectors,
+                        ...editableSelectors
+                    }
                 }
             };
             

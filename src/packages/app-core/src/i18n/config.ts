@@ -105,6 +105,16 @@ const resources = {
         elementsFound: 'elementos encontrados',
         confirmAndIndex: 'Confirmar e Indexar',
         errorValidatingSelectors: 'Erro ao validar seletores',
+        cancel: 'Cancelar',
+        validation: {
+          title: 'Validação de Seletores',
+          validate: 'Validar',
+          description: 'Revise os seletores gerados pela IA. Edite se necessário e teste novamente antes de confirmar.',
+          validating: 'Validando...',
+          elementsFound: 'elementos encontrados',
+          success: 'Seletores validados com sucesso!',
+          error: 'Erro ao validar seletores',
+        }
       },
       history: {
         title: 'Histórico',
@@ -369,6 +379,16 @@ const resources = {
         elementsFound: 'elements found',
         confirmAndIndex: 'Confirm and Index',
         errorValidatingSelectors: 'Error validating selectors',
+        cancel: 'Cancel',
+        validation: {
+          title: 'Validation of Selectors',
+          validate: 'Validate',
+          description: 'Review the AI-generated selectors. Edit if needed and test again before confirming.',
+          validating: 'Validating...',
+          elementsFound: 'elements found',
+          success: 'Selectors validated successfully!',
+          error: 'Error validating selectors',
+        }
       },
       history: {
         title: 'History',
@@ -606,6 +626,16 @@ const resources = {
         elementsFound: 'elementos encontrados',
         confirmAndIndex: 'Confirmar e Indexar',
         errorValidatingSelectors: 'Error al validar selectores',
+        cancel: 'Cancelar',
+        validation: {
+          title: 'Validación de Selectores',
+          validate: 'Validar',
+          description: 'Revisa los selectores generados por la IA. Edita si es necesario y prueba nuevamente antes de confirmar.',
+          validating: 'Validando...',
+          elementsFound: 'elementos encontrados',
+          success: 'Seletores validados con éxito!',
+          error: 'Error al validar selectores',
+        }
       },
       history: {
         title: 'Historial',

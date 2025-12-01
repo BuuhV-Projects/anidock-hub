@@ -12,11 +12,11 @@ export class WindowManager {
     }
 
     const mainWindow = new BrowserWindow({
-      width: 1200,
-      height: 800,
+      width: 1366,
+      height: 768,
       show: false,
       autoHideMenuBar: config.getBoolEnv('ELECTRON_AUTO_HIDE_MENU_BAR', true),
-      fullscreen: true,
+      fullscreen: false,
       ...(process.platform === 'linux' ? { icon: join(__dirname, '../../resources/icon.png') } : {}),
       webPreferences: {
         preload: join(__dirname, '../preload/index.cjs'),

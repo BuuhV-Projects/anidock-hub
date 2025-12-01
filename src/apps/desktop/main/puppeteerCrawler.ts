@@ -2,11 +2,16 @@ import puppeteer, { Browser, Page } from 'puppeteer';
 
 let browser: Browser | null = null;
 
+// Helper function to replace deprecated waitForTimeout
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // Initialize browser instance
 async function getBrowser(): Promise<Browser> {
   if (!browser) {
     browser = await puppeteer.launch({
-      headless: true,
+      headless: false,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -68,7 +73,7 @@ export async function fetchHTML(url: string): Promise<string> {
     });
     
     // Wait a bit for any JS to execute
-    await page.waitForTimeout(2000);
+    await delay(5000);
     
     const html = await page.content();
     return html;
@@ -122,7 +127,7 @@ export async function extractData(
       timeout: 30000
     });
     
-    await page.waitForTimeout(2000);
+    await delay(5000);
     
     // Extract data using selectors
     const data = await page.evaluate((config) => {
@@ -213,7 +218,7 @@ export async function extractVideoUrl(
       timeout: 30000
     });
     
-    await page.waitForTimeout(2000);
+    await delay(5000);
     
     const result = await page.evaluate((config) => {
       // Strategy 1: Look for iframe with video player
