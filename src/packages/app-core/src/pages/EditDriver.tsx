@@ -1,14 +1,16 @@
-import { Button, Card, Input, Label, Badge } from '@anidock/shared-ui';
-import { ArrowLeft, Loader2, Save, RefreshCw, CheckCircle2, XCircle } from 'lucide-react';
+import { Button, Card, Label, Badge, Switch } from '@anidock/shared-ui';
+import { ArrowLeft, Loader2, Save, RefreshCw } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { db, Driver } from '../lib/indexedDB';
 import { useTranslation } from 'react-i18next';
-import { fetchHTML } from '../lib/clientCrawler';
+import { usePlataform } from '../contexts/plataform/usePlataform';
+import { SelectorInput } from './components/SelectorInput';
 
 const EditDriver = () => {
   const { t } = useTranslation();
+  const { crawler } = usePlataform();
   const navigate = useNavigate();
   const { driverId } = useParams();
 
@@ -16,7 +18,7 @@ const EditDriver = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
-  const [validationHtml, setValidationHtml] = useState<string>('');
+  const [requiresExternalLink, setRequiresExternalLink] = useState(false);
 
   const [selectors, setSelectors] = useState({
     animeList: '',
@@ -29,6 +31,8 @@ const EditDriver = () => {
     episodeNumber: '',
     episodeTitle: '',
     episodeUrl: '',
+    videoPlayer: '',
+    externalLinkSelector: '',
   });
 
   const [selectorCounts, setSelectorCounts] = useState<Record<string, number>>({});
@@ -46,6 +50,7 @@ const EditDriver = () => {
       }
 
       setDriver(driverData);
+      setRequiresExternalLink(driverData.config?.requiresExternalLink || false);
 
       if (driverData.config?.selectors) {
         setSelectors({
@@ -59,6 +64,8 @@ const EditDriver = () => {
           episodeNumber: driverData.config.selectors.episodeNumber || '',
           episodeTitle: driverData.config.selectors.episodeTitle || '',
           episodeUrl: driverData.config.selectors.episodeUrl || '',
+          videoPlayer: driverData.config.selectors.videoPlayer || '',
+          externalLinkSelector: driverData.config.selectors.externalLinkSelector || '',
         });
       }
     } catch (error: any) {
@@ -71,15 +78,20 @@ const EditDriver = () => {
   }, [driverId, navigate, t]);
 
   const validateSelectors = useCallback(async () => {
-    if (!driver?.sourceUrl) {
+    const urlToValidate = driver?.catalogUrl || driver?.sourceUrl || driver?.config?.baseUrl;
+    if (!urlToValidate) {
       toast.error(t('createDriver.validation.noUrl'));
       return;
     }
 
     setIsValidating(true);
     try {
-      const html = await fetchHTML(driver.sourceUrl);
-      setValidationHtml(html);
+      const fetchFn = crawler?.fetchHTML || (async (url: string) => {
+        const response = await fetch(url);
+        return response.text();
+      });
+      
+      const html = await fetchFn(urlToValidate);
 
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
@@ -104,7 +116,7 @@ const EditDriver = () => {
     } finally {
       setIsValidating(false);
     }
-  }, [driver?.sourceUrl, selectors, t]);
+  }, [driver?.catalogUrl, driver?.sourceUrl, driver?.config?.baseUrl, selectors, t, crawler]);
 
   const handleSave = async () => {
     if (!driver) return;
@@ -115,9 +127,20 @@ const EditDriver = () => {
         ...driver,
         config: {
           ...driver.config,
+          requiresExternalLink,
           selectors: {
-            ...driver.config.selectors,
-            ...selectors,
+            animeList: selectors.animeList,
+            animeTitle: selectors.animeTitle,
+            animeUrl: selectors.animeUrl,
+            animeImage: selectors.animeImage,
+            animeSynopsis: selectors.animeSynopsis,
+            animePageTitle: selectors.animePageTitle,
+            episodeList: selectors.episodeList,
+            episodeNumber: selectors.episodeNumber,
+            episodeTitle: selectors.episodeTitle,
+            episodeUrl: selectors.episodeUrl,
+            videoPlayer: selectors.videoPlayer,
+            externalLinkSelector: selectors.externalLinkSelector,
           },
         },
         updatedAt: new Date().toISOString(),
@@ -211,167 +234,151 @@ const EditDriver = () => {
         </Card>
 
         <div className="space-y-6">
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4">{t('editDriver.animeListSelectors')}</h3>
-            <div className="space-y-4">
+          {/* External Link Configuration */}
+          <Card className="p-6 bg-primary/5 border-primary/20">
+            <div className="flex items-center justify-between">
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label htmlFor="animeList">{t('editDriver.animeContainer')}</Label>
-                  {selectorCounts.animeList !== undefined && (
-                    <Badge variant={selectorCounts.animeList > 0 ? "default" : "destructive"} className="gap-1">
-                      {selectorCounts.animeList > 0 ? (
-                        <CheckCircle2 className="h-3 w-3" />
-                      ) : (
-                        <XCircle className="h-3 w-3" />
-                      )}
-                      {selectorCounts.animeList} {t('createDriver.validation.elementsFound')}
-                    </Badge>
-                  )}
-                </div>
-                <Input
-                  id="animeList"
-                  value={selectors.animeList}
-                  onChange={(e) => setSelectors({ ...selectors, animeList: e.target.value })}
-                  placeholder=".anime-item, article.anime"
-                />
+                <h3 className="text-lg font-semibold">{t('editDriver.requiresExternalLink')}</h3>
+                <p className="text-sm text-muted-foreground">{t('editDriver.requiresExternalLinkDescription')}</p>
               </div>
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label htmlFor="animeTitle">{t('editDriver.animeTitle')} {t('editDriver.required')}</Label>
-                  {selectorCounts.animeTitle !== undefined && (
-                    <Badge variant={selectorCounts.animeTitle > 0 ? "default" : "destructive"} className="gap-1">
-                      {selectorCounts.animeTitle > 0 ? (
-                        <CheckCircle2 className="h-3 w-3" />
-                      ) : (
-                        <XCircle className="h-3 w-3" />
-                      )}
-                      {selectorCounts.animeTitle} {t('createDriver.validation.elementsFound')}
-                    </Badge>
-                  )}
-                </div>
-                <Input
-                  id="animeTitle"
-                  value={selectors.animeTitle}
-                  onChange={(e) => setSelectors({ ...selectors, animeTitle: e.target.value })}
-                  placeholder="h2.title, .anime-title"
-                  required
-                />
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label htmlFor="animeUrl">{t('editDriver.animeUrl')} {t('editDriver.required')}</Label>
-                  {selectorCounts.animeUrl !== undefined && (
-                    <Badge variant={selectorCounts.animeUrl > 0 ? "default" : "destructive"} className="gap-1">
-                      {selectorCounts.animeUrl > 0 ? (
-                        <CheckCircle2 className="h-3 w-3" />
-                      ) : (
-                        <XCircle className="h-3 w-3" />
-                      )}
-                      {selectorCounts.animeUrl} {t('createDriver.validation.elementsFound')}
-                    </Badge>
-                  )}
-                </div>
-                <Input
-                  id="animeUrl"
-                  value={selectors.animeUrl}
-                  onChange={(e) => setSelectors({ ...selectors, animeUrl: e.target.value })}
-                  placeholder="a, .anime-link"
-                  required
-                />
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label htmlFor="animeImage">{t('editDriver.animeImage')}</Label>
-                  {selectorCounts.animeImage !== undefined && (
-                    <Badge variant={selectorCounts.animeImage > 0 ? "default" : "destructive"} className="gap-1">
-                      {selectorCounts.animeImage > 0 ? (
-                        <CheckCircle2 className="h-3 w-3" />
-                      ) : (
-                        <XCircle className="h-3 w-3" />
-                      )}
-                      {selectorCounts.animeImage} {t('createDriver.validation.elementsFound')}
-                    </Badge>
-                  )}
-                </div>
-                <Input
-                  id="animeImage"
-                  value={selectors.animeImage}
-                  onChange={(e) => setSelectors({ ...selectors, animeImage: e.target.value })}
-                  placeholder="img.cover, .anime-image"
-                />
-              </div>
+              <Switch
+                checked={requiresExternalLink}
+                onCheckedChange={setRequiresExternalLink}
+              />
             </div>
           </Card>
 
+          {/* Anime List Selectors */}
+          <Card className="p-6">
+            <h3 className="text-xl font-semibold mb-4">{t('editDriver.animeListSelectors')}</h3>
+            <div className="space-y-4">
+              <SelectorInput
+                id="animeList"
+                label={t('editDriver.animeContainer')}
+                value={selectors.animeList}
+                onChange={(value) => setSelectors({ ...selectors, animeList: value })}
+                placeholder=".anime-item, article.anime"
+                count={selectorCounts.animeList}
+                t={t}
+              />
+              <SelectorInput
+                id="animeTitle"
+                label={t('editDriver.animeTitle')}
+                value={selectors.animeTitle}
+                onChange={(value) => setSelectors({ ...selectors, animeTitle: value })}
+                placeholder="h2.title, .anime-title"
+                count={selectorCounts.animeTitle}
+                required
+                t={t}
+              />
+              <SelectorInput
+                id="animeUrl"
+                label={t('editDriver.animeUrl')}
+                value={selectors.animeUrl}
+                onChange={(value) => setSelectors({ ...selectors, animeUrl: value })}
+                placeholder="a, .anime-link"
+                count={selectorCounts.animeUrl}
+                required
+                t={t}
+              />
+              <SelectorInput
+                id="animeImage"
+                label={t('editDriver.animeImage')}
+                value={selectors.animeImage}
+                onChange={(value) => setSelectors({ ...selectors, animeImage: value })}
+                placeholder="img.cover, .anime-image"
+                count={selectorCounts.animeImage}
+                t={t}
+              />
+              <SelectorInput
+                id="animeSynopsis"
+                label={t('editDriver.animeSynopsis')}
+                value={selectors.animeSynopsis}
+                onChange={(value) => setSelectors({ ...selectors, animeSynopsis: value })}
+                placeholder=".synopsis, .description"
+                count={selectorCounts.animeSynopsis}
+                t={t}
+              />
+              <SelectorInput
+                id="animePageTitle"
+                label={t('editDriver.animePageTitle')}
+                value={selectors.animePageTitle}
+                onChange={(value) => setSelectors({ ...selectors, animePageTitle: value })}
+                placeholder="h1.title, .page-title"
+                count={selectorCounts.animePageTitle}
+                t={t}
+              />
+            </div>
+          </Card>
+
+          {/* Episode Selectors */}
           <Card className="p-6">
             <h3 className="text-xl font-semibold mb-4">{t('editDriver.episodeSelectors')}</h3>
             <div className="space-y-4">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label htmlFor="episodeList">{t('editDriver.episodeContainer')} {t('editDriver.required')}</Label>
-                  {selectorCounts.episodeList !== undefined && (
-                    <Badge variant={selectorCounts.episodeList > 0 ? "default" : "destructive"} className="gap-1">
-                      {selectorCounts.episodeList > 0 ? (
-                        <CheckCircle2 className="h-3 w-3" />
-                      ) : (
-                        <XCircle className="h-3 w-3" />
-                      )}
-                      {selectorCounts.episodeList} {t('createDriver.validation.elementsFound')}
-                    </Badge>
-                  )}
-                </div>
-                <Input
-                  id="episodeList"
-                  value={selectors.episodeList}
-                  onChange={(e) => setSelectors({ ...selectors, episodeList: e.target.value })}
-                  placeholder=".episode, .ep-item"
-                  required
-                />
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label htmlFor="episodeNumber">{t('editDriver.episodeNumber')} {t('editDriver.required')}</Label>
-                  {selectorCounts.episodeNumber !== undefined && (
-                    <Badge variant={selectorCounts.episodeNumber > 0 ? "default" : "destructive"} className="gap-1">
-                      {selectorCounts.episodeNumber > 0 ? (
-                        <CheckCircle2 className="h-3 w-3" />
-                      ) : (
-                        <XCircle className="h-3 w-3" />
-                      )}
-                      {selectorCounts.episodeNumber} {t('createDriver.validation.elementsFound')}
-                    </Badge>
-                  )}
-                </div>
-                <Input
-                  id="episodeNumber"
-                  value={selectors.episodeNumber}
-                  onChange={(e) => setSelectors({ ...selectors, episodeNumber: e.target.value })}
-                  placeholder=".ep-number, .number"
-                  required
-                />
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label htmlFor="episodeUrl">{t('editDriver.episodeUrl')} {t('editDriver.required')}</Label>
-                  {selectorCounts.episodeUrl !== undefined && (
-                    <Badge variant={selectorCounts.episodeUrl > 0 ? "default" : "destructive"} className="gap-1">
-                      {selectorCounts.episodeUrl > 0 ? (
-                        <CheckCircle2 className="h-3 w-3" />
-                      ) : (
-                        <XCircle className="h-3 w-3" />
-                      )}
-                      {selectorCounts.episodeUrl} {t('createDriver.validation.elementsFound')}
-                    </Badge>
-                  )}
-                </div>
-                <Input
-                  id="episodeUrl"
-                  value={selectors.episodeUrl}
-                  onChange={(e) => setSelectors({ ...selectors, episodeUrl: e.target.value })}
-                  placeholder="a, .ep-link"
-                  required
-                />
-              </div>
+              <SelectorInput
+                id="episodeList"
+                label={t('editDriver.episodeContainer')}
+                value={selectors.episodeList}
+                onChange={(value) => setSelectors({ ...selectors, episodeList: value })}
+                placeholder=".episode, .ep-item"
+                count={selectorCounts.episodeList}
+                required
+                t={t}
+              />
+              <SelectorInput
+                id="episodeNumber"
+                label={t('editDriver.episodeNumber')}
+                value={selectors.episodeNumber}
+                onChange={(value) => setSelectors({ ...selectors, episodeNumber: value })}
+                placeholder=".ep-number, .number"
+                count={selectorCounts.episodeNumber}
+                required
+                t={t}
+              />
+              <SelectorInput
+                id="episodeTitle"
+                label={t('editDriver.episodeTitle')}
+                value={selectors.episodeTitle}
+                onChange={(value) => setSelectors({ ...selectors, episodeTitle: value })}
+                placeholder=".ep-title, .title"
+                count={selectorCounts.episodeTitle}
+                t={t}
+              />
+              <SelectorInput
+                id="episodeUrl"
+                label={t('editDriver.episodeUrl')}
+                value={selectors.episodeUrl}
+                onChange={(value) => setSelectors({ ...selectors, episodeUrl: value })}
+                placeholder="a, .ep-link"
+                count={selectorCounts.episodeUrl}
+                required
+                t={t}
+              />
+            </div>
+          </Card>
+
+          {/* Player Selectors */}
+          <Card className="p-6">
+            <h3 className="text-xl font-semibold mb-4">{t('editDriver.playerSelectors')}</h3>
+            <div className="space-y-4">
+              <SelectorInput
+                id="videoPlayer"
+                label={t('editDriver.videoPlayer')}
+                value={selectors.videoPlayer}
+                onChange={(value) => setSelectors({ ...selectors, videoPlayer: value })}
+                placeholder="iframe, video, .player"
+                count={selectorCounts.videoPlayer}
+                t={t}
+              />
+              <SelectorInput
+                id="externalLinkSelector"
+                label={t('editDriver.externalLinkSelector')}
+                value={selectors.externalLinkSelector}
+                onChange={(value) => setSelectors({ ...selectors, externalLinkSelector: value })}
+                placeholder="a.external-link, .download-link"
+                count={selectorCounts.externalLinkSelector}
+                t={t}
+              />
             </div>
           </Card>
         </div>

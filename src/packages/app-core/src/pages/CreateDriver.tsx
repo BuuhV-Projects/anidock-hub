@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Input, Label, Progress, Alert, AlertDescription, Badge } from '@anidock/shared-ui';
+import { Button, Card, Input, Label, Progress, Alert, AlertDescription, Badge, Switch } from '@anidock/shared-ui';
 import { Sparkles, ArrowLeft, Loader2, CheckCircle2, Cpu, Edit, Save, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { db, Driver } from '../lib/indexedDB';
@@ -30,6 +30,7 @@ const CreateDriver = () => {
     const [selectorValidation, setSelectorValidation] = useState<Record<string, number>>({});
     const [isValidatingSelectors, setIsValidatingSelectors] = useState(false);
     const [editableSelectors, setEditableSelectors] = useState<Record<string, string>>({});
+    const [requiresExternalLink, setRequiresExternalLink] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -105,7 +106,21 @@ const CreateDriver = () => {
             );
 
             setGeneratedDriver(driver);
-            setEditableSelectors(driver.config.selectors as Record<string, string>);
+            setRequiresExternalLink(driver.config.requiresExternalLink || false);
+            setEditableSelectors({
+                animeList: driver.config.selectors.animeList || '',
+                animeTitle: driver.config.selectors.animeTitle || '',
+                animeUrl: driver.config.selectors.animeUrl || '',
+                animeImage: driver.config.selectors.animeImage || '',
+                animeSynopsis: driver.config.selectors.animeSynopsis || '',
+                animePageTitle: driver.config.selectors.animePageTitle || '',
+                episodeList: driver.config.selectors.episodeList || '',
+                episodeNumber: driver.config.selectors.episodeNumber || '',
+                episodeTitle: driver.config.selectors.episodeTitle || '',
+                episodeUrl: driver.config.selectors.episodeUrl || '',
+                videoPlayer: driver.config.selectors.videoPlayer || '',
+                externalLinkSelector: driver.config.selectors.externalLinkSelector || '',
+            });
             setGenerationStatus('');
             
             // Validate selectors automatically
@@ -129,20 +144,18 @@ const CreateDriver = () => {
             const doc = parser.parseFromString(html, 'text/html');
 
             const validation: Record<string, number> = {};
-            const selectors = driver.config.selectors;
+            const selectors = editableSelectors;
 
-            if (selectors.animeList) {
-                validation.animeList = doc.querySelectorAll(selectors.animeList).length;
-            }
-            if (selectors.animeTitle) {
-                validation.animeTitle = doc.querySelectorAll(selectors.animeTitle).length;
-            }
-            if (selectors.animeUrl) {
-                validation.animeUrl = doc.querySelectorAll(selectors.animeUrl).length;
-            }
-            if (selectors.animeImage) {
-                validation.animeImage = doc.querySelectorAll(selectors.animeImage).length;
-            }
+            // Validate all selectors
+            Object.entries(selectors).forEach(([key, selector]) => {
+                if (selector && typeof selector === 'string') {
+                    try {
+                        validation[key] = doc.querySelectorAll(selector).length;
+                    } catch {
+                        validation[key] = 0;
+                    }
+                }
+            });
 
             setSelectorValidation(validation);
         } catch (error) {
@@ -156,11 +169,24 @@ const CreateDriver = () => {
     const handleRevalidate = async () => {
         if (!generatedDriver) return;
         
-        const updatedDriver = {
+        const updatedDriver: Driver = {
             ...generatedDriver,
             config: {
                 ...generatedDriver.config,
-                selectors: editableSelectors
+                selectors: {
+                    animeList: editableSelectors.animeList,
+                    animeTitle: editableSelectors.animeTitle || '',
+                    animeUrl: editableSelectors.animeUrl || '',
+                    animeImage: editableSelectors.animeImage,
+                    animeSynopsis: editableSelectors.animeSynopsis,
+                    animePageTitle: editableSelectors.animePageTitle,
+                    episodeList: editableSelectors.episodeList || '',
+                    episodeNumber: editableSelectors.episodeNumber || '',
+                    episodeTitle: editableSelectors.episodeTitle,
+                    episodeUrl: editableSelectors.episodeUrl || '',
+                    videoPlayer: editableSelectors.videoPlayer,
+                    externalLinkSelector: editableSelectors.externalLinkSelector,
+                }
             }
         };
         
@@ -178,7 +204,21 @@ const CreateDriver = () => {
                 ...generatedDriver,
                 config: {
                     ...generatedDriver.config,
-                    selectors: editableSelectors
+                    requiresExternalLink,
+                    selectors: {
+                        animeList: editableSelectors.animeList,
+                        animeTitle: editableSelectors.animeTitle,
+                        animeUrl: editableSelectors.animeUrl,
+                        animeImage: editableSelectors.animeImage,
+                        animeSynopsis: editableSelectors.animeSynopsis,
+                        animePageTitle: editableSelectors.animePageTitle,
+                        episodeList: editableSelectors.episodeList,
+                        episodeNumber: editableSelectors.episodeNumber,
+                        episodeTitle: editableSelectors.episodeTitle,
+                        episodeUrl: editableSelectors.episodeUrl,
+                        videoPlayer: editableSelectors.videoPlayer,
+                        externalLinkSelector: editableSelectors.externalLinkSelector,
+                    }
                 }
             };
             
@@ -397,7 +437,7 @@ const CreateDriver = () => {
 
                 {generatedDriver && !isIndexing && (
                     <Card className="p-6 mt-6">
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-xl font-bold">{t('createDriver.validateSelectors')}</h2>
                                 <Button
@@ -421,11 +461,25 @@ const CreateDriver = () => {
                                 </AlertDescription>
                             </Alert>
 
+                            {/* External Link Toggle */}
+                            <div className="flex items-center justify-between p-4 rounded-lg bg-primary/5 border border-primary/20">
+                                <div>
+                                    <Label className="text-base font-semibold">{t('editDriver.requiresExternalLink')}</Label>
+                                    <p className="text-sm text-muted-foreground">{t('editDriver.requiresExternalLinkDescription')}</p>
+                                </div>
+                                <Switch
+                                    checked={requiresExternalLink}
+                                    onCheckedChange={setRequiresExternalLink}
+                                />
+                            </div>
+
+                            {/* Anime List Selectors */}
                             <div className="space-y-3">
-                                {Object.entries(editableSelectors).map(([key, value]) => (
+                                <h3 className="text-lg font-semibold">{t('editDriver.animeListSelectors')}</h3>
+                                {['animeList', 'animeTitle', 'animeUrl', 'animeImage', 'animeSynopsis', 'animePageTitle'].map((key) => (
                                     <div key={key} className="space-y-2">
                                         <div className="flex items-center gap-2">
-                                            <Label className="text-sm font-mono">{key}</Label>
+                                            <Label className="text-sm font-mono">{t(`editDriver.${key === 'animeList' ? 'animeContainer' : key}`)}</Label>
                                             {selectorValidation[key] !== undefined && (
                                                 <Badge variant={selectorValidation[key] > 0 ? "default" : "destructive"}>
                                                     {selectorValidation[key]} {t('createDriver.elementsFound')}
@@ -433,12 +487,64 @@ const CreateDriver = () => {
                                             )}
                                         </div>
                                         <Input
-                                            value={value || ''}
+                                            value={editableSelectors[key] || ''}
                                             onChange={(e) => setEditableSelectors({
                                                 ...editableSelectors,
                                                 [key]: e.target.value
                                             })}
-                                            placeholder={`CSS selector for ${key}`}
+                                            placeholder={`CSS selector`}
+                                            className="font-mono text-sm"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Episode Selectors */}
+                            <div className="space-y-3">
+                                <h3 className="text-lg font-semibold">{t('editDriver.episodeSelectors')}</h3>
+                                {['episodeList', 'episodeNumber', 'episodeTitle', 'episodeUrl'].map((key) => (
+                                    <div key={key} className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <Label className="text-sm font-mono">{t(`editDriver.${key === 'episodeList' ? 'episodeContainer' : key}`)}</Label>
+                                            {selectorValidation[key] !== undefined && (
+                                                <Badge variant={selectorValidation[key] > 0 ? "default" : "destructive"}>
+                                                    {selectorValidation[key]} {t('createDriver.elementsFound')}
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <Input
+                                            value={editableSelectors[key] || ''}
+                                            onChange={(e) => setEditableSelectors({
+                                                ...editableSelectors,
+                                                [key]: e.target.value
+                                            })}
+                                            placeholder={`CSS selector`}
+                                            className="font-mono text-sm"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Player Selectors */}
+                            <div className="space-y-3">
+                                <h3 className="text-lg font-semibold">{t('editDriver.playerSelectors')}</h3>
+                                {['videoPlayer', 'externalLinkSelector'].map((key) => (
+                                    <div key={key} className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <Label className="text-sm font-mono">{t(`editDriver.${key}`)}</Label>
+                                            {selectorValidation[key] !== undefined && (
+                                                <Badge variant={selectorValidation[key] > 0 ? "default" : "destructive"}>
+                                                    {selectorValidation[key]} {t('createDriver.elementsFound')}
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <Input
+                                            value={editableSelectors[key] || ''}
+                                            onChange={(e) => setEditableSelectors({
+                                                ...editableSelectors,
+                                                [key]: e.target.value
+                                            })}
+                                            placeholder={`CSS selector`}
                                             className="font-mono text-sm"
                                         />
                                     </div>
