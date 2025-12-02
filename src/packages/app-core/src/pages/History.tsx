@@ -1,14 +1,14 @@
 import { Badge, Button, Card } from '@anidock/shared-ui';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale/pt-BR';
 import { enUS } from 'date-fns/locale/en-US';
 import { es } from 'date-fns/locale/es';
+import { ptBR } from 'date-fns/locale/pt-BR';
 import { ArrowLeft, Clock, Film, Play, Trash2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { db, WatchHistoryEntry } from '../lib/indexedDB';
-import { useTranslation } from 'react-i18next';
 
 const History = () => {
   const navigate = useNavigate();
@@ -24,11 +24,7 @@ const History = () => {
     }
   };
 
-  useEffect(() => {
-    loadHistory();
-  }, []);
-
-  const loadHistory = async () => {
+  const loadHistory = useCallback(async () => {
     try {
       await db.init();
       const historyData = await db.getWatchHistory();
@@ -37,7 +33,7 @@ const History = () => {
       console.error('Error loading history:', error);
       toast.error(t('history.errorLoading'));
     }
-  };
+  }, [t]);
 
   const handleClearHistory = async () => {
     try {
@@ -114,6 +110,10 @@ const History = () => {
   };
 
   const groupedHistory = groupHistoryByDate();
+
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
 
   if (history.length === 0) {
     return (

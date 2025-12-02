@@ -35,12 +35,12 @@ function removeAnidockHostFromCrawledUrl(driverBaseUrl: string, url?: string | n
 }
 
 // Fetch HTML from URL with CORS proxy fallbacks (web) or Puppeteer (desktop)
-export async function fetchHTML(url: string, usePuppeteer?: (url: string) => Promise<string>): Promise<string> {
+export async function fetchHTML(url: string, puppeteerCrawler?: (url: string) => Promise<string>): Promise<string> {
     // If Puppeteer is available (desktop), use it
-    if (usePuppeteer) {
+    if (puppeteerCrawler) {
         try {
             console.log('Using Puppeteer to fetch HTML');
-            return await usePuppeteer(url);
+            return await puppeteerCrawler(url);
         } catch (error) {
             console.error('Puppeteer failed:', error);
             throw error;
@@ -186,6 +186,7 @@ export async function crawlEpisodes(
     const episodes: LocalEpisode[] = [];
     const logger = new Logger(crawlEpisodes.name);
     try {
+        logger.info(`Iniciando crawler de episódios para ${animeUrl}`);
         onProgress?.({ current: 0, total: 1, status: 'Fetching anime page...' });
 
         const html = await fetchHTML(animeUrl, crawlerFetchHTML);
@@ -196,15 +197,17 @@ export async function crawlEpisodes(
         const episodeItems = doc.querySelectorAll(driver.config.selectors.episodeList);
 
         if (episodeItems.length === 0) {
+            logger.error('No episodes found with selector: ' + driver.config.selectors.episodeList);
             errors.push('No episodes found with selector: ' + driver.config.selectors.episodeList);
             return { episodes: [], errors };
         }
 
+        logger.info(`Encontrados ${episodeItems.length} episódios`);
         onProgress?.({ current: 0, total: episodeItems.length, status: 'Extracting episodes...' });
 
         for (let i = 0; i < episodeItems.length; i++) {
             const item = episodeItems[i];
-
+            logger.info(`Extraindo episódio ${i + 1} de ${episodeItems.length}`);
             try {
                 // Extract episode number
                 const numberEl = item.querySelector(driver.config.selectors.episodeNumber);

@@ -108,7 +108,7 @@ const AnimeDetails = () => {
       setIsLoading(false);
       setIsCrawling(false);
     }
-  }, [animeUrl, driverId, navigate]);
+  }, [animeUrl, driverId, navigate, crawler]);
 
   useEffect(() => {
     loadAnimeAndEpisodes();

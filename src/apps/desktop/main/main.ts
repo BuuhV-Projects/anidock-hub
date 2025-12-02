@@ -39,27 +39,15 @@ app.whenReady().then(() => {
   
   // Register Puppeteer crawler IPC handlers
   ipcMain.handle(IPC_CHANNELS.crawler.fetchHTML, async (_, url: string) => {
-    try {
-      return await puppeteerCrawler.fetchHTML(url);
-    } catch (error) {
-      throw error;
-    }
+    return await puppeteerCrawler.fetchHTML(url);
   });
 
   ipcMain.handle(IPC_CHANNELS.crawler.extractData, async (_, url: string, selectors: any) => {
-    try {
-      return await puppeteerCrawler.extractData(url, selectors);
-    } catch (error) {
-      throw error;
-    }
+    return await puppeteerCrawler.extractData(url, selectors);
   });
 
   ipcMain.handle(IPC_CHANNELS.crawler.extractVideoUrl, async (_, url: string, selectors: any) => {
-    try {
-      return await puppeteerCrawler.extractVideoUrl(url, selectors);
-    } catch (error) {
-      throw error;
-    }
+    return await puppeteerCrawler.extractVideoUrl(url, selectors);
   });
   
   createWindow();

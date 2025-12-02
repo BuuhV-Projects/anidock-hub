@@ -1,11 +1,11 @@
-import { Button, Card, Label, Badge, Switch } from '@anidock/shared-ui';
-import { ArrowLeft, Loader2, Save, RefreshCw } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import { Button, Card, Switch } from '@anidock/shared-ui';
+import { ArrowLeft, Loader2, RefreshCw, Save } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { db, Driver } from '../lib/indexedDB';
-import { useTranslation } from 'react-i18next';
 import { usePlataform } from '../contexts/plataform/usePlataform';
+import { db, Driver } from '../lib/indexedDB';
 import { SelectorInput } from './components/SelectorInput';
 
 const EditDriver = () => {

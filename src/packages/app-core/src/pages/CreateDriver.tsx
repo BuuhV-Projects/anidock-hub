@@ -1,15 +1,14 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
+import { Alert, AlertDescription, Badge, Button, Card, Input, Label, Progress, Switch } from '@anidock/shared-ui';
+import { AlertTriangle, ArrowLeft, CheckCircle2, Cpu, Loader2, Save, Sparkles } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Input, Label, Progress, Alert, AlertDescription, Badge, Switch } from '@anidock/shared-ui';
-import { Sparkles, ArrowLeft, Loader2, CheckCircle2, Cpu, Edit, Save, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-import { db, Driver } from '../lib/indexedDB';
+import { usePlataform } from '../contexts/plataform/usePlataform';
 import { generateDriverWithAI, validateAPIKey, type AIConfig, type AIProvider } from '../lib/aiDriver';
 import { crawlWithDriver } from '../lib/clientCrawler';
+import { db, Driver } from '../lib/indexedDB';
 import { getAIKey, saveAIKey } from '../lib/localStorage';
-import { useTranslation } from 'react-i18next';
-import { usePlataform } from '../contexts/plataform/usePlataform';
 
 const CreateDriver = () => {
     const { t } = useTranslation();
