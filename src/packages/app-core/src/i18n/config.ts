@@ -115,7 +115,13 @@ const resources = {
           description: 'Valide os seletores do driver buscando o conteúdo do site',
           validating: 'Validando...',
           validate: 'Validar',
-        }
+        },
+        validationPages: 'Páginas validadas',
+        catalogPage: 'Página do catálogo',
+        animePage: 'Página do anime',
+        episodePage: 'Página do episódio',
+        validatedOn: 'Validado em',
+        animePageSelectors: 'Seletores da Página do Anime',
       },
       history: {
         title: 'Histórico',
@@ -398,7 +404,13 @@ const resources = {
           description: 'Validate driver selectors by fetching site content',
           validating: 'Validating...',
           validate: 'Validate',
-        }
+        },
+        validationPages: 'Validated pages',
+        catalogPage: 'Catalog page',
+        animePage: 'Anime page',
+        episodePage: 'Episode page',
+        validatedOn: 'Validated on',
+        animePageSelectors: 'Anime Page Selectors',
       },
       history: {
         title: 'History',
@@ -654,7 +666,13 @@ const resources = {
           description: 'Valide los selectores del driver obteniendo el contenido del sitio',
           validating: 'Validando...',
           validate: 'Validar',
-        }
+        },
+        validationPages: 'Páginas validadas',
+        catalogPage: 'Página del catálogo',
+        animePage: 'Página del anime',
+        episodePage: 'Página del episodio',
+        validatedOn: 'Validado en',
+        animePageSelectors: 'Selectores de la Página del Anime',
       },
       history: {
         title: 'Historial',

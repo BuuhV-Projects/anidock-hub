@@ -9,6 +9,7 @@ import { generateDriverWithAI, validateAPIKey, type AIConfig, type AIProvider } 
 import { crawlWithDriver } from '../lib/clientCrawler';
 import { db, Driver } from '../lib/indexedDB';
 import { getAIKey, saveAIKey } from '../lib/localStorage';
+import { validateSelectors as validateSelectorsService, type SelectorValidationResult } from '../lib/selectorValidator';
 
 const CreateDriver = () => {
     const { t } = useTranslation();
@@ -26,7 +27,7 @@ const CreateDriver = () => {
     const [indexStatus, setIndexStatus] = useState('');
     const [totalAnimes, setTotalAnimes] = useState(0);
     const [generatedDriver, setGeneratedDriver] = useState<Driver | null>(null);
-    const [selectorValidation, setSelectorValidation] = useState<Record<string, number>>({});
+    const [selectorValidation, setSelectorValidation] = useState<SelectorValidationResult | null>(null);
     const [isValidatingSelectors, setIsValidatingSelectors] = useState(false);
     const [editableSelectors, setEditableSelectors] = useState<Record<string, string>>({});
     const [requiresExternalLink, setRequiresExternalLink] = useState(false);
@@ -133,30 +134,21 @@ const CreateDriver = () => {
         }
     };
 
-    const validateSelectors = async (driver: Driver) => {
-        if (!crawler?.fetchHTML) return;
+    const runValidation = async (selectorsToValidate: Record<string, string>) => {
+        const fetchFn = crawler?.fetchHTML || (async (url: string) => {
+            const response = await fetch(url);
+            return response.text();
+        });
         
         setIsValidatingSelectors(true);
         try {
-            const html = await crawler.fetchHTML(driver.catalogUrl || driver.sourceUrl || driver.config.baseUrl);
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-
-            const validation: Record<string, number> = {};
-            const selectors = editableSelectors;
-
-            // Validate all selectors
-            Object.entries(selectors).forEach(([key, selector]) => {
-                if (selector && typeof selector === 'string') {
-                    try {
-                        validation[key] = doc.querySelectorAll(selector).length;
-                    } catch {
-                        validation[key] = 0;
-                    }
-                }
-            });
-
-            setSelectorValidation(validation);
+            const catalogUrlToUse = catalogUrl || generatedDriver?.catalogUrl || generatedDriver?.sourceUrl || '';
+            const result = await validateSelectorsService(catalogUrlToUse, selectorsToValidate, fetchFn);
+            setSelectorValidation(result);
+            
+            if (result.errors.length > 0) {
+                result.errors.forEach(error => console.warn('Validation warning:', error));
+            }
         } catch (error) {
             console.error('Error validating selectors:', error);
             toast.error(t('createDriver.errorValidatingSelectors'));
@@ -165,22 +157,14 @@ const CreateDriver = () => {
         }
     };
 
+    const validateSelectors = async (driver: Driver) => {
+        const selectors = driver.config.selectors || editableSelectors;
+        await runValidation(selectors);
+    };
+
     const handleRevalidate = async () => {
         if (!generatedDriver) return;
-        
-        const updatedDriver: Driver = {
-            ...generatedDriver,
-            config: {
-                ...generatedDriver.config,
-                selectors: {
-                    ...generatedDriver.config.selectors,
-                    ...editableSelectors
-                }
-            }
-        };
-        
-        setGeneratedDriver(updatedDriver);
-        await validateSelectors(updatedDriver);
+        await runValidation(editableSelectors);
     };
 
     const handleConfirmDriver = async () => {
@@ -452,16 +436,65 @@ const CreateDriver = () => {
                                 />
                             </div>
 
+                            {/* Validation Info */}
+                            {selectorValidation && (
+                                <div className="p-4 rounded-lg bg-muted/50 space-y-2 text-sm">
+                                    <p className="font-medium">{t('createDriver.validationPages')}</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        <Badge variant={selectorValidation.pages.catalog ? "default" : "destructive"}>
+                                            {t('createDriver.catalogPage')}: {selectorValidation.pages.catalog ? '✓' : '✗'}
+                                        </Badge>
+                                        <Badge variant={selectorValidation.pages.anime ? "default" : "secondary"}>
+                                            {t('createDriver.animePage')}: {selectorValidation.pages.anime ? '✓' : '✗'}
+                                        </Badge>
+                                        <Badge variant={selectorValidation.pages.episode ? "default" : "secondary"}>
+                                            {t('createDriver.episodePage')}: {selectorValidation.pages.episode ? '✓' : '✗'}
+                                        </Badge>
+                                    </div>
+                                    {selectorValidation.errors.length > 0 && (
+                                        <p className="text-destructive text-xs">{selectorValidation.errors[0]}</p>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Anime List Selectors */}
                             <div className="space-y-3">
                                 <h3 className="text-lg font-semibold">{t('editDriver.animeListSelectors')}</h3>
-                                {['animeList', 'animeTitle', 'animeUrl', 'animeImage', 'animeSynopsis', 'animePageTitle'].map((key) => (
+                                <p className="text-xs text-muted-foreground">{t('createDriver.validatedOn')}: {t('createDriver.catalogPage')}</p>
+                                {['animeList', 'animeTitle', 'animeUrl', 'animeImage'].map((key) => (
                                     <div key={key} className="space-y-2">
                                         <div className="flex items-center gap-2">
                                             <Label className="text-sm font-mono">{t(`editDriver.${key === 'animeList' ? 'animeContainer' : key}`)}</Label>
-                                            {selectorValidation[key] !== undefined && (
-                                                <Badge variant={selectorValidation[key] > 0 ? "default" : "destructive"}>
-                                                    {selectorValidation[key]} {t('createDriver.elementsFound')}
+                                            {selectorValidation?.counts[key] !== undefined && (
+                                                <Badge variant={selectorValidation.counts[key] > 0 ? "default" : "destructive"}>
+                                                    {selectorValidation.counts[key]} {t('createDriver.elementsFound')}
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <Input
+                                            value={editableSelectors[key] || ''}
+                                            onChange={(e) => setEditableSelectors({
+                                                ...editableSelectors,
+                                                [key]: e.target.value
+                                            })}
+                                            placeholder={`CSS selector`}
+                                            className="font-mono text-sm"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Anime Page Selectors */}
+                            <div className="space-y-3">
+                                <h3 className="text-lg font-semibold">{t('createDriver.animePageSelectors')}</h3>
+                                <p className="text-xs text-muted-foreground">{t('createDriver.validatedOn')}: {t('createDriver.animePage')}</p>
+                                {['animeSynopsis', 'animePageTitle'].map((key) => (
+                                    <div key={key} className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <Label className="text-sm font-mono">{t(`editDriver.${key}`)}</Label>
+                                            {selectorValidation?.counts[key] !== undefined && (
+                                                <Badge variant={selectorValidation.counts[key] > 0 ? "default" : "destructive"}>
+                                                    {selectorValidation.counts[key]} {t('createDriver.elementsFound')}
                                                 </Badge>
                                             )}
                                         </div>
@@ -481,13 +514,14 @@ const CreateDriver = () => {
                             {/* Episode Selectors */}
                             <div className="space-y-3">
                                 <h3 className="text-lg font-semibold">{t('editDriver.episodeSelectors')}</h3>
+                                <p className="text-xs text-muted-foreground">{t('createDriver.validatedOn')}: {t('createDriver.animePage')}</p>
                                 {['episodeList', 'episodeNumber', 'episodeTitle', 'episodeUrl'].map((key) => (
                                     <div key={key} className="space-y-2">
                                         <div className="flex items-center gap-2">
                                             <Label className="text-sm font-mono">{t(`editDriver.${key === 'episodeList' ? 'episodeContainer' : key}`)}</Label>
-                                            {selectorValidation[key] !== undefined && (
-                                                <Badge variant={selectorValidation[key] > 0 ? "default" : "destructive"}>
-                                                    {selectorValidation[key]} {t('createDriver.elementsFound')}
+                                            {selectorValidation?.counts[key] !== undefined && (
+                                                <Badge variant={selectorValidation.counts[key] > 0 ? "default" : "destructive"}>
+                                                    {selectorValidation.counts[key]} {t('createDriver.elementsFound')}
                                                 </Badge>
                                             )}
                                         </div>
@@ -507,13 +541,14 @@ const CreateDriver = () => {
                             {/* Player Selectors */}
                             <div className="space-y-3">
                                 <h3 className="text-lg font-semibold">{t('editDriver.playerSelectors')}</h3>
+                                <p className="text-xs text-muted-foreground">{t('createDriver.validatedOn')}: {t('createDriver.episodePage')}</p>
                                 {['videoPlayer', 'externalLinkSelector'].map((key) => (
                                     <div key={key} className="space-y-2">
                                         <div className="flex items-center gap-2">
                                             <Label className="text-sm font-mono">{t(`editDriver.${key}`)}</Label>
-                                            {selectorValidation[key] !== undefined && (
-                                                <Badge variant={selectorValidation[key] > 0 ? "default" : "destructive"}>
-                                                    {selectorValidation[key]} {t('createDriver.elementsFound')}
+                                            {selectorValidation?.counts[key] !== undefined && (
+                                                <Badge variant={selectorValidation.counts[key] > 0 ? "default" : "destructive"}>
+                                                    {selectorValidation.counts[key]} {t('createDriver.elementsFound')}
                                                 </Badge>
                                             )}
                                         </div>
@@ -541,7 +576,7 @@ const CreateDriver = () => {
                                 <Button
                                     onClick={handleConfirmDriver}
                                     className="flex-1 gap-2"
-                                    disabled={selectorValidation.animeList === 0}
+                                    disabled={!selectorValidation || selectorValidation.counts.animeList === 0}
                                 >
                                     <Save className="h-4 w-4" />
                                     {t('createDriver.confirmAndIndex')}

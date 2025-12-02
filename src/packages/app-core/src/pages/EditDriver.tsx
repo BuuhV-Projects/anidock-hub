@@ -1,4 +1,4 @@
-import { Button, Card, Switch } from '@anidock/shared-ui';
+import { Badge, Button, Card, Switch } from '@anidock/shared-ui';
 import { ArrowLeft, Loader2, RefreshCw, Save } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { usePlataform } from '../contexts/plataform/usePlataform';
 import { db, Driver } from '../lib/indexedDB';
+import { validateSelectors as validateSelectorsService, type SelectorValidationResult } from '../lib/selectorValidator';
 import { SelectorInput } from './components/SelectorInput';
 
 const EditDriver = () => {
@@ -35,7 +36,7 @@ const EditDriver = () => {
     externalLinkSelector: '',
   });
 
-  const [selectorCounts, setSelectorCounts] = useState<Record<string, number>>({});
+  const [validationResult, setValidationResult] = useState<SelectorValidationResult | null>(null);
 
   const loadDriver = useCallback(async () => {
     if (!driverId) return;
@@ -91,24 +92,13 @@ const EditDriver = () => {
         return response.text();
       });
       
-      const html = await fetchFn(urlToValidate);
-
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-
-      const counts: Record<string, number> = {};
-      Object.entries(selectors).forEach(([key, selector]) => {
-        if (selector) {
-          try {
-            const elements = doc.querySelectorAll(selector);
-            counts[key] = elements.length;
-          } catch {
-            counts[key] = 0;
-          }
-        }
-      });
-
-      setSelectorCounts(counts);
+      const result = await validateSelectorsService(urlToValidate, selectors, fetchFn);
+      setValidationResult(result);
+      
+      if (result.errors.length > 0) {
+        result.errors.forEach(error => console.warn('Validation warning:', error));
+      }
+      
       toast.success(t('createDriver.validation.success'));
     } catch (error) {
       console.error('Validation error:', error);
@@ -233,6 +223,27 @@ const EditDriver = () => {
           </div>
         </Card>
 
+        {/* Validation Info */}
+        {validationResult && (
+          <div className="p-4 rounded-lg bg-muted/50 space-y-2 text-sm">
+            <p className="font-medium">{t('createDriver.validationPages')}</p>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant={validationResult.pages.catalog ? "default" : "destructive"}>
+                {t('createDriver.catalogPage')}: {validationResult.pages.catalog ? '✓' : '✗'}
+              </Badge>
+              <Badge variant={validationResult.pages.anime ? "default" : "secondary"}>
+                {t('createDriver.animePage')}: {validationResult.pages.anime ? '✓' : '✗'}
+              </Badge>
+              <Badge variant={validationResult.pages.episode ? "default" : "secondary"}>
+                {t('createDriver.episodePage')}: {validationResult.pages.episode ? '✓' : '✗'}
+              </Badge>
+            </div>
+            {validationResult.errors.length > 0 && (
+              <p className="text-destructive text-xs">{validationResult.errors[0]}</p>
+            )}
+          </div>
+        )}
+
         <div className="space-y-6">
           {/* External Link Configuration */}
           <Card className="p-6 bg-primary/5 border-primary/20">
@@ -250,7 +261,8 @@ const EditDriver = () => {
 
           {/* Anime List Selectors */}
           <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4">{t('editDriver.animeListSelectors')}</h3>
+            <h3 className="text-xl font-semibold mb-2">{t('editDriver.animeListSelectors')}</h3>
+            <p className="text-xs text-muted-foreground mb-4">{t('createDriver.validatedOn')}: {t('createDriver.catalogPage')}</p>
             <div className="space-y-4">
               <SelectorInput
                 id="animeList"
@@ -258,7 +270,7 @@ const EditDriver = () => {
                 value={selectors.animeList}
                 onChange={(value) => setSelectors({ ...selectors, animeList: value })}
                 placeholder=".anime-item, article.anime"
-                count={selectorCounts.animeList}
+                count={validationResult?.counts.animeList}
                 t={t}
               />
               <SelectorInput
@@ -267,7 +279,7 @@ const EditDriver = () => {
                 value={selectors.animeTitle}
                 onChange={(value) => setSelectors({ ...selectors, animeTitle: value })}
                 placeholder="h2.title, .anime-title"
-                count={selectorCounts.animeTitle}
+                count={validationResult?.counts.animeTitle}
                 required
                 t={t}
               />
@@ -277,7 +289,7 @@ const EditDriver = () => {
                 value={selectors.animeUrl}
                 onChange={(value) => setSelectors({ ...selectors, animeUrl: value })}
                 placeholder="a, .anime-link"
-                count={selectorCounts.animeUrl}
+                count={validationResult?.counts.animeUrl}
                 required
                 t={t}
               />
@@ -287,16 +299,24 @@ const EditDriver = () => {
                 value={selectors.animeImage}
                 onChange={(value) => setSelectors({ ...selectors, animeImage: value })}
                 placeholder="img.cover, .anime-image"
-                count={selectorCounts.animeImage}
+                count={validationResult?.counts.animeImage}
                 t={t}
               />
+            </div>
+          </Card>
+
+          {/* Anime Page Selectors */}
+          <Card className="p-6">
+            <h3 className="text-xl font-semibold mb-2">{t('createDriver.animePageSelectors')}</h3>
+            <p className="text-xs text-muted-foreground mb-4">{t('createDriver.validatedOn')}: {t('createDriver.animePage')}</p>
+            <div className="space-y-4">
               <SelectorInput
                 id="animeSynopsis"
                 label={t('editDriver.animeSynopsis')}
                 value={selectors.animeSynopsis}
                 onChange={(value) => setSelectors({ ...selectors, animeSynopsis: value })}
                 placeholder=".synopsis, .description"
-                count={selectorCounts.animeSynopsis}
+                count={validationResult?.counts.animeSynopsis}
                 t={t}
               />
               <SelectorInput
@@ -305,7 +325,7 @@ const EditDriver = () => {
                 value={selectors.animePageTitle}
                 onChange={(value) => setSelectors({ ...selectors, animePageTitle: value })}
                 placeholder="h1.title, .page-title"
-                count={selectorCounts.animePageTitle}
+                count={validationResult?.counts.animePageTitle}
                 t={t}
               />
             </div>
@@ -313,7 +333,8 @@ const EditDriver = () => {
 
           {/* Episode Selectors */}
           <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4">{t('editDriver.episodeSelectors')}</h3>
+            <h3 className="text-xl font-semibold mb-2">{t('editDriver.episodeSelectors')}</h3>
+            <p className="text-xs text-muted-foreground mb-4">{t('createDriver.validatedOn')}: {t('createDriver.animePage')}</p>
             <div className="space-y-4">
               <SelectorInput
                 id="episodeList"
@@ -321,7 +342,7 @@ const EditDriver = () => {
                 value={selectors.episodeList}
                 onChange={(value) => setSelectors({ ...selectors, episodeList: value })}
                 placeholder=".episode, .ep-item"
-                count={selectorCounts.episodeList}
+                count={validationResult?.counts.episodeList}
                 required
                 t={t}
               />
@@ -331,7 +352,7 @@ const EditDriver = () => {
                 value={selectors.episodeNumber}
                 onChange={(value) => setSelectors({ ...selectors, episodeNumber: value })}
                 placeholder=".ep-number, .number"
-                count={selectorCounts.episodeNumber}
+                count={validationResult?.counts.episodeNumber}
                 required
                 t={t}
               />
@@ -341,7 +362,7 @@ const EditDriver = () => {
                 value={selectors.episodeTitle}
                 onChange={(value) => setSelectors({ ...selectors, episodeTitle: value })}
                 placeholder=".ep-title, .title"
-                count={selectorCounts.episodeTitle}
+                count={validationResult?.counts.episodeTitle}
                 t={t}
               />
               <SelectorInput
@@ -350,7 +371,7 @@ const EditDriver = () => {
                 value={selectors.episodeUrl}
                 onChange={(value) => setSelectors({ ...selectors, episodeUrl: value })}
                 placeholder="a, .ep-link"
-                count={selectorCounts.episodeUrl}
+                count={validationResult?.counts.episodeUrl}
                 required
                 t={t}
               />
@@ -359,7 +380,8 @@ const EditDriver = () => {
 
           {/* Player Selectors */}
           <Card className="p-6">
-            <h3 className="text-xl font-semibold mb-4">{t('editDriver.playerSelectors')}</h3>
+            <h3 className="text-xl font-semibold mb-2">{t('editDriver.playerSelectors')}</h3>
+            <p className="text-xs text-muted-foreground mb-4">{t('createDriver.validatedOn')}: {t('createDriver.episodePage')}</p>
             <div className="space-y-4">
               <SelectorInput
                 id="videoPlayer"
@@ -367,7 +389,7 @@ const EditDriver = () => {
                 value={selectors.videoPlayer}
                 onChange={(value) => setSelectors({ ...selectors, videoPlayer: value })}
                 placeholder="iframe, video, .player"
-                count={selectorCounts.videoPlayer}
+                count={validationResult?.counts.videoPlayer}
                 t={t}
               />
               <SelectorInput
@@ -376,7 +398,7 @@ const EditDriver = () => {
                 value={selectors.externalLinkSelector}
                 onChange={(value) => setSelectors({ ...selectors, externalLinkSelector: value })}
                 placeholder="a.external-link, .download-link"
-                count={selectorCounts.externalLinkSelector}
+                count={validationResult?.counts.externalLinkSelector}
                 t={t}
               />
             </div>
