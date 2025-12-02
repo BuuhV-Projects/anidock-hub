@@ -11,7 +11,7 @@ function delay(ms: number): Promise<void> {
 async function getBrowser(): Promise<Browser> {
   if (!browser) {
     browser = await puppeteer.launch({
-      headless: false,
+      headless: true,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
