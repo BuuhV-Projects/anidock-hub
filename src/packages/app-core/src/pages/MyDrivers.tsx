@@ -20,6 +20,7 @@ import {
   Download,
   Eye,
   FileEdit,
+  Link,
   Loader2,
   Plus,
   Settings,
@@ -221,6 +222,10 @@ const MyDrivers = () => {
                         <DropdownMenuItem onClick={() => navigate(`/drivers/${driver.id}/edit`)}>
                           <FileEdit className="h-4 w-4 mr-2" />
                           Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/drivers/${driver.id}/add-anime`)}>
+                          <Link className="h-4 w-4 mr-2" />
+                          Adicionar Anime
                         </DropdownMenuItem>
                         {totalAnimes > 0 && (
                           <DropdownMenuItem onClick={() => handleViewIndexedAnimes(driver)}>
