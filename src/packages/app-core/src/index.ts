@@ -12,6 +12,7 @@ export { default as IndexManual } from './pages/IndexManual';
 export { default as EditIndexedAnime } from './pages/EditIndexedAnime';
 export { default as Backup } from './pages/Backup';
 export { default as Settings } from './pages/Settings';
+export { default as AddAnime } from './pages/AddAnime';
 export { default as NotFound } from './pages/NotFound';
 export { default as TermsOfService } from './pages/TermsOfService';
 export { default as PrivacyPolicy } from './pages/PrivacyPolicy';

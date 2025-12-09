@@ -1,5 +1,6 @@
 import React from "react";
 import {
+    AddAnime,
     AnimeDetails,
     Backup,
     Browse,
@@ -31,6 +32,8 @@ const RouterAppCore = () => {
             <Route path="/drivers" element={<MyDrivers />} />
             <Route path="/drivers/:driverId/index-manual" element={<IndexManual />} />
             <Route path="/drivers/:driverId/edit-anime" element={<EditIndexedAnime />} />
+            <Route path="/drivers/:driverId/add-anime" element={<AddAnime />} />
+            <Route path="/drivers/add-anime" element={<AddAnime />} />
             <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/backup" element={<Backup />} />
       <Route path="/settings" element={<Settings />} />
