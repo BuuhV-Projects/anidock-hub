@@ -186,6 +186,7 @@ const resources = {
         invalidDriver: 'Driver inválido',
         importError: 'Erro ao importar driver. Verifique o formato JSON.',
         importSuccess: 'Driver "{{name}}" importado com sucesso!',
+        importSuccessWithAnimes: 'Driver "{{name}}" importado com {{count}} animes!',
         exampleDownloaded: 'Exemplo baixado!',
       },
       editDriver: {
@@ -475,6 +476,7 @@ const resources = {
         invalidDriver: 'Invalid driver',
         importError: 'Error importing driver. Check the JSON format.',
         importSuccess: 'Driver "{{name}}" imported successfully!',
+        importSuccessWithAnimes: 'Driver "{{name}}" imported with {{count}} animes!',
         exampleDownloaded: 'Example downloaded!',
       },
       editDriver: {
@@ -737,6 +739,7 @@ const resources = {
         invalidDriver: 'Driver inválido',
         importError: 'Error al importar driver. Verifica el formato JSON.',
         importSuccess: '¡Driver "{{name}}" importado con éxito!',
+        importSuccessWithAnimes: '¡Driver "{{name}}" importado con {{count}} animes!',
         exampleDownloaded: '¡Ejemplo descargado!',
       },
       editDriver: {

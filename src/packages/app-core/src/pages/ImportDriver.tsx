@@ -3,8 +3,12 @@ import { ArrowLeft, Cpu, FileCode, Upload, Loader2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { db, Driver } from '../lib/indexedDB';
+import { db, Driver, AnimeIndex, LocalAnime } from '../lib/indexedDB';
 import { useTranslation } from 'react-i18next';
+
+interface ImportedDriver extends Driver {
+  indexedData?: LocalAnime[];
+}
 
 const ImportDriver = () => {
   const { t } = useTranslation();
@@ -33,20 +37,41 @@ const ImportDriver = () => {
 
     setIsLoading(true);
     try {
-      const driver: Driver = JSON.parse(driverJson);
+      const importedDriver: ImportedDriver = JSON.parse(driverJson);
       
       // Validate driver structure
-      if (!driver.id || !driver.name || !driver.config) {
+      if (!importedDriver.id || !importedDriver.name || !importedDriver.config) {
         throw new Error(t('importDriver.invalidDriver'));
       }
 
       // Initialize IndexedDB
       await db.init();
       
-      // Save driver
-      await db.saveDriver(driver);
+      // Extract indexedData before saving driver
+      const { indexedData, ...driverData } = importedDriver;
       
-      toast.success(t('importDriver.importSuccess', { name: driver.name }));
+      // Save driver (without indexedData)
+      await db.saveDriver(driverData as Driver);
+      
+      // If there's indexed data, create an AnimeIndex
+      if (indexedData && indexedData.length > 0) {
+        const animeIndex: AnimeIndex = {
+          id: crypto.randomUUID(),
+          driverId: driverData.id,
+          name: driverData.name,
+          sourceUrl: driverData.sourceUrl || driverData.catalogUrl || '',
+          totalAnimes: indexedData.length,
+          animes: indexedData,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        
+        await db.saveIndex(animeIndex);
+        toast.success(t('importDriver.importSuccessWithAnimes', { name: driverData.name, count: indexedData.length }));
+      } else {
+        toast.success(t('importDriver.importSuccess', { name: driverData.name }));
+      }
+      
       navigate('/browse');
     } catch (error) {
       toast.error(t('importDriver.importError'));
