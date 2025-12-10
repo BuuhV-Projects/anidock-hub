@@ -88,15 +88,6 @@ const DriverCard: React.FC<DriverCardProps> = ({ driver }) => {
             <Calendar className="w-3.5 h-3.5" />
             {formatDate(driver.updatedAt)}
           </span>
-          <span className="flex items-center gap-1">
-            <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-            <span className="text-foreground font-medium">{driver.rating.toFixed(1)}</span>
-            <span>({driver.ratingCount})</span>
-          </span>
-          <span className="flex items-center gap-1 text-primary">
-            <Download className="w-3.5 h-3.5" />
-            {formatNumber(driver.downloadCount)}
-          </span>
         </div>
 
         {/* Action buttons */}
