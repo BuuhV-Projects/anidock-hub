@@ -1,6 +1,6 @@
-import React from 'react';
-import { Search, Info, Plus, Github } from 'lucide-react';
 import { Button } from '@anidock/shared-ui';
+import { Github, Plus } from 'lucide-react';
+import React from 'react';
 import SearchBar from './SearchBar';
 
 interface HeaderProps {
