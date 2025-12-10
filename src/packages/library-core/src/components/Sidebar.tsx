@@ -40,6 +40,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             variant="outline" 
             size="sm" 
             className="w-full border-primary/30 text-primary hover:bg-primary/10"
+            onClick={() => document.getElementById('getting-started-guide')?.scrollIntoView({ behavior: 'smooth' })}
           >
             Get Started
           </Button>
