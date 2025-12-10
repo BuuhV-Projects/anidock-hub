@@ -30,10 +30,21 @@ const DriverCard: React.FC<DriverCardProps> = ({ driver }) => {
   const StatusIcon = status.icon;
 
   const handleInstall = () => {
-    // Opens the CDN URL to download the driver JSON
-    window.open(driver.cdnUrl, '_blank');
+    // Try to open the desktop app with the driver URL via custom protocol
+    const encodedUrl = encodeURIComponent(driver.cdnUrl);
+    const deepLinkUrl = `anidock://import?url=${encodedUrl}`;
+    
+    // Try to open the deep link
+    window.location.href = deepLinkUrl;
+    
+    // Fallback: after a short delay, if the app didn't open, open the CDN URL directly
+    setTimeout(() => {
+      // Check if the page is still visible (app didn't take focus)
+      if (document.hasFocus()) {
+        window.open(driver.cdnUrl, '_blank');
+      }
+    }, 1500);
   };
-
 
   const formatNumber = (num: number) => {
     if (num >= 1000) {

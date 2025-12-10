@@ -7,10 +7,84 @@ import * as puppeteerCrawler from './puppeteerCrawler';
 
 const windowManager = new WindowManager();
 
+// Store pending deep link URL to be sent when window is ready
+let pendingDeepLinkUrl: string | null = null;
+
+// Protocol name for deep linking
+const PROTOCOL_NAME = 'anidock';
+
 function createWindow(): void {
   windowManager.createMainWindow();
 }
 
+// Handle deep link URL
+function handleDeepLink(url: string): void {
+  console.log('Deep link received:', url);
+  
+  try {
+    // Parse the URL: anidock://import?url=<encodedUrl>
+    const parsedUrl = new URL(url);
+    
+    if (parsedUrl.host === 'import' || parsedUrl.pathname === '//import') {
+      const driverUrl = parsedUrl.searchParams.get('url');
+      
+      if (driverUrl) {
+        const mainWindow = windowManager.getMainWindow();
+        
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          // Send the URL to the renderer process
+          mainWindow.webContents.send(IPC_CHANNELS.deepLink.importDriver, driverUrl);
+          
+          // Focus the window
+          if (mainWindow.isMinimized()) mainWindow.restore();
+          mainWindow.focus();
+        } else {
+          // Store for later when window is ready
+          pendingDeepLinkUrl = driverUrl;
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error parsing deep link:', error);
+  }
+}
+
+// Register as default protocol handler
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient(PROTOCOL_NAME, process.execPath, [process.argv[1]]);
+  }
+} else {
+  app.setAsDefaultProtocolClient(PROTOCOL_NAME);
+}
+
+// Handle protocol on Windows/Linux when app is already running
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', (_event, commandLine) => {
+    // Someone tried to run a second instance, focus our window
+    const mainWindow = windowManager.getMainWindow();
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+    
+    // Handle the protocol URL from command line (Windows/Linux)
+    const url = commandLine.find(arg => arg.startsWith(`${PROTOCOL_NAME}://`));
+    if (url) {
+      handleDeepLink(url);
+    }
+  });
+}
+
+// Handle protocol on macOS
+app.on('open-url', (event, url) => {
+  event.preventDefault();
+  handleDeepLink(url);
+});
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -51,6 +125,24 @@ app.whenReady().then(() => {
   });
   
   createWindow();
+  
+  // Send pending deep link URL after window is created
+  if (pendingDeepLinkUrl) {
+    const mainWindow = windowManager.getMainWindow();
+    if (mainWindow) {
+      // Wait for the window to be ready
+      mainWindow.webContents.once('did-finish-load', () => {
+        mainWindow.webContents.send(IPC_CHANNELS.deepLink.importDriver, pendingDeepLinkUrl);
+        pendingDeepLinkUrl = null;
+      });
+    }
+  }
+  
+  // Check if app was opened with a protocol URL (Windows/Linux cold start)
+  const protocolUrl = process.argv.find(arg => arg.startsWith(`${PROTOCOL_NAME}://`));
+  if (protocolUrl) {
+    handleDeepLink(protocolUrl);
+  }
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

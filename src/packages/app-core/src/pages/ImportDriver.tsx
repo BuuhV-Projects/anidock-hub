@@ -1,7 +1,7 @@
 import { Button, Card, Textarea, Label } from '@anidock/shared-ui';
-import { ArrowLeft, Cpu, FileCode, Upload, Loader2 } from 'lucide-react';
-import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Cpu, FileCode, Upload, Loader2, Link } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { db, Driver, AnimeIndex, LocalAnime } from '../lib/indexedDB';
 import { useTranslation } from 'react-i18next';
@@ -10,12 +10,76 @@ interface ImportedDriver extends Driver {
   indexedData?: LocalAnime[];
 }
 
+declare global {
+  interface Window {
+    deepLink?: {
+      onImportDriver: (callback: (url: string) => void) => void;
+      removeImportDriverListener: () => void;
+    };
+  }
+}
+
 const ImportDriver = () => {
   const { t } = useTranslation();
   const [driverJson, setDriverJson] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingFromUrl, setIsLoadingFromUrl] = useState(false);
+  const [driverUrl, setDriverUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Handle URL from query params or deep link
+  useEffect(() => {
+    const urlParam = searchParams.get('url');
+    if (urlParam) {
+      setDriverUrl(urlParam);
+      loadDriverFromUrl(urlParam);
+    }
+  }, [searchParams]);
+
+  // Handle deep link from desktop app
+  useEffect(() => {
+    if (window.deepLink) {
+      window.deepLink.onImportDriver((url: string) => {
+        console.log('Received deep link URL:', url);
+        setDriverUrl(url);
+        loadDriverFromUrl(url);
+        // Navigate to import page if not already there
+        navigate('/import-driver?url=' + encodeURIComponent(url));
+      });
+
+      return () => {
+        window.deepLink?.removeImportDriverListener();
+      };
+    }
+  }, [navigate]);
+
+  const loadDriverFromUrl = async (url: string) => {
+    setIsLoadingFromUrl(true);
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch driver');
+      }
+      const jsonText = await response.text();
+      setDriverJson(jsonText);
+      toast.success(t('importDriver.loadedFromUrl'));
+    } catch (error) {
+      console.error('Error loading driver from URL:', error);
+      toast.error(t('importDriver.loadUrlError'));
+    } finally {
+      setIsLoadingFromUrl(false);
+    }
+  };
+
+  const handleLoadFromUrl = () => {
+    if (!driverUrl.trim()) {
+      toast.error(t('importDriver.enterUrl'));
+      return;
+    }
+    loadDriverFromUrl(driverUrl);
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -142,7 +206,47 @@ const ImportDriver = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          {/* Load from URL */}
+          <Card className="p-6 border-border/50 border-primary/30">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                <Link className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="font-display font-bold text-lg mb-2">
+                {t('importDriver.loadFromUrl')}
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                {t('importDriver.loadFromUrlDescription')}
+              </p>
+              <div className="flex flex-col gap-2">
+                <input
+                  type="url"
+                  value={driverUrl}
+                  onChange={(e) => setDriverUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="w-full px-3 py-2 text-sm bg-background border border-border/50 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+                <Button
+                  onClick={handleLoadFromUrl}
+                  variant="outline"
+                  className="border-primary/50 hover:bg-primary/10 w-full"
+                  disabled={isLoadingFromUrl}
+                >
+                  {isLoadingFromUrl ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Link className="h-4 w-4 mr-2" />
+                      {t('importDriver.loadUrl')}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </Card>
+
+          {/* Upload file */}
           <Card className="p-6 border-border/50">
             <div className="text-center">
               <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
@@ -172,6 +276,7 @@ const ImportDriver = () => {
             </div>
           </Card>
 
+          {/* Download example */}
           <Card className="p-6 border-border/50 bg-card/50">
             <div className="text-center">
               <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
