@@ -3,22 +3,22 @@ import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import DriverCard from '../components/DriverCard';
 import GettingStartedGuide from '../components/GettingStartedGuide';
-import { mockDrivers } from '../data/mockDrivers';
-import { StatusFilter } from '../types/driver';
+import driversData from '../data/drivers.json';
+import { LibraryDriver, StatusFilter } from '../types/driver';
 
+const drivers = driversData as LibraryDriver[];
 const Library: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
   const statusCounts = useMemo(() => ({
-    trusted: mockDrivers.filter(d => d.status === 'trusted').length,
-    safe: mockDrivers.filter(d => d.status === 'safe').length,
-    'use-at-own-risk': mockDrivers.filter(d => d.status === 'use-at-own-risk').length,
+    trusted: drivers.filter(d => d.status === 'trusted').length,
+    safe: drivers.filter(d => d.status === 'safe').length,
+    'use-at-own-risk': drivers.filter(d => d.status === 'use-at-own-risk').length,
   }), []);
 
   const filteredDrivers = useMemo(() => {
-    let result = [...mockDrivers];
-
+    let result = [...drivers];
     // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
