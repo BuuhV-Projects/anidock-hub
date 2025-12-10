@@ -48,7 +48,7 @@ const ImportDriver = () => {
         }
     }, [t]);
 
-    // Handle URL from query params or deep link
+    // Handle URL from query params
     useEffect(() => {
         const urlParam = searchParams.get('url');
         if (urlParam) {
@@ -56,23 +56,6 @@ const ImportDriver = () => {
             loadDriverFromUrl(urlParam);
         }
     }, [searchParams, loadDriverFromUrl]);
-
-    // Handle deep link from desktop app
-    useEffect(() => {
-        if (window.deepLink) {
-            window.deepLink.onImportDriver((url: string) => {
-                console.log('Received deep link URL:', url);
-                setDriverUrl(url);
-                loadDriverFromUrl(url);
-                // Navigate to import page if not already there
-                navigate('/import-driver?url=' + encodeURIComponent(url));
-            });
-
-            return () => {
-                window.deepLink?.removeImportDriverListener();
-            };
-        }
-    }, [navigate, loadDriverFromUrl]);
 
     const handleLoadFromUrl = () => {
         if (!driverUrl.trim()) {
