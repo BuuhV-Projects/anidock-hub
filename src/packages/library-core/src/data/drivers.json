@@ -1,0 +1,15 @@
+[
+  {
+    "id": "1",
+    "name": "AnimesDigital",
+    "description": "Driver completo para AnimesDigital.org com suporte a todos os animes disponíveis no catálogo.",
+    "domain": "animesdigital.org",
+    "author": "AniDock Community",
+    "version": "1.0.0",
+    "animeCount": 1,
+    "status": "trusted",
+    "createdAt": "2024-12-01",
+    "updatedAt": "2024-12-10",
+    "cdnUrl": "https://anidockhub-prod-public-files.s3.us-east-1.amazonaws.com/driver-for-animesdigital.org-driver.json"
+  }
+]
