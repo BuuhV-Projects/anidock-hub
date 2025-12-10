@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, Star, Calendar, ExternalLink, Shield, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Download, Calendar, Shield, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Card, CardContent, Button, Badge } from '@anidock/shared-ui';
 import { LibraryDriver } from '../types/driver';
 
@@ -34,9 +34,6 @@ const DriverCard: React.FC<DriverCardProps> = ({ driver }) => {
     window.open(driver.cdnUrl, '_blank');
   };
 
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(driver.cdnUrl);
-  };
 
   const formatNumber = (num: number) => {
     if (num >= 1000) {
@@ -90,25 +87,15 @@ const DriverCard: React.FC<DriverCardProps> = ({ driver }) => {
           </span>
         </div>
 
-        {/* Action buttons */}
-        <div className="flex gap-2">
-          <Button 
-            onClick={handleInstall}
-            className="flex-1 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 hover:border-primary/50 transition-all"
-            variant="outline"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Install
-          </Button>
-          <Button 
-            onClick={handleCopy}
-            variant="outline" 
-            className="border-border/50 hover:border-muted-foreground/50 text-muted-foreground hover:text-foreground"
-          >
-            <ExternalLink className="w-4 h-4 mr-1" />
-            Copy
-          </Button>
-        </div>
+        {/* Action button */}
+        <Button 
+          onClick={handleInstall}
+          className="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 hover:border-primary/50 transition-all"
+          variant="outline"
+        >
+          <Download className="w-4 h-4 mr-2" />
+          Install
+        </Button>
       </CardContent>
     </Card>
   );
