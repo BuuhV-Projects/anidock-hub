@@ -42,6 +42,7 @@ const Header: React.FC<HeaderProps> = ({ searchQuery, onSearchChange }) => {
             variant="outline" 
             size="sm"
             className="border-primary/30 text-primary hover:bg-primary/10"
+            onClick={() => window.open('https://github.com/BuuhV-Projects/anidock-hub/pulls', '_blank')}
           >
             <Plus className="w-4 h-4 mr-2" />
             <span className="hidden sm:inline">Suggest Driver</span>
