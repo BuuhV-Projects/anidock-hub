@@ -1,0 +1,29 @@
+{
+  "name": "@anidock/library-core",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@anidock/anime-core": "*",
+    "@anidock/shared-ui": "*",
+    "@anidock/shared-utils": "*",
+    "@hookform/resolvers": "^3.10.0",
+    "@tanstack/react-query": "^5.83.0",
+    "lucide-react": "^0.462.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.61.1",
+    "react-router-dom": "^6.30.1",
+    "sonner": "^1.7.4"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "typescript": "^5.8.3"
+  }
+}
+
