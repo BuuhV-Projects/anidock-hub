@@ -3,12 +3,11 @@ import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import DriverCard from '../components/DriverCard';
 import { mockDrivers } from '../data/mockDrivers';
-import { StatusFilter, SortOption } from '../types/driver';
+import { StatusFilter } from '../types/driver';
 
 const Library: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [sortOption, setSortOption] = useState<SortOption>('popular');
 
   const statusCounts = useMemo(() => ({
     trusted: mockDrivers.filter(d => d.status === 'trusted').length,
@@ -16,7 +15,7 @@ const Library: React.FC = () => {
     'use-at-own-risk': mockDrivers.filter(d => d.status === 'use-at-own-risk').length,
   }), []);
 
-  const filteredAndSortedDrivers = useMemo(() => {
+  const filteredDrivers = useMemo(() => {
     let result = [...mockDrivers];
 
     // Filter by search query
@@ -34,24 +33,11 @@ const Library: React.FC = () => {
       result = result.filter(d => d.status === statusFilter);
     }
 
-    // Sort
-    switch (sortOption) {
-      case 'popular':
-        result.sort((a, b) => b.downloadCount - a.downloadCount);
-        break;
-      case 'newest':
-        result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        break;
-      case 'most-downloads':
-        result.sort((a, b) => b.downloadCount - a.downloadCount);
-        break;
-      case 'top-rated':
-        result.sort((a, b) => b.rating - a.rating);
-        break;
-    }
+    // Default sort by downloads
+    result.sort((a, b) => b.downloadCount - a.downloadCount);
 
     return result;
-  }, [searchQuery, statusFilter, sortOption]);
+  }, [searchQuery, statusFilter]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -64,19 +50,19 @@ const Library: React.FC = () => {
             {/* Results count */}
             <div className="flex items-center justify-between mb-4">
               <p className="text-sm text-muted-foreground">
-                Showing <span className="text-foreground font-medium">{filteredAndSortedDrivers.length}</span> drivers
+                Showing <span className="text-foreground font-medium">{filteredDrivers.length}</span> drivers
               </p>
             </div>
 
             {/* Driver grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {filteredAndSortedDrivers.map((driver) => (
+              {filteredDrivers.map((driver) => (
                 <DriverCard key={driver.id} driver={driver} />
               ))}
             </div>
 
             {/* Empty state */}
-            {filteredAndSortedDrivers.length === 0 && (
+            {filteredDrivers.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">No drivers found matching your criteria.</p>
               </div>
@@ -88,8 +74,6 @@ const Library: React.FC = () => {
             <Sidebar
               statusFilter={statusFilter}
               onStatusFilterChange={setStatusFilter}
-              sortOption={sortOption}
-              onSortOptionChange={setSortOption}
               statusCounts={statusCounts}
             />
           </div>
