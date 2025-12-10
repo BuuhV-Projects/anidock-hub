@@ -22,7 +22,7 @@ function DeepLinkHandler() {
             window.deepLink.onImportDriver((url: string) => {
                 console.log('Deep link received in App:', url);
                 // Navigate to import page with the URL
-                navigate('/import-driver?url=' + encodeURIComponent(url));
+                navigate('/drivers/import?url=' + encodeURIComponent(url));
             });
 
             return () => {
