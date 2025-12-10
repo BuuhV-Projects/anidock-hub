@@ -36,7 +36,7 @@ const steps = [
 
 const GettingStartedGuide: React.FC = () => {
   return (
-    <Card id="getting-started-guide" className="bg-card/50 border-border/50 mb-6">
+    <Card id="getting-started-guide" className="bg-card/50 border-border/50 mt-8">
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-lg">
           <CheckCircle2 className="h-5 w-5 text-primary" />
