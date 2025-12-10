@@ -48,9 +48,6 @@ const Library: React.FC = () => {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Main content */}
           <div className="flex-1 order-2 lg:order-1">
-            {/* Getting Started Guide */}
-            <GettingStartedGuide />
-
             {/* Results count */}
             <div className="flex items-center justify-between mb-4">
               <p className="text-sm text-muted-foreground">
@@ -71,6 +68,9 @@ const Library: React.FC = () => {
                 <p className="text-muted-foreground">No drivers found matching your criteria.</p>
               </div>
             )}
+
+            {/* Getting Started Guide */}
+            <GettingStartedGuide />
           </div>
 
           {/* Sidebar */}
