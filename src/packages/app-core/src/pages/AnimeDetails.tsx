@@ -76,7 +76,7 @@ const AnimeDetails = () => {
         animeUrl, 
         driverData,
         undefined,
-        crawler?.fetchHTML ? () => crawler.fetchHTML(animeUrl) : undefined
+        crawler?.fetchHTML ? (url: string) => crawler.fetchHTML(url) : undefined
       );
       
       if (result.errors.length > 0) {
@@ -123,7 +123,7 @@ const AnimeDetails = () => {
       const result = await extractVideoUrl(
         episode.sourceUrl, 
         driver,
-        crawler?.fetchHTML ? () => crawler.fetchHTML(episode.sourceUrl) : undefined
+        crawler?.fetchHTML ? (url: string) => crawler.fetchHTML(url) : undefined
       );
 
       toast.dismiss();
