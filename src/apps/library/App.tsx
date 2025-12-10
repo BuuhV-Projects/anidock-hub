@@ -4,7 +4,7 @@ import {
 import { Toaster, TooltipProvider } from "@anidock/shared-ui";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
-import "@anidock/shared-ui/styles";
+import "@anidock/shared-ui/styles/index.css";
 
 const queryClient = new QueryClient();
 
