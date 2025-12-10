@@ -53,7 +53,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           <h3 className="font-semibold font-['Orbitron'] text-sm mb-3">Driver Status</h3>
           <div className="space-y-2">
             {statusItems.map((item) => {
-              const Icon = item.icon;
               const isActive = statusFilter === item.value;
               const count = statusCounts[item.value];
               
