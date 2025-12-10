@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import DriverCard from '../components/DriverCard';
+import GettingStartedGuide from '../components/GettingStartedGuide';
 import { mockDrivers } from '../data/mockDrivers';
 import { StatusFilter } from '../types/driver';
 
@@ -47,6 +48,9 @@ const Library: React.FC = () => {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Main content */}
           <div className="flex-1 order-2 lg:order-1">
+            {/* Getting Started Guide */}
+            <GettingStartedGuide />
+
             {/* Results count */}
             <div className="flex items-center justify-between mb-4">
               <p className="text-sm text-muted-foreground">
