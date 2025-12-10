@@ -1,0 +1,126 @@
+{
+  "id": "42b69841-b83f-49b0-bdbd-cc476928a47f",
+  "name": "Driver for animesdigital.org",
+  "domain": "animesdigital.org",
+  "version": "1.0.0",
+  "author": "AI Generated",
+  "config": {
+    "requiresExternalLink": false,
+    "selectors": {
+      "animeList": ".itemA",
+      "animeTitle": ".title_anime",
+      "animeUrl": ".itemA a",
+      "animeImage": ".itemA img",
+      "animeSynopsis": ".sinopse",
+      "animePageTitle": ".dados h1",
+      "episodeList": ".item_ep",
+      "episodeNumber": "",
+      "episodeTitle": ".title_anime",
+      "episodeUrl": ".item_ep a",
+      "videoPlayer": "iframe.metaframe.rptss.no-lazy",
+      "externalLinkSelector": ""
+    },
+    "baseUrl": "https://animesdigital.org"
+  },
+  "catalogUrl": "https://animesdigital.org/animes-legendados-online",
+  "sourceUrl": "https://animesdigital.org/animes-legendados-online",
+  "createdAt": "2025-12-09T22:41:32.815Z",
+  "updatedAt": "2025-12-09T23:52:19.162Z",
+  "indexedData": [
+    {
+      "id": "b8097491-2ff1-45e1-bec4-f82f81534afd",
+      "driverId": "42b69841-b83f-49b0-bdbd-cc476928a47f",
+      "title": "I Parry Everything",
+      "sourceUrl": "https://animesdigital.org/anime/a/i-parry-everything-todo-os-episodios",
+      "synopsis": "I Parry Everything O Reino de Clays enfrenta uma crise terrível: uma tentativa de assassinato acaba de ser feita contra a sua própria Princesa Lynneburg, e os seus países vizinhos olham para as consequências como abutres famintos, planeando a queda do Reino. O conflito que se seguirá moldará a face do continente nos próximos séculos... mas Noor não tem a menor ideia sobre nada disso! Tendo chegado recentemente à capital real depois de mais de uma década de treinamento rigoroso e isolado em sua casa na montanha, ele está decidido a realizar seu sonho de infância de se tornar um aventureiro, mesmo que as únicas habilidades que possua sejam inúteis. Claro, ele pode “Aparar” milhares de espadas em um único suspiro, mas todo mundo sabe que você precisa de mais do que isso se quiser ser um aventureiro! O caminho do nosso herói para realizar seu sonho será longo (?) e árduo (?) - mas se há uma coisa de que Noor não tem medo, é do bom e velho trabalho duro!",
+      "episodes": [
+        {
+          "id": "ep_1765321206112_sg7tpe3zd",
+          "episodeNumber": 12,
+          "title": "I Parry Everything Episódio 12",
+          "sourceUrl": "https://animesdigital.org/video/a/123832/",
+          "watched": false
+        },
+        {
+          "id": "ep_1765321206112_l7dfrunwd",
+          "episodeNumber": 11,
+          "title": "I Parry Everything Episódio 11",
+          "sourceUrl": "https://animesdigital.org/video/a/123833/",
+          "watched": false
+        },
+        {
+          "id": "ep_1765321206112_tc3suk7rs",
+          "episodeNumber": 10,
+          "title": "I Parry Everything Episódio 10",
+          "sourceUrl": "https://animesdigital.org/video/a/123834/",
+          "watched": false
+        },
+        {
+          "id": "ep_1765321206112_b53lwnfoc",
+          "episodeNumber": 9,
+          "title": "I Parry Everything Episódio 09",
+          "sourceUrl": "https://animesdigital.org/video/a/123835/",
+          "watched": false
+        },
+        {
+          "id": "ep_1765321206112_6z02tzpvf",
+          "episodeNumber": 8,
+          "title": "I Parry Everything Episódio 08",
+          "sourceUrl": "https://animesdigital.org/video/a/123836/",
+          "watched": false
+        },
+        {
+          "id": "ep_1765321206112_uuhmkask6",
+          "episodeNumber": 7,
+          "title": "I Parry Everything Episódio 07",
+          "sourceUrl": "https://animesdigital.org/video/a/123837/",
+          "watched": false
+        },
+        {
+          "id": "ep_1765321206112_xc1c4u83f",
+          "episodeNumber": 4,
+          "title": "I Parry Everything Episódio 06",
+          "sourceUrl": "https://animesdigital.org/video/a/123838/",
+          "watched": false
+        },
+        {
+          "id": "ep_1765321206112_7g0xkzr64",
+          "episodeNumber": 5,
+          "title": "I Parry Everything Episódio 05",
+          "sourceUrl": "https://animesdigital.org/video/a/123839/",
+          "watched": false
+        },
+        {
+          "id": "ep_1765321206112_d1cd5n9ud",
+          "episodeNumber": 4,
+          "title": "I Parry Everything Episódio 04",
+          "sourceUrl": "https://animesdigital.org/video/a/123840/",
+          "watched": false
+        },
+        {
+          "id": "ep_1765321206112_1huyt0vuv",
+          "episodeNumber": 3,
+          "title": "I Parry Everything Episódio 03",
+          "sourceUrl": "https://animesdigital.org/video/a/123841/",
+          "watched": false
+        },
+        {
+          "id": "ep_1765321206112_dr0j0qpxs",
+          "episodeNumber": 2,
+          "title": "I Parry Everything Episódio 02",
+          "sourceUrl": "https://animesdigital.org/video/a/123842/",
+          "watched": false
+        },
+        {
+          "id": "ep_1765321206112_vu1xxcy74",
+          "episodeNumber": 1,
+          "title": "I Parry Everything Episódio 01",
+          "sourceUrl": "https://animesdigital.org/video/a/123843/",
+          "watched": false
+        }
+      ],
+      "createdAt": "2025-12-09T23:00:06.112Z",
+      "updatedAt": "2025-12-10T10:51:41.089Z"
+    }
+  ]
+}
