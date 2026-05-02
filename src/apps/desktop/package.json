@@ -19,10 +19,10 @@
     "package": "electron-builder --dir",
     "dist": "electron-builder",
     "version": "standard-version --message \"[skip ci]\"",
-    "version:rc": "yarn changelog -- --prerelease rc --skip.changelog --skip.tag",
-    "version:patch": "yarn changelog -- --release-as patch --prerelease rc",
-    "version:minor": "yarn changelog -- --release-as minor --prerelease rc",
-    "version:major": "yarn changelog -- --release-as major --prerelease rc"
+    "version:rc": "standard-version --prerelease rc --skip.changelog --skip.tag",
+    "version:patch": "standard-version --release-as patch --prerelease rc",
+    "version:minor": "standard-version --release-as minor --prerelease rc",
+    "version:major": "standard-version --release-as major --prerelease rc"
   },
   "dependencies": {
     "@anidock/anime-core": "*",
