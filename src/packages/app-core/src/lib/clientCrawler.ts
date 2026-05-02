@@ -213,8 +213,15 @@ export async function crawlEpisodes(
             const item = episodeItems[i];
             logger.info(`Extraindo episódio ${i + 1} de ${episodeItems.length}`);
             try {
-                // Extract episode number
-                const numberEl = item.querySelector(driver.config.selectors.episodeNumber);
+                // Extract episode number — selector may be empty when the AI
+                // could not infer one (a real driver in the wild has been
+                // observed with episodeNumber: ""). querySelector('') would
+                // throw SyntaxError, so guard before the call and fall back
+                // to the loop index.
+                const episodeNumberSelector = driver.config.selectors.episodeNumber;
+                const numberEl = episodeNumberSelector
+                    ? item.querySelector(episodeNumberSelector)
+                    : null;
                 const numberText = numberEl?.textContent?.trim() || '';
                 const episodeNumber = parseInt(numberText.replace(/\D/g, '')) || (i + 1);
 
