@@ -1,0 +1,30 @@
+{
+  "_comment": "Trimmed copy of a real exported driver. indexedData was dropped because the smoke test regenerates the catalog, episodes and video URL from scratch via Puppeteer.",
+  "id": "42b69841-b83f-49b0-bdbd-cc476928a47f",
+  "name": "Driver for animesdigital.org",
+  "domain": "animesdigital.org",
+  "version": "1.0.0",
+  "author": "AI Generated",
+  "config": {
+    "requiresExternalLink": false,
+    "selectors": {
+      "animeList": ".itemA",
+      "animeTitle": ".title_anime",
+      "animeUrl": ".itemA a",
+      "animeImage": ".itemA img",
+      "animeSynopsis": ".sinopse",
+      "animePageTitle": ".dados h1",
+      "episodeList": ".item_ep",
+      "episodeNumber": "",
+      "episodeTitle": ".title_anime",
+      "episodeUrl": ".item_ep a",
+      "videoPlayer": "iframe.metaframe.rptss.no-lazy",
+      "externalLinkSelector": ""
+    },
+    "baseUrl": "https://animesdigital.org"
+  },
+  "catalogUrl": "https://animesdigital.org/animes-legendados-online",
+  "sourceUrl": "https://animesdigital.org/animes-legendados-online",
+  "createdAt": "2025-12-09T22:41:32.815Z",
+  "updatedAt": "2025-12-09T23:52:19.162Z"
+}
