@@ -27,12 +27,13 @@ interface GeminiResponse {
     }>;
 }
 
-// Fetch HTML helper with multiple CORS proxy fallbacks
+// Fetch HTML helper with multiple CORS proxy fallbacks. cors-anywhere was
+// dropped because the public Heroku instance has been gated since 2021 and is
+// effectively unreachable for end users.
 async function fetchHTML(url: string): Promise<string> {
     const proxies = [
         'https://corsproxy.io/?',
         'https://api.allorigins.win/raw?url=',
-        'https://cors-anywhere.herokuapp.com/',
     ];
 
     for (let i = 0; i < proxies.length; i++) {
@@ -209,9 +210,34 @@ Return ONLY valid JSON, no markdown code blocks, no explanations.`;
     }
 
     console.log('🤖 AI Response:', jsonStr);
-    
-    const selectors = JSON.parse(jsonStr);
-    
+
+    interface AIGeneratedSelectors {
+        animeList?: string;
+        animeTitle?: string;
+        animeImage?: string;
+        animeSynopsis?: string;
+        animeUrl?: string;
+        episodeList?: string;
+        episodeNumber?: string;
+        episodeTitle?: string;
+        episodeUrl?: string;
+        videoPlayer?: string;
+        externalLinkSelector?: string;
+        baseUrl?: string;
+        requiresExternalLink?: boolean;
+    }
+
+    let selectors: AIGeneratedSelectors;
+    try {
+        selectors = JSON.parse(jsonStr) as AIGeneratedSelectors;
+    } catch (parseError) {
+        console.error('AI returned non-JSON response:', parseError);
+        throw new Error(
+            'A IA retornou uma resposta em formato inválido. Tente novamente, ' +
+            'ou troque para outro provedor/modelo.'
+        );
+    }
+
     // Log the generated selectors for debugging
     console.log('🎯 Generated selectors:', selectors);
 
