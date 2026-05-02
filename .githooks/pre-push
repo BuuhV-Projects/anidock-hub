@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# AniDock pre-push hook.
+# Runs lint on every push and the crawler smoke test only when the push
+# touches files that could break the crawler.
+#
+# Bypasses:
+#   ANIDOCK_SKIP_HOOKS=1 git push   # skip everything
+#   ANIDOCK_SKIP_SMOKE=1 git push   # keep lint, skip the smoke test
+#   git push --no-verify            # nuclear option (skips ALL hooks)
+
+set -euo pipefail
+
+if [ "${ANIDOCK_SKIP_HOOKS:-0}" = "1" ]; then
+  echo "[pre-push] ANIDOCK_SKIP_HOOKS=1 set, skipping all checks."
+  exit 0
+fi
+
+ZERO_SHA="0000000000000000000000000000000000000000"
+CRAWLER_PATTERN='^(src/packages/app-core/src/lib/(clientCrawler|aiDriver)\.ts|src/apps/desktop/main/puppeteerCrawler\.ts|scripts/smoke-test-driver\.mjs|scripts/fixtures/.*)$'
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+# Collect the union of files changed across every ref being pushed. git
+# streams "<localRef> <localSha> <remoteRef> <remoteSha>\n" lines on stdin.
+changed_files=""
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [ "$local_sha" = "$ZERO_SHA" ]; then
+    # Deletion of a remote ref. Nothing to validate.
+    continue
+  fi
+
+  if [ "$remote_sha" = "$ZERO_SHA" ]; then
+    # New branch on the remote — diff against the merge base with origin/main
+    # so we do not flood the diff with the entire branch history.
+    if git rev-parse --verify --quiet origin/main >/dev/null; then
+      diff_range="origin/main..$local_sha"
+    else
+      diff_range="$local_sha"
+    fi
+  else
+    diff_range="$remote_sha..$local_sha"
+  fi
+
+  ref_changed_files="$(git diff --name-only "$diff_range" 2>/dev/null || true)"
+  if [ -n "$ref_changed_files" ]; then
+    changed_files="${changed_files}${ref_changed_files}"$'\n'
+  fi
+done
+
+# Always lint — it is fast and catches the bulk of regressions.
+echo "[pre-push] yarn lint"
+yarn lint
+
+# Smoke test only when the changeset touches crawler-adjacent files.
+if [ -z "$changed_files" ]; then
+  echo "[pre-push] No file changes detected in this push; skipping smoke test."
+  exit 0
+fi
+
+if echo "$changed_files" | grep -Eq "$CRAWLER_PATTERN"; then
+  if [ "${ANIDOCK_SKIP_SMOKE:-0}" = "1" ]; then
+    echo "[pre-push] Crawler files changed but ANIDOCK_SKIP_SMOKE=1, skipping smoke test."
+    exit 0
+  fi
+
+  echo "[pre-push] Crawler files changed — running smoke test."
+  echo "[pre-push] Tip: set ANIDOCK_SKIP_SMOKE=1 to skip when offline or when the target site is down."
+  node scripts/smoke-test-driver.mjs
+else
+  echo "[pre-push] No crawler-related changes; skipping smoke test."
+fi
+
+echo "[pre-push] OK"

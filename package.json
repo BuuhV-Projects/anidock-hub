@@ -32,7 +32,9 @@
     "version:desktop": "yarn workspace @anidock/desktop version",
     "version:library": "yarn workspace @anidock/library version",
     "version:desktop:rc": "yarn workspace @anidock/desktop version:rc",
-    "version:library:rc": "yarn workspace @anidock/library version:rc"
+    "version:library:rc": "yarn workspace @anidock/library version:rc",
+    "hooks:install": "git config core.hooksPath .githooks",
+    "hooks:uninstall": "git config --unset core.hooksPath"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",

@@ -195,4 +195,36 @@ envolvidos são:
 nomeados (`yarn dev:landingpage`, `yarn dev:web`, etc.). A raiz é exclusivamente
 para o pipeline Lovable.
 
+## 🪝 Git Hooks
+
+O repositório versiona um hook `pre-push` em `.githooks/pre-push` que roda
+`yarn lint` em todo push e o smoke test do crawler quando o changeset toca
+arquivos do crawler (`clientCrawler.ts`, `aiDriver.ts`, `puppeteerCrawler.ts`,
+`smoke-test-driver.mjs` ou as fixtures).
+
+Para ativar (uma vez por clone):
+
+```bash
+yarn hooks:install
+```
+
+Isso roda `git config core.hooksPath .githooks` e passa a usar os hooks
+versionados em vez dos hooks default em `.git/hooks/`.
+
+Para desativar:
+
+```bash
+yarn hooks:uninstall
+```
+
+### Bypasses
+
+Em pushes raros onde o smoke test atrapalha (sem internet, site fora do ar,
+release urgente), use:
+
+```bash
+ANIDOCK_SKIP_SMOKE=1 git push      # mantém o lint, pula só o smoke
+ANIDOCK_SKIP_HOOKS=1 git push      # pula tudo (lint + smoke)
+git push --no-verify               # pula TODOS os hooks do git
+```
 
