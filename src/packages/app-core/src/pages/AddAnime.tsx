@@ -16,9 +16,11 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { db, Driver, AnimeIndex, LocalAnime } from '../lib/indexedDB';
 import { fetchHTML } from '../lib/clientCrawler';
+import { usePlataform } from '../contexts/plataform/usePlataform';
 
 const AddAnime = () => {
   const { t } = useTranslation();
+  const { crawler } = usePlataform();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const preselectedDriverId = searchParams.get('driverId');
@@ -61,7 +63,9 @@ const AddAnime = () => {
 
   const extractAnimeData = async (url: string, driver: Driver): Promise<LocalAnime | null> => {
     try {
-      const html = await fetchHTML(url);
+      // On desktop, route through Puppeteer (window.crawler.fetchHTML); on web,
+      // fall back to the CORS-proxy implementation built into fetchHTML.
+      const html = await fetchHTML(url, crawler?.fetchHTML);
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
       const { selectors } = driver.config;
@@ -84,13 +88,20 @@ const AddAnime = () => {
         synopsis = synopsisEl?.textContent?.trim() || '';
       }
 
-      // Extract cover image (might be on the anime page)
+      // Extract cover image (might be on the anime page) — read raw attributes
+      // so we never inherit document.baseURI from the AniDock host.
       let coverUrl = '';
       if (selectors.animeImage) {
-        const imageEl = doc.querySelector(selectors.animeImage) as HTMLImageElement;
-        coverUrl = imageEl?.src || imageEl?.getAttribute('data-src') || '';
-        if (coverUrl && !coverUrl.startsWith('http')) {
-          coverUrl = new URL(coverUrl, driver.config.baseUrl).href;
+        const imageEl = doc.querySelector(selectors.animeImage);
+        const rawSrc = imageEl?.getAttribute('src');
+        const rawDataSrc = imageEl?.getAttribute('data-src');
+        const rawCoverHref = rawSrc || rawDataSrc;
+        if (rawCoverHref) {
+          try {
+            coverUrl = new URL(rawCoverHref, driver.config.baseUrl).href;
+          } catch {
+            coverUrl = '';
+          }
         }
       }
 
@@ -119,7 +130,7 @@ const AddAnime = () => {
             const epTitle = titleEl?.textContent?.trim();
 
             episodes.push({
-              id: `ep_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+              id: crypto.randomUUID(),
               episodeNumber: episodeNumber || index + 1,
               title: epTitle,
               sourceUrl,

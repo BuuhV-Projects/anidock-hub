@@ -2,7 +2,6 @@
 export { default as Dashboard } from './pages/Dashboard';
 export { default as Browse } from './pages/Browse';
 export { default as AnimeDetails } from './pages/AnimeDetails';
-export { default as Player } from './pages/Player';
 export { default as History } from './pages/History';
 export { default as ImportDriver } from './pages/ImportDriver';
 export { default as CreateDriver } from './pages/CreateDriver';
@@ -24,6 +23,9 @@ export { LanguageSelector } from './components/LanguageSelector';
 
 // Export router
 export { default as RouterAppCore } from './router/RouterAppCore';
+
+// Export i18n instance (configured at module load)
+export { default as i18n } from './i18n/config';
 
 // Export contexts
 export { PlataformProvider } from './contexts/plataform/PlataformProvider';

@@ -85,10 +85,28 @@ const ImportDriver = () => {
 
         setIsLoading(true);
         try {
-            const importedDriver: ImportedDriver = JSON.parse(driverJson);
+            let importedDriver: ImportedDriver;
+            try {
+                importedDriver = JSON.parse(driverJson);
+            } catch {
+                throw new Error(t('importDriver.invalidDriver'));
+            }
 
-            // Validate driver structure
-            if (!importedDriver.id || !importedDriver.name || !importedDriver.config) {
+            // Validate driver structure: top-level fields and the selectors the
+            // crawler actually depends on at runtime. Loose typing here is fine
+            // because we are checking shape coming from external JSON.
+            const hasTopLevelFields =
+                importedDriver?.id &&
+                importedDriver?.name &&
+                importedDriver?.config;
+            const requiredSelectors = importedDriver?.config?.selectors;
+            const hasMinimumSelectors =
+                requiredSelectors?.animeTitle &&
+                requiredSelectors?.animeUrl &&
+                requiredSelectors?.episodeList &&
+                requiredSelectors?.episodeUrl;
+            const hasBaseUrl = !!importedDriver?.config?.baseUrl;
+            if (!hasTopLevelFields || !hasMinimumSelectors || !hasBaseUrl) {
                 throw new Error(t('importDriver.invalidDriver'));
             }
 

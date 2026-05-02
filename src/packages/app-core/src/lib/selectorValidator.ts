@@ -50,20 +50,13 @@ function countElements(doc: Document, selector: string): number {
 }
 
 /**
- * Normalizes a URL to an absolute URL based on a base URL
+ * Resolves a possibly-relative href against a base URL. Delegates to the URL
+ * constructor so trailing slashes, dot segments and existing absolute URLs
+ * are handled correctly (e.g. baseUrl "https://x.com/anime/" + href "naruto"
+ * yields "https://x.com/anime/naruto", not "https://x.com/naruto").
  */
 function normalizeUrl(href: string, baseUrl: string): string {
-  if (href.startsWith('http://') || href.startsWith('https://')) {
-    return href;
-  }
-
-  const base = new URL(baseUrl);
-  
-  if (href.startsWith('/')) {
-    return `${base.origin}${href}`;
-  }
-  
-  return `${base.origin}/${href}`;
+  return new URL(href, baseUrl).href;
 }
 
 /**

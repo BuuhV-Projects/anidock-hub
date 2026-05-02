@@ -4,6 +4,9 @@ import { registerIpcHandlers } from '../common/ipc';
 import { WindowManager } from './windowManager';
 import { IPC_CHANNELS } from '../common/ipc/channels';
 import * as puppeteerCrawler from './puppeteerCrawler';
+import * as aiKeyStore from './aiKeyStore';
+
+type AiProvider = 'openai' | 'gemini';
 
 const windowManager = new WindowManager();
 
@@ -123,7 +126,19 @@ app.whenReady().then(() => {
   ipcMain.handle(IPC_CHANNELS.crawler.extractVideoUrl, async (_, url: string, selectors: any) => {
     return await puppeteerCrawler.extractVideoUrl(url, selectors);
   });
-  
+
+  // AI key store IPC handlers — keys are encrypted via OS-level safeStorage and
+  // only crossed back to the renderer when explicitly requested.
+  ipcMain.handle(IPC_CHANNELS.aiKeys.save, (_, provider: AiProvider, plaintextKey: string) => {
+    aiKeyStore.saveKey(provider, plaintextKey);
+  });
+  ipcMain.handle(IPC_CHANNELS.aiKeys.get, (_, provider: AiProvider) => {
+    return aiKeyStore.getKey(provider);
+  });
+  ipcMain.handle(IPC_CHANNELS.aiKeys.delete, (_, provider: AiProvider) => {
+    aiKeyStore.deleteKey(provider);
+  });
+
   createWindow();
   
   // Send pending deep link URL after window is created

@@ -34,14 +34,17 @@ const CreateDriver = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const savedKey = getAIKey(aiProvider);
-        if (savedKey) {
-            setApiKey(savedKey);
-            setKeyValidated(true);
-        } else {
-            setApiKey('');
-            setKeyValidated(false);
-        }
+        const loadSavedKey = async () => {
+            const savedKey = await getAIKey(aiProvider);
+            if (savedKey) {
+                setApiKey(savedKey);
+                setKeyValidated(true);
+            } else {
+                setApiKey('');
+                setKeyValidated(false);
+            }
+        };
+        loadSavedKey();
     }, [aiProvider]);
 
     const handleValidateKey = async () => {
@@ -62,7 +65,7 @@ const CreateDriver = () => {
             if (isValid) {
                 setKeyValidated(true);
                 toast.success(t('settings.saveSuccess', { provider: aiProvider === 'openai' ? 'OpenAI' : 'Gemini' }));
-                saveAIKey(aiProvider, apiKey.trim());
+                await saveAIKey(aiProvider, apiKey.trim());
             } else {
                 toast.error(t('createDriver.keyInvalid'));
             }
@@ -99,11 +102,17 @@ const CreateDriver = () => {
             };
 
             const driver = await generateDriverWithAI(
-                catalogUrl.trim(), 
-                config, 
+                catalogUrl.trim(),
+                config,
                 setGenerationStatus,
                 crawler?.fetchHTML
             );
+
+            // generateDriverWithAI sets both catalogUrl and sourceUrl to the
+            // catalog argument. Override sourceUrl with the user-provided
+            // site URL so the form's siteUrl field stops being silently
+            // discarded.
+            driver.sourceUrl = url.trim();
 
             setGeneratedDriver(driver);
             setRequiresExternalLink(driver.config.requiresExternalLink || false);
@@ -221,15 +230,23 @@ const CreateDriver = () => {
                 return;
             }
 
+            // Reuse the existing index for this driver if there is one, so
+            // re-running the wizard refreshes the catalog instead of stacking
+            // duplicate AnimeIndex rows in IndexedDB. MyDrivers / Dashboard
+            // depend on a 1:1 driver→index relationship to count animes
+            // correctly.
+            const existingIndexes = await db.getIndexesByDriver(driver.id);
+            const previousIndex = existingIndexes[0];
+            const nowIso = new Date().toISOString();
             const animeIndex = {
-                id: crypto.randomUUID(),
+                id: previousIndex?.id ?? crypto.randomUUID(),
                 driverId: driver.id,
                 name: `Index for ${driver.name}`,
                 sourceUrl: urlToIndex,
                 totalAnimes: result.animes.length,
                 animes: result.animes,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
+                createdAt: previousIndex?.createdAt ?? nowIso,
+                updatedAt: nowIso,
             };
 
             await db.saveIndex(animeIndex);

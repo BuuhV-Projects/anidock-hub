@@ -13,25 +13,21 @@ export interface CrawlProgress {
     status: string;
 }
 
-function removeAnidockHostFromCrawledUrl(driverBaseUrl: string, url?: string | null, ): string | null {
-    if (!url) {
+// Resolve a raw URL string (relative or absolute) against the driver base URL.
+// Callers MUST pass the raw attribute value (getAttribute('href'/'src')), NOT the
+// resolved DOM property (.href/.src) — DOMParser resolves those against the
+// current page baseURI, which would silently mix the AniDock host into URLs.
+// External absolute URLs (CDN, video providers) are preserved as-is.
+function resolveAgainstDriverBase(driverBaseUrl: string, rawUrl: string | null | undefined): string | null {
+    if (!rawUrl) {
         return null;
     }
-
-    // Make URL absolute if relative
-    if (url.startsWith('/')) {
-        const baseUrl = new URL(driverBaseUrl);
-        url = baseUrl.origin + url;
-    } else if (!url.startsWith('http')) {
-        url = driverBaseUrl + url;
+    try {
+        const resolvedUrl = new URL(rawUrl, driverBaseUrl);
+        return resolvedUrl.href;
+    } catch {
+        return null;
     }
-
-    //previne que caso a url seja a do anidock e não a do site, então ele aplica a url do site para envitar apontamento errado
-    const anidockOriginUrl = new URL(url).origin;
-    if (anidockOriginUrl !== driverBaseUrl) {
-        url = url.replace(anidockOriginUrl, driverBaseUrl);
-    }
-    return url;
 }
 
 // Fetch HTML from URL with CORS proxy fallbacks (web) or Puppeteer (desktop)
@@ -71,7 +67,15 @@ export async function fetchHTML(url: string, puppeteerCrawler?: (url: string) =>
             }
 
             console.log(`Proxy ${i + 1} succeeded!`);
-            return await response.text();
+            // Force UTF-8 decoding instead of relying on response.text(), which
+            // honors the proxy's Content-Type charset header. Public CORS
+            // proxies frequently strip or omit the charset, so the browser
+            // falls back to a Latin-1-ish default and Portuguese characters
+            // come out as mojibake (e.g. "EpisÃ³dio" instead of "Episódio").
+            // Anime sites are virtually always UTF-8, so decoding the raw
+            // bytes that way is the right default.
+            const responseBuffer = await response.arrayBuffer();
+            return new TextDecoder('utf-8').decode(responseBuffer);
         } catch (error) {
             console.error(`Proxy ${i + 1} error:`, error);
             if (i === proxies.length - 1) {
@@ -125,9 +129,12 @@ export async function crawlWithDriver(
                     continue;
                 }
 
-                // Extract URL
-                const urlEl = item.querySelector(driver.config.selectors.animeUrl) as HTMLAnchorElement;
-                const animeUrl = removeAnidockHostFromCrawledUrl(driver.config.baseUrl, urlEl?.href || urlEl?.getAttribute('href') || '');
+                // Extract URL — read the raw href attribute, not urlEl.href
+                // (the latter is resolved against document.baseURI, which leaks
+                // the AniDock host into the URL).
+                const urlEl = item.querySelector(driver.config.selectors.animeUrl);
+                const rawAnimeHref = urlEl?.getAttribute('href');
+                const animeUrl = resolveAgainstDriverBase(driver.config.baseUrl, rawAnimeHref);
 
                 if (!animeUrl) {
                     errors.push(`Anime ${i + 1}: URL not found`);
@@ -135,9 +142,14 @@ export async function crawlWithDriver(
                 }
 
 
-                // Extract cover image
-                const imgEl = item.querySelector(driver.config.selectors.animeImage || 'img') as HTMLImageElement;
-                const coverUrl = removeAnidockHostFromCrawledUrl(driver.config.baseUrl, imgEl?.src || imgEl?.getAttribute('data-src') || imgEl?.getAttribute('data-lazy-src'));
+                // Extract cover image — read raw attributes, not imgEl.src
+                // (same baseURI leaking concern as the animeUrl above).
+                const imgEl = item.querySelector(driver.config.selectors.animeImage || 'img');
+                const rawSrc = imgEl?.getAttribute('src');
+                const rawDataSrc = imgEl?.getAttribute('data-src');
+                const rawDataLazySrc = imgEl?.getAttribute('data-lazy-src');
+                const rawCoverHref = rawSrc || rawDataSrc || rawDataLazySrc;
+                const coverUrl = resolveAgainstDriverBase(driver.config.baseUrl, rawCoverHref);
 
                 // Extract synopsis if available
                 const synopsisEl = driver.config.selectors.animeSynopsis
@@ -209,14 +221,24 @@ export async function crawlEpisodes(
             const item = episodeItems[i];
             logger.info(`Extraindo episódio ${i + 1} de ${episodeItems.length}`);
             try {
-                // Extract episode number
-                const numberEl = item.querySelector(driver.config.selectors.episodeNumber);
+                // Extract episode number — selector may be empty when the AI
+                // could not infer one (a real driver in the wild has been
+                // observed with episodeNumber: ""). querySelector('') would
+                // throw SyntaxError, so guard before the call and fall back
+                // to the loop index.
+                const episodeNumberSelector = driver.config.selectors.episodeNumber;
+                const numberEl = episodeNumberSelector
+                    ? item.querySelector(episodeNumberSelector)
+                    : null;
                 const numberText = numberEl?.textContent?.trim() || '';
                 const episodeNumber = parseInt(numberText.replace(/\D/g, '')) || (i + 1);
 
-                // Extract episode URL
-                const urlEl = item.querySelector(driver.config.selectors.episodeUrl) as HTMLAnchorElement;
-                const episodeUrl = removeAnidockHostFromCrawledUrl(driver.config.baseUrl, urlEl?.href || urlEl?.getAttribute('href') || '');
+                // Extract episode URL — read the raw href attribute, not urlEl.href
+                // (the latter is resolved against document.baseURI, which leaks
+                // the AniDock host into the URL).
+                const urlEl = item.querySelector(driver.config.selectors.episodeUrl);
+                const rawEpisodeHref = urlEl?.getAttribute('href');
+                const episodeUrl = resolveAgainstDriverBase(driver.config.baseUrl, rawEpisodeHref);
 
                 if (!episodeUrl) {
                     errors.push(`Episode ${episodeNumber}: URL not found`);

@@ -172,3 +172,66 @@ yarn dev:landingpage    # Rodar app
 - ✅ Vite resolve TypeScript direto
 - ✅ Packages apontam para arquivos fonte
 
+## 🚀 Deploy via Lovable (raiz como fachada)
+
+A produção em `https://anidock.buuhvprojects.com/` é deployada via Lovable, que lê
+o `index.html`, `vite.config.ts` e `tsconfig.json` da **raiz** do repositório.
+
+Por isso a raiz mantém um app Vite "fachada" que **não é um workspace do
+monorepo** — é apenas o ponto de entrada esperado pelo Lovable. Os arquivos
+envolvidos são:
+
+- `index.html` — define qual app é deployado (atualmente aponta para o
+  `landingpage` em produção). Quando precisar trocar o app deployado, edite o
+  `<script src>` deste arquivo manualmente apontando para
+  `./src/apps/<app>/main.tsx`.
+- `vite.config.ts` — config do Vite usado pelo Lovable. Aliases dos packages
+  são duplicados aqui para o Vite resolver os imports do app deployado.
+- `tsconfig.json` — referencia os tsconfigs dos apps `landingpage` e `web`.
+- Scripts `dev`, `build`, `build:dev`, `preview` no `package.json` raiz são os
+  comandos que o Lovable executa.
+
+**Importante:** ao desenvolver localmente, prefira sempre os scripts
+nomeados (`yarn dev:landingpage`, `yarn dev:web`, etc.). A raiz é exclusivamente
+para o pipeline Lovable.
+
+## 🪝 Git Hooks
+
+O repositório versiona um hook `pre-push` em `.githooks/pre-push` que roda
+`npm run lint` em todo push e o smoke test do crawler quando o changeset toca
+arquivos do crawler (`clientCrawler.ts`, `aiDriver.ts`, `puppeteerCrawler.ts`,
+`smoke-test-driver.mjs` ou as fixtures).
+
+> **Sobre o gestor de pacotes:** o CI/CD oficial roda em `npm` (consome o
+> `package-lock.json` versionado). Os scripts mostrados acima usando `yarn`
+> são para conveniência de desenvolvimento local — quem preferir pode rodar
+> com `npm`/`npm run` à vontade, e o `package-lock.json` continua sendo a
+> fonte da verdade. O `yarn.lock` foi intencionalmente removido para evitar
+> drift entre os dois lockfiles.
+
+Para ativar (uma vez por clone):
+
+```bash
+yarn hooks:install
+```
+
+Isso roda `git config core.hooksPath .githooks` e passa a usar os hooks
+versionados em vez dos hooks default em `.git/hooks/`.
+
+Para desativar:
+
+```bash
+yarn hooks:uninstall
+```
+
+### Bypasses
+
+Em pushes raros onde o smoke test atrapalha (sem internet, site fora do ar,
+release urgente), use:
+
+```bash
+ANIDOCK_SKIP_SMOKE=1 git push      # mantém o lint, pula só o smoke
+ANIDOCK_SKIP_HOOKS=1 git push      # pula tudo (lint + smoke)
+git push --no-verify               # pula TODOS os hooks do git
+```
+

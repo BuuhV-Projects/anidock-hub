@@ -2,14 +2,14 @@ import {
     PlataformProvider,
     RouterAppCore,
     UpdateNotification,
-    usePlataform
+    usePlataform,
+    i18n
 } from "@anidock/app-core";
 import { Toaster, TooltipProvider } from "@anidock/shared-ui";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { HashRouter, useNavigate } from "react-router-dom";
 import { I18nextProvider } from 'react-i18next';
-import i18n from '../../../packages/app-core/src/i18n/config';
 
 const queryClient = new QueryClient();
 

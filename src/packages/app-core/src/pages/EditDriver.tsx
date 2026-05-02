@@ -1,4 +1,4 @@
-import { Badge, Button, Card, Switch } from '@anidock/shared-ui';
+import { Badge, Button, Card, Input, Label, Switch } from '@anidock/shared-ui';
 import { ArrowLeft, Loader2, RefreshCw, Save } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +20,14 @@ const EditDriver = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [requiresExternalLink, setRequiresExternalLink] = useState(false);
+
+  // Editable metadata — kept separate from `driver` so the page only commits
+  // changes on save. `domain` is read-only because changing it after indexing
+  // would orphan all watch-history entries that point at the old host.
+  const [name, setName] = useState('');
+  const [baseUrl, setBaseUrl] = useState('');
+  const [catalogUrl, setCatalogUrl] = useState('');
+  const [sourceUrl, setSourceUrl] = useState('');
 
   const [selectors, setSelectors] = useState({
     animeList: '',
@@ -52,6 +60,10 @@ const EditDriver = () => {
 
       setDriver(driverData);
       setRequiresExternalLink(driverData.config?.requiresExternalLink || false);
+      setName(driverData.name || '');
+      setBaseUrl(driverData.config?.baseUrl || '');
+      setCatalogUrl(driverData.catalogUrl || '');
+      setSourceUrl(driverData.sourceUrl || '');
 
       if (driverData.config?.selectors) {
         setSelectors({
@@ -111,12 +123,25 @@ const EditDriver = () => {
   const handleSave = async () => {
     if (!driver) return;
 
+    if (!name.trim()) {
+      toast.error(t('editDriver.nameRequired'));
+      return;
+    }
+    if (!baseUrl.trim()) {
+      toast.error(t('editDriver.baseUrlRequired'));
+      return;
+    }
+
     setIsSaving(true);
     try {
       const updatedDriver: Driver = {
         ...driver,
+        name: name.trim(),
+        catalogUrl: catalogUrl.trim() || undefined,
+        sourceUrl: sourceUrl.trim() || undefined,
         config: {
           ...driver.config,
+          baseUrl: baseUrl.trim(),
           requiresExternalLink,
           selectors: {
             animeList: selectors.animeList,
@@ -245,6 +270,70 @@ const EditDriver = () => {
         )}
 
         <div className="space-y-6">
+          {/* Driver Metadata */}
+          <Card className="p-6">
+            <h3 className="text-xl font-semibold mb-4">{t('editDriver.metadata')}</h3>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="driver-name">{t('editDriver.driverName')} *</Label>
+                <Input
+                  id="driver-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={t('editDriver.driverNamePlaceholder')}
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="driver-domain">{t('editDriver.driverDomain')}</Label>
+                <Input
+                  id="driver-domain"
+                  type="text"
+                  value={driver.domain}
+                  disabled
+                  className="mt-2"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t('editDriver.domainReadOnlyHint')}
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="driver-base-url">{t('editDriver.driverBaseUrl')} *</Label>
+                <Input
+                  id="driver-base-url"
+                  type="url"
+                  value={baseUrl}
+                  onChange={(e) => setBaseUrl(e.target.value)}
+                  placeholder="https://exemplo.com"
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="driver-catalog-url">{t('editDriver.driverCatalogUrl')}</Label>
+                <Input
+                  id="driver-catalog-url"
+                  type="url"
+                  value={catalogUrl}
+                  onChange={(e) => setCatalogUrl(e.target.value)}
+                  placeholder="https://exemplo.com/animes"
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="driver-source-url">{t('editDriver.driverSourceUrl')}</Label>
+                <Input
+                  id="driver-source-url"
+                  type="url"
+                  value={sourceUrl}
+                  onChange={(e) => setSourceUrl(e.target.value)}
+                  placeholder="https://exemplo.com"
+                  className="mt-2"
+                />
+              </div>
+            </div>
+          </Card>
+
           {/* External Link Configuration */}
           <Card className="p-6 bg-primary/5 border-primary/20">
             <div className="flex items-center justify-between">

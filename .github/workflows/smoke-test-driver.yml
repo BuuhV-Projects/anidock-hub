@@ -1,0 +1,70 @@
+name: Smoke Test Driver
+
+on:
+  push:
+    branches:
+      - '*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Cache Puppeteer Chromium
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/puppeteer
+          key: ${{ runner.os }}-puppeteer-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-puppeteer-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run smoke test
+        id: smoke
+        run: |
+          set -o pipefail
+          node scripts/smoke-test-driver.mjs 2>&1 | tee smoke-test.log
+
+      - name: Append summary
+        if: always()
+        run: |
+          {
+            echo "## Smoke Test Result"
+            echo ""
+            echo "- **Job status:** ${{ job.status }}"
+            echo ""
+            echo "### Output"
+            echo ""
+            echo '```'
+            if [ -f smoke-test.log ]; then
+              tail -n 100 smoke-test.log
+            else
+              echo "(no output captured — script likely failed before producing log)"
+            fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload smoke-test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-log
+          path: smoke-test.log
+          if-no-files-found: ignore

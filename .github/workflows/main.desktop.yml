@@ -25,17 +25,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: yarn
-          cache-dependency-path: |
-            yarn.lock
-            src/apps/*/yarn.lock
-            src/packages/*/yarn.lock
-
-      - name: Enable Corepack
-        run: corepack enable
+          cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
       - name: Configure environment
         run: |
@@ -48,8 +42,13 @@ jobs:
           echo "#############################"
           cp .env src/apps/desktop/.env
 
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
       - name: Lint
-        run: yarn lint
+        run: npm run lint
 
       - name: Prepare apt cache directory
         run: mkdir -p ~/.cache/apt/archives/partial
@@ -83,20 +82,20 @@ jobs:
           path: |
             ~/.cache/electron
             ~/.cache/electron-builder
-          key: ${{ runner.os }}-electron-cache-${{ hashFiles('src/apps/desktop/package.json', 'src/apps/desktop/yarn.lock') }}
+          key: ${{ runner.os }}-electron-cache-${{ hashFiles('src/apps/desktop/package.json', 'package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-electron-cache-
 
       - name: Version desktop
-        run: cd src/apps/desktop && yarn version && cd ../../
+        run: cd src/apps/desktop && npm run version && cd ../../
 
       - name: Build desktop assets
         working-directory: src/apps/desktop
-        run: yarn build
+        run: npm run build
 
       - name: Package desktop for Windows
         working-directory: src/apps/desktop
-        run: yarn build:win
+        run: npm run build:win
 
       - name: Upload desktop artifact
         uses: actions/upload-artifact@v4
