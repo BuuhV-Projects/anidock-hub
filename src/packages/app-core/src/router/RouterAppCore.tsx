@@ -13,7 +13,6 @@ import ImportDriver from "../pages/ImportDriver";
 import IndexManual from "../pages/IndexManual";
 import MyDrivers from "../pages/MyDrivers";
 import NotFound from "../pages/NotFound";
-import Player from "../pages/Player";
 import Settings from "../pages/Settings";
 
 const RouterAppCore = () => {
@@ -22,7 +21,6 @@ const RouterAppCore = () => {
             <Route path="/" element={<Browse />} />
             <Route path="/browse" element={<Browse />} />
             <Route path="/anime" element={<AnimeDetails />} />
-            <Route path="/player" element={<Player />} />
             <Route path="/history" element={<History />} />
             <Route path="/drivers/import" element={<ImportDriver />} />
             <Route path="/drivers/create" element={<CreateDriver />} />
