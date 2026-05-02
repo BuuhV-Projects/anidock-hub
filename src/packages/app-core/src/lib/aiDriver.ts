@@ -48,7 +48,12 @@ async function fetchHTML(url: string): Promise<string> {
                 continue;
             }
 
-            return await response.text();
+            // Force UTF-8 — public CORS proxies frequently strip the charset
+            // attribute from Content-Type, so response.text() falls back to a
+            // default decoder and Portuguese characters arrive as mojibake.
+            // Same justification as in clientCrawler.fetchHTML.
+            const responseBuffer = await response.arrayBuffer();
+            return new TextDecoder('utf-8').decode(responseBuffer);
         } catch (error) {
             if (i === proxies.length - 1) {
                 throw new Error(`Failed to fetch HTML: ${error instanceof Error ? error.message : 'Unknown error'}`);
