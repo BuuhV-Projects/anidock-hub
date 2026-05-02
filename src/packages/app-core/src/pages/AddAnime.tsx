@@ -130,7 +130,7 @@ const AddAnime = () => {
             const epTitle = titleEl?.textContent?.trim();
 
             episodes.push({
-              id: `ep_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+              id: crypto.randomUUID(),
               episodeNumber: episodeNumber || index + 1,
               title: epTitle,
               sourceUrl,
