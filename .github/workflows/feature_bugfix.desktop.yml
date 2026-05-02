@@ -7,6 +7,8 @@ on:
       - bugfix/**
       - feature/**
 
+cancel-in-progress: true
+
 jobs:
   build:
     environment:
