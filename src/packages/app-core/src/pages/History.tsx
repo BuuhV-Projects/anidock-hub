@@ -73,8 +73,10 @@ const History = () => {
   };
 
   const handleReplayEpisode = (item: WatchHistoryEntry) => {
+    // The /anime route resolves the anime by sourceUrl, not by episode URL —
+    // pass the parent anime URL so AnimeDetails can find it in the index.
     const params = new URLSearchParams({
-      url: item.episodeUrl,
+      url: item.animeSourceUrl,
       driverId: item.driverId || '',
     });
     navigate(`/anime?${params.toString()}`);
