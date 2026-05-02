@@ -67,7 +67,15 @@ export async function fetchHTML(url: string, puppeteerCrawler?: (url: string) =>
             }
 
             console.log(`Proxy ${i + 1} succeeded!`);
-            return await response.text();
+            // Force UTF-8 decoding instead of relying on response.text(), which
+            // honors the proxy's Content-Type charset header. Public CORS
+            // proxies frequently strip or omit the charset, so the browser
+            // falls back to a Latin-1-ish default and Portuguese characters
+            // come out as mojibake (e.g. "EpisÃ³dio" instead of "Episódio").
+            // Anime sites are virtually always UTF-8, so decoding the raw
+            // bytes that way is the right default.
+            const responseBuffer = await response.arrayBuffer();
+            return new TextDecoder('utf-8').decode(responseBuffer);
         } catch (error) {
             console.error(`Proxy ${i + 1} error:`, error);
             if (i === proxies.length - 1) {
