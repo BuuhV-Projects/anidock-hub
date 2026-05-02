@@ -36,3 +36,17 @@ The script is **not** automated and is **not** an assertion-based test. It is a 
 ### Legal note
 
 The fixture driver targets `animesdigital.org`. Running this script issues HTTP requests against that site. Decide for yourself whether that is appropriate for your context — the script does not run anything automatically.
+
+### Running from CI
+
+A workflow at [`.github/workflows/smoke-test-driver.yml`](../.github/workflows/smoke-test-driver.yml) wraps this script behind a manual `workflow_dispatch` trigger. It is **not** wired into the release / hotfix pipelines on purpose — the smoke test is inherently flaky (depends on the target site staying online and on its HTML matching the recorded selectors) and gating releases on it would create more outages than it prevents.
+
+Trigger it explicitly when you want a fresh run against the live site:
+
+```bash
+gh workflow run smoke-test-driver.yml
+# or with a custom driver path
+gh workflow run smoke-test-driver.yml -f driver_path=path/to/driver.json
+```
+
+The job appends the script output to the run summary and uploads the full log as an artifact.

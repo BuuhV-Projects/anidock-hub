@@ -1,0 +1,94 @@
+name: Smoke Test Driver (manual)
+
+# Manual smoke test for the crawler stack against a real anime site.
+# Intentionally NOT wired into push triggers because the test:
+#   - hits a third-party anime site that may violate GitHub TOS to scrape
+#     from CI on a recurring basis
+#   - is inherently flaky (site outage, Cloudflare, HTML drift, IP bans)
+#   - would block legitimate releases on external state we do not control
+# Trigger it from the Actions UI (or the gh CLI: `gh workflow run smoke-test-driver.yml`)
+# whenever you want to validate a driver after touching the crawler or after
+# exporting a new driver. The result is reported in the job summary; the
+# workflow does not gate any other pipeline.
+
+on:
+  workflow_dispatch:
+    inputs:
+      driver_path:
+        description: 'Path inside the repo to the driver JSON (defaults to the bundled animesdigital fixture)'
+        required: false
+        default: 'scripts/fixtures/driver-animesdigital.json'
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+          cache-dependency-path: |
+            yarn.lock
+            src/apps/*/yarn.lock
+            src/packages/*/yarn.lock
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Cache Puppeteer Chromium
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/puppeteer
+          key: ${{ runner.os }}-puppeteer-${{ hashFiles('package-lock.json', 'yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-puppeteer-
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Verify driver fixture exists
+        run: |
+          if [ ! -f "${{ inputs.driver_path }}" ]; then
+            echo "::error::Driver file not found at ${{ inputs.driver_path }}"
+            exit 1
+          fi
+
+      - name: Run smoke test
+        id: smoke
+        run: |
+          set -o pipefail
+          node scripts/smoke-test-driver.mjs "${{ inputs.driver_path }}" 2>&1 | tee smoke-test.log
+
+      - name: Append summary
+        if: always()
+        run: |
+          {
+            echo "## Smoke Test Result"
+            echo ""
+            echo "- **Driver fixture:** \`${{ inputs.driver_path }}\`"
+            echo "- **Job status:** ${{ job.status }}"
+            echo ""
+            echo "### Output"
+            echo ""
+            echo '```'
+            if [ -f smoke-test.log ]; then
+              tail -n 100 smoke-test.log
+            else
+              echo "(no output captured — script likely failed before producing log)"
+            fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload smoke-test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-log
+          path: smoke-test.log
+          if-no-files-found: ignore
