@@ -25,6 +25,9 @@ export { LanguageSelector } from './components/LanguageSelector';
 // Export router
 export { default as RouterAppCore } from './router/RouterAppCore';
 
+// Export i18n instance (configured at module load)
+export { default as i18n } from './i18n/config';
+
 // Export contexts
 export { PlataformProvider } from './contexts/plataform/PlataformProvider';
 export { usePlataform } from './contexts/plataform/usePlataform';

@@ -1,22 +1,20 @@
 import React from "react";
-import {
-    AddAnime,
-    AnimeDetails,
-    Backup,
-    Browse,
-    CreateDriver,
-    Dashboard,
-    EditDriver,
-    EditIndexedAnime,
-    History,
-    ImportDriver,
-    IndexManual,
-    MyDrivers,
-    NotFound,
-    Player
-} from "@anidock/app-core";
-import Settings from "../pages/Settings";
 import { Route, Routes } from "react-router-dom";
+import AddAnime from "../pages/AddAnime";
+import AnimeDetails from "../pages/AnimeDetails";
+import Backup from "../pages/Backup";
+import Browse from "../pages/Browse";
+import CreateDriver from "../pages/CreateDriver";
+import Dashboard from "../pages/Dashboard";
+import EditDriver from "../pages/EditDriver";
+import EditIndexedAnime from "../pages/EditIndexedAnime";
+import History from "../pages/History";
+import ImportDriver from "../pages/ImportDriver";
+import IndexManual from "../pages/IndexManual";
+import MyDrivers from "../pages/MyDrivers";
+import NotFound from "../pages/NotFound";
+import Player from "../pages/Player";
+import Settings from "../pages/Settings";
 
 const RouterAppCore = () => {
     return (
@@ -35,11 +33,11 @@ const RouterAppCore = () => {
             <Route path="/drivers/:driverId/add-anime" element={<AddAnime />} />
             <Route path="/drivers/add-anime" element={<AddAnime />} />
             <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/backup" element={<Backup />} />
-      <Route path="/settings" element={<Settings />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
+            <Route path="/backup" element={<Backup />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="*" element={<NotFound />} />
+        </Routes>
+    );
 };
 
 export default RouterAppCore;
