@@ -7,14 +7,15 @@ function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Initialize browser instance
+// Initialize browser instance.
+// The Chromium sandbox is intentionally left enabled (no --no-sandbox flag) —
+// this app loads arbitrary HTML from third-party anime sites, so the SO-level
+// renderer isolation is the main defense against drive-by exploits.
 async function getBrowser(): Promise<Browser> {
   if (!browser) {
     browser = await puppeteer.launch({
       headless: true,
       args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
         '--disable-accelerated-2d-canvas',
         '--disable-gpu',
