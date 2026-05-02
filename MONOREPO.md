@@ -172,3 +172,27 @@ yarn dev:landingpage    # Rodar app
 - ✅ Vite resolve TypeScript direto
 - ✅ Packages apontam para arquivos fonte
 
+## 🚀 Deploy via Lovable (raiz como fachada)
+
+A produção em `https://anidock.buuhvprojects.com/` é deployada via Lovable, que lê
+o `index.html`, `vite.config.ts` e `tsconfig.json` da **raiz** do repositório.
+
+Por isso a raiz mantém um app Vite "fachada" que **não é um workspace do
+monorepo** — é apenas o ponto de entrada esperado pelo Lovable. Os arquivos
+envolvidos são:
+
+- `index.html` — define qual app é deployado (atualmente aponta para o
+  `landingpage` em produção). Quando precisar trocar o app deployado, edite o
+  `<script src>` deste arquivo manualmente apontando para
+  `./src/apps/<app>/main.tsx`.
+- `vite.config.ts` — config do Vite usado pelo Lovable. Aliases dos packages
+  são duplicados aqui para o Vite resolver os imports do app deployado.
+- `tsconfig.json` — referencia os tsconfigs dos apps `landingpage` e `web`.
+- Scripts `dev`, `build`, `build:dev`, `preview` no `package.json` raiz são os
+  comandos que o Lovable executa.
+
+**Importante:** ao desenvolver localmente, prefira sempre os scripts
+nomeados (`yarn dev:landingpage`, `yarn dev:web`, etc.). A raiz é exclusivamente
+para o pipeline Lovable.
+
+
