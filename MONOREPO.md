@@ -198,9 +198,16 @@ para o pipeline Lovable.
 ## 🪝 Git Hooks
 
 O repositório versiona um hook `pre-push` em `.githooks/pre-push` que roda
-`yarn lint` em todo push e o smoke test do crawler quando o changeset toca
+`npm run lint` em todo push e o smoke test do crawler quando o changeset toca
 arquivos do crawler (`clientCrawler.ts`, `aiDriver.ts`, `puppeteerCrawler.ts`,
 `smoke-test-driver.mjs` ou as fixtures).
+
+> **Sobre o gestor de pacotes:** o CI/CD oficial roda em `npm` (consome o
+> `package-lock.json` versionado). Os scripts mostrados acima usando `yarn`
+> são para conveniência de desenvolvimento local — quem preferir pode rodar
+> com `npm`/`npm run` à vontade, e o `package-lock.json` continua sendo a
+> fonte da verdade. O `yarn.lock` foi intencionalmente removido para evitar
+> drift entre os dois lockfiles.
 
 Para ativar (uma vez por clone):
 

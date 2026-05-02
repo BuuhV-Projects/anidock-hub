@@ -50,8 +50,8 @@ while read -r local_ref local_sha remote_ref remote_sha; do
 done
 
 # Always lint — it is fast and catches the bulk of regressions.
-echo "[pre-push] yarn lint"
-yarn lint
+echo "[pre-push] npm run lint"
+npm run lint
 
 # Smoke test only when the changeset touches crawler-adjacent files.
 if [ -z "$changed_files" ]; then
