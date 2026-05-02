@@ -23,7 +23,14 @@ import { createJiti } from 'jiti';
 import { DOMParser } from 'linkedom';
 import puppeteer from 'puppeteer';
 
+// `--no-sandbox` is required on GitHub-hosted Ubuntu 24.04 runners because
+// AppArmor blocks unprivileged user namespaces, which Chromium needs for its
+// default sandbox. This is acceptable here because the smoke test runs in a
+// disposable CI container against a single trusted page; the desktop app
+// itself still launches Puppeteer with the sandbox enabled.
 const PUPPETEER_LAUNCH_ARGS = [
+  '--no-sandbox',
+  '--disable-setuid-sandbox',
   '--disable-dev-shm-usage',
   '--disable-accelerated-2d-canvas',
   '--disable-gpu',
