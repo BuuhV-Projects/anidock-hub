@@ -22,6 +22,19 @@ const deepLinkApi = {
   }
 };
 
+// AI key store API — keys are encrypted in main via safeStorage; the renderer
+// only receives the plaintext on explicit get(). Never persist results to
+// localStorage from the renderer.
+type AiProvider = 'openai' | 'gemini';
+const aiKeysApi = {
+  save: (provider: AiProvider, plaintextKey: string): Promise<void> =>
+    ipcRenderer.invoke(IPC_CHANNELS.aiKeys.save, provider, plaintextKey),
+  get: (provider: AiProvider): Promise<string | null> =>
+    ipcRenderer.invoke(IPC_CHANNELS.aiKeys.get, provider),
+  delete: (provider: AiProvider): Promise<void> =>
+    ipcRenderer.invoke(IPC_CHANNELS.aiKeys.delete, provider)
+};
+
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
 // just add to the DOM global.
@@ -31,6 +44,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('api', windowApi);
     contextBridge.exposeInMainWorld('crawler', crawlerApi);
     contextBridge.exposeInMainWorld('deepLink', deepLinkApi);
+    contextBridge.exposeInMainWorld('aiKeys', aiKeysApi);
   } catch (error) {
     console.error(error);
   }
@@ -39,5 +53,6 @@ if (process.contextIsolated) {
   window.api = windowApi;
   window.crawler = crawlerApi;
   window.deepLink = deepLinkApi;
+  window.aiKeys = aiKeysApi;
 }
 

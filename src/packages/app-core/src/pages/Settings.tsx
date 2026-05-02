@@ -19,9 +19,9 @@ const Settings = () => {
     loadKeys();
   }, []);
 
-  const loadKeys = () => {
-    const savedOpenai = getAIKey('openai');
-    const savedGemini = getAIKey('gemini');
+  const loadKeys = async () => {
+    const savedOpenai = await getAIKey('openai');
+    const savedGemini = await getAIKey('gemini');
 
     if (savedOpenai) {
       setOpenaiKey(savedOpenai);
@@ -39,40 +39,40 @@ const Settings = () => {
     return `${key.slice(0, 4)}${'*'.repeat(key.length - 8)}${key.slice(-4)}`;
   };
 
-  const handleSaveOpenai = () => {
+  const handleSaveOpenai = async () => {
     if (!openaiKey.trim()) {
       toast.error('Insira uma API key válida');
       return;
     }
 
-    saveAIKey('openai', openaiKey);
+    await saveAIKey('openai', openaiKey);
     setHasOpenaiKey(true);
     toast.success('Chave OpenAI salva com sucesso!');
   };
 
-  const handleSaveGemini = () => {
+  const handleSaveGemini = async () => {
     if (!geminiKey.trim()) {
       toast.error('Insira uma API key válida');
       return;
     }
 
-    saveAIKey('gemini', geminiKey);
+    await saveAIKey('gemini', geminiKey);
     setHasGeminiKey(true);
     toast.success('Chave Gemini salva com sucesso!');
   };
 
-  const handleDeleteOpenai = () => {
+  const handleDeleteOpenai = async () => {
     if (confirm('Tem certeza que deseja deletar a chave OpenAI?')) {
-      deleteAIKey('openai');
+      await deleteAIKey('openai');
       setOpenaiKey('');
       setHasOpenaiKey(false);
       toast.success('Chave OpenAI deletada');
     }
   };
 
-  const handleDeleteGemini = () => {
+  const handleDeleteGemini = async () => {
     if (confirm('Tem certeza que deseja deletar a chave Gemini?')) {
-      deleteAIKey('gemini');
+      await deleteAIKey('gemini');
       setGeminiKey('');
       setHasGeminiKey(false);
       toast.success('Chave Gemini deletada');

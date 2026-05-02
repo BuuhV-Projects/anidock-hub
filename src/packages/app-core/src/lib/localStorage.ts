@@ -389,26 +389,71 @@ export const deleteHistoryItem = (itemId: string): void => {
 };
 
 // ========== AI API KEYS MANAGEMENT ==========
-export const saveAIKey = (provider: 'openai' | 'gemini', apiKey: string): void => {
+// Desktop (Electron): keys are encrypted via the main-process safeStorage
+// bridge exposed at window.aiKeys. Web: keys remain in localStorage because
+// the browser has no equivalent OS-level encryption primitive.
+
+declare global {
+  interface Window {
+    aiKeys?: {
+      save: (provider: 'openai' | 'gemini', plaintextKey: string) => Promise<void>;
+      get: (provider: 'openai' | 'gemini') => Promise<string | null>;
+      delete: (provider: 'openai' | 'gemini') => Promise<void>;
+    };
+  }
+}
+
+type AIProvider = 'openai' | 'gemini';
+
+function getLegacyKeyStorageId(provider: AIProvider): string {
+  return `anidock_${provider}_key`;
+}
+
+export const saveAIKey = async (provider: AIProvider, apiKey: string): Promise<void> => {
+  const trimmedKey = apiKey.trim();
   try {
-    localStorage.setItem(`anidock_${provider}_key`, apiKey.trim());
+    if (window.aiKeys) {
+      await window.aiKeys.save(provider, trimmedKey);
+      // After persisting via safeStorage, drop any legacy plaintext copy.
+      localStorage.removeItem(getLegacyKeyStorageId(provider));
+      return;
+    }
+    localStorage.setItem(getLegacyKeyStorageId(provider), trimmedKey);
   } catch (error) {
     console.error('Error saving AI key:', error);
   }
 };
 
-export const getAIKey = (provider: 'openai' | 'gemini'): string | null => {
+export const getAIKey = async (provider: AIProvider): Promise<string | null> => {
   try {
-    return localStorage.getItem(`anidock_${provider}_key`);
+    if (window.aiKeys) {
+      const encryptedStored = await window.aiKeys.get(provider);
+      if (encryptedStored) {
+        return encryptedStored;
+      }
+      // Migration: an older build stored the key in localStorage. Move it into
+      // safeStorage on first read and wipe the legacy plaintext copy.
+      const legacyKey = localStorage.getItem(getLegacyKeyStorageId(provider));
+      if (legacyKey) {
+        await window.aiKeys.save(provider, legacyKey);
+        localStorage.removeItem(getLegacyKeyStorageId(provider));
+        return legacyKey;
+      }
+      return null;
+    }
+    return localStorage.getItem(getLegacyKeyStorageId(provider));
   } catch (error) {
     console.error('Error loading AI key:', error);
     return null;
   }
 };
 
-export const deleteAIKey = (provider: 'openai' | 'gemini'): void => {
+export const deleteAIKey = async (provider: AIProvider): Promise<void> => {
   try {
-    localStorage.removeItem(`anidock_${provider}_key`);
+    if (window.aiKeys) {
+      await window.aiKeys.delete(provider);
+    }
+    localStorage.removeItem(getLegacyKeyStorageId(provider));
   } catch (error) {
     console.error('Error deleting AI key:', error);
   }

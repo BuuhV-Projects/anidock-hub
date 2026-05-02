@@ -10,10 +10,15 @@ declare global {
     crawler: {
       fetchHTML: (url: string) => Promise<string>
       extractData: (url: string, selectors: any) => Promise<any[]>
-      extractVideoUrl: (url: string, selectors: any) => Promise<{ 
+      extractVideoUrl: (url: string, selectors: any) => Promise<{
         videoUrl: string | null
-        videoType: 'iframe' | 'video' | 'external' 
+        videoType: 'iframe' | 'video' | 'external'
       }>
+    }
+    aiKeys: {
+      save: (provider: 'openai' | 'gemini', plaintextKey: string) => Promise<void>
+      get: (provider: 'openai' | 'gemini') => Promise<string | null>
+      delete: (provider: 'openai' | 'gemini') => Promise<void>
     }
   }
 }

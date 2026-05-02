@@ -34,14 +34,17 @@ const CreateDriver = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const savedKey = getAIKey(aiProvider);
-        if (savedKey) {
-            setApiKey(savedKey);
-            setKeyValidated(true);
-        } else {
-            setApiKey('');
-            setKeyValidated(false);
-        }
+        const loadSavedKey = async () => {
+            const savedKey = await getAIKey(aiProvider);
+            if (savedKey) {
+                setApiKey(savedKey);
+                setKeyValidated(true);
+            } else {
+                setApiKey('');
+                setKeyValidated(false);
+            }
+        };
+        loadSavedKey();
     }, [aiProvider]);
 
     const handleValidateKey = async () => {
@@ -62,7 +65,7 @@ const CreateDriver = () => {
             if (isValid) {
                 setKeyValidated(true);
                 toast.success(t('settings.saveSuccess', { provider: aiProvider === 'openai' ? 'OpenAI' : 'Gemini' }));
-                saveAIKey(aiProvider, apiKey.trim());
+                await saveAIKey(aiProvider, apiKey.trim());
             } else {
                 toast.error(t('createDriver.keyInvalid'));
             }
