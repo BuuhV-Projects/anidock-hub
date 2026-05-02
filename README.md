@@ -157,26 +157,47 @@ Drivers definem como extrair dados de sites específicos. Existem duas formas de
 1. **AI-Powered** - Cole uma URL, a IA analisa e cria automaticamente
 2. **Manual** - Defina seletores CSS manualmente para sites complexos
 
-**Estrutura de um Driver:**
+**Estrutura de um Driver** (definida em [`indexedDB.ts`](src/packages/app-core/src/lib/indexedDB.ts)):
 
 ```typescript
 interface Driver {
-  publicId: string;
+  id: string;
   name: string;
   domain: string;
+  version: string;
+  author?: string;
+  config: {
+    requiresExternalLink?: boolean;
+    selectors: {
+      animeList?: string;
+      animeTitle: string;
+      animeImage?: string;
+      animeSynopsis?: string;
+      animeUrl: string;
+      animePageTitle?: string;
+      episodeList: string;
+      episodeNumber: string;
+      episodeTitle?: string;
+      episodeUrl: string;
+      videoPlayer?: string;
+      externalLinkSelector?: string;
+    };
+    pagination?: {
+      nextButton?: string;
+      pageParam?: string;
+    };
+    baseUrl: string;
+  };
   catalogUrl?: string;
   sourceUrl?: string;
-  config: {
-    catalog?: CatalogSelectors;
-    animePage?: AnimePageSelectors;
-    episodePage?: EpisodePageSelectors;
-  };
-  totalAnimes?: number;
-  isPublic: boolean;
-  lastIndexedAt?: Date;
-  indexedData?: AnimeIndex;
+  createdAt: string;
+  updatedAt: string;
 }
 ```
+
+A contagem de animes (`totalAnimes`) e a lista de animes indexados ficam num
+registro separado (`AnimeIndex`) referenciado por `driverId`, não embutidos no
+driver.
 
 ### IA Client-Side
 
