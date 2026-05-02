@@ -104,7 +104,7 @@ jobs:
           path: src/apps/desktop/dist
 
       - name: Push tags
-        run: git push --follow-tags origin main --no-verify
+        run: git pull && git push --follow-tags origin main --no-verify
 
       - name: Notificar no Discord
         if: always()
