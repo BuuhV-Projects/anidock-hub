@@ -14,22 +14,25 @@ const Backup = () => {
     drivers: number;
     indexes: number;
     watchHistory: number;
+    library: number;
   } | null>(null);
 
   const loadStats = async () => {
     try {
       await db.init();
-      
-      const [drivers, indexes, watchHistory] = await Promise.all([
+
+      const [drivers, indexes, watchHistory, library] = await Promise.all([
         db.getAllDrivers(),
         db.getAllIndexes(),
         db.getWatchHistory(),
+        db.getAllLibraryEntries(),
       ]);
 
       setStats({
         drivers: drivers.length,
         indexes: indexes.length,
         watchHistory: watchHistory.length,
+        library: library.length,
       });
     } catch (error) {
       console.error('Error loading stats:', error);
@@ -71,8 +74,11 @@ const Backup = () => {
       const text = await file.text();
       const data = JSON.parse(text);
 
-      // Validate structure
-      if (!data.drivers && !data.indexes && !data.watchHistory) {
+      // Validate structure: any of the known top-level arrays is enough.
+      // `library` was added in v2 backups; older files simply omit it.
+      const hasAnyKnownField =
+        data.drivers || data.indexes || data.watchHistory || data.library;
+      if (!hasAnyKnownField) {
         throw new Error('Arquivo de backup inválido');
       }
 
@@ -143,7 +149,7 @@ const Backup = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 rounded-lg bg-primary/10">
                   <div className="text-3xl font-bold text-primary">{stats.drivers}</div>
                   <div className="text-sm text-muted-foreground mt-1">Drivers</div>
@@ -155,6 +161,10 @@ const Backup = () => {
                 <div className="text-center p-4 rounded-lg bg-accent/10">
                   <div className="text-3xl font-bold text-accent">{stats.watchHistory}</div>
                   <div className="text-sm text-muted-foreground mt-1">Histórico</div>
+                </div>
+                <div className="text-center p-4 rounded-lg bg-primary/10">
+                  <div className="text-3xl font-bold text-primary">{stats.library}</div>
+                  <div className="text-sm text-muted-foreground mt-1">Biblioteca</div>
                 </div>
               </div>
             </CardContent>

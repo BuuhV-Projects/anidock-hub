@@ -1,6 +1,8 @@
 // IndexedDB manager for local data storage
 const DB_NAME = 'anidock_db';
-const DB_VERSION = 1;
+// v2 introduces the `library` store for user-curated lists (watching, planned,
+// paused, completed, dropped) plus tags, score and notes per anime.
+const DB_VERSION = 2;
 
 export interface Driver {
   id: string;
@@ -85,6 +87,42 @@ export interface AnimeIndex {
   updatedAt: string;
 }
 
+// User-curated library entry for one anime. The id is composed as
+// `${driverId}:${animeSourceUrl}` so that re-indexing the catalog (which
+// regenerates LocalAnime UUIDs) does not orphan the entry.
+export type LibraryStatus =
+  | 'watching'
+  | 'planned'
+  | 'paused'
+  | 'completed'
+  | 'dropped';
+
+export interface LibraryEntry {
+  id: string;
+  driverId: string;
+  animeSourceUrl: string;
+  animeTitle: string;
+  animeCover?: string;
+  status: LibraryStatus;
+  tags: string[];
+  score?: number;
+  notes?: string;
+  addedAt: string;
+  updatedAt: string;
+}
+
+export const LIBRARY_STATUSES: LibraryStatus[] = [
+  'watching',
+  'planned',
+  'paused',
+  'completed',
+  'dropped',
+];
+
+export function buildLibraryEntryId(driverId: string, animeSourceUrl: string): string {
+  return `${driverId}:${animeSourceUrl}`;
+}
+
 class IndexedDBManager {
   private db: IDBDatabase | null = null;
 
@@ -115,6 +153,13 @@ class IndexedDBManager {
           const historyStore = db.createObjectStore('watchHistory', { keyPath: 'id' });
           historyStore.createIndex('watchedAt', 'watchedAt', { unique: false });
           historyStore.createIndex('animeSourceUrl', 'animeSourceUrl', { unique: false });
+        }
+
+        if (!db.objectStoreNames.contains('library')) {
+          const libraryStore = db.createObjectStore('library', { keyPath: 'id' });
+          libraryStore.createIndex('status', 'status', { unique: false });
+          libraryStore.createIndex('driverId', 'driverId', { unique: false });
+          libraryStore.createIndex('animeSourceUrl', 'animeSourceUrl', { unique: false });
         }
       };
     });
@@ -302,14 +347,81 @@ class IndexedDBManager {
   async clearAllData(): Promise<void> {
     const db = this.ensureDB();
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction(['drivers', 'indexes', 'watchHistory'], 'readwrite');
-      
+      const transaction = db.transaction(
+        ['drivers', 'indexes', 'watchHistory', 'library'],
+        'readwrite',
+      );
+
       transaction.objectStore('drivers').clear();
       transaction.objectStore('indexes').clear();
       transaction.objectStore('watchHistory').clear();
+      transaction.objectStore('library').clear();
 
       transaction.oncomplete = () => resolve();
       transaction.onerror = () => reject(transaction.error);
+    });
+  }
+
+  // Library operations
+
+  async saveLibraryEntry(entry: LibraryEntry): Promise<void> {
+    const db = this.ensureDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['library'], 'readwrite');
+      const store = transaction.objectStore('library');
+      const request = store.put(entry);
+
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async getLibraryEntry(id: string): Promise<LibraryEntry | undefined> {
+    const db = this.ensureDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['library'], 'readonly');
+      const store = transaction.objectStore('library');
+      const request = store.get(id);
+
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async getAllLibraryEntries(): Promise<LibraryEntry[]> {
+    const db = this.ensureDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['library'], 'readonly');
+      const store = transaction.objectStore('library');
+      const request = store.getAll();
+
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async getLibraryEntriesByStatus(status: LibraryStatus): Promise<LibraryEntry[]> {
+    const db = this.ensureDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['library'], 'readonly');
+      const store = transaction.objectStore('library');
+      const index = store.index('status');
+      const request = index.getAll(status);
+
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async deleteLibraryEntry(id: string): Promise<void> {
+    const db = this.ensureDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['library'], 'readwrite');
+      const store = transaction.objectStore('library');
+      const request = store.delete(id);
+
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
     });
   }
 
@@ -318,21 +430,24 @@ class IndexedDBManager {
     drivers: Driver[];
     indexes: AnimeIndex[];
     watchHistory: WatchHistoryEntry[];
+    library: LibraryEntry[];
     exportDate: string;
     version: string;
   }> {
-    const [drivers, indexes, watchHistory] = await Promise.all([
+    const [drivers, indexes, watchHistory, library] = await Promise.all([
       this.getAllDrivers(),
       this.getAllIndexes(),
       this.getWatchHistory(),
+      this.getAllLibraryEntries(),
     ]);
 
     return {
       drivers,
       indexes,
       watchHistory,
+      library,
       exportDate: new Date().toISOString(),
-      version: '1.0',
+      version: '2.0',
     };
   }
 
@@ -340,11 +455,15 @@ class IndexedDBManager {
     drivers?: Driver[];
     indexes?: AnimeIndex[];
     watchHistory?: WatchHistoryEntry[];
+    library?: LibraryEntry[];
   }): Promise<void> {
     const db = this.ensureDB();
-    
+
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction(['drivers', 'indexes', 'watchHistory'], 'readwrite');
+      const transaction = db.transaction(
+        ['drivers', 'indexes', 'watchHistory', 'library'],
+        'readwrite',
+      );
 
       // Import drivers
       if (data.drivers) {
@@ -362,6 +481,13 @@ class IndexedDBManager {
       if (data.watchHistory) {
         const historyStore = transaction.objectStore('watchHistory');
         data.watchHistory.forEach(entry => historyStore.put(entry));
+      }
+
+      // Import library entries (v2 backups). Older v1 backups simply omit
+      // this field, which is fine — the existing entries are kept.
+      if (data.library) {
+        const libraryStore = transaction.objectStore('library');
+        data.library.forEach(entry => libraryStore.put(entry));
       }
 
       transaction.oncomplete = () => resolve();
