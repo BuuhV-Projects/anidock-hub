@@ -11,9 +11,11 @@ import EditIndexedAnime from "../pages/EditIndexedAnime";
 import History from "../pages/History";
 import ImportDriver from "../pages/ImportDriver";
 import IndexManual from "../pages/IndexManual";
+import Library from "../pages/Library";
 import MyDrivers from "../pages/MyDrivers";
 import NotFound from "../pages/NotFound";
 import Settings from "../pages/Settings";
+import Stats from "../pages/Stats";
 
 const RouterAppCore = () => {
     return (
@@ -31,6 +33,8 @@ const RouterAppCore = () => {
             <Route path="/drivers/:driverId/add-anime" element={<AddAnime />} />
             <Route path="/drivers/add-anime" element={<AddAnime />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/library" element={<Library />} />
+            <Route path="/stats" element={<Stats />} />
             <Route path="/backup" element={<Backup />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />

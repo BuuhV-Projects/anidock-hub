@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@anidock/shared-ui';
 import { useNavigate } from 'react-router-dom';
-import { Cpu, LogOut, LayoutDashboard } from 'lucide-react';
+import { BarChart3, Cpu, LayoutDashboard, Library as LibraryIcon, LogOut } from 'lucide-react';
 import { useElectronApi } from '../../hooks/useElectronApi';
 import { LanguageSelector } from '../../components/LanguageSelector';
 import { useTranslation } from 'react-i18next';
@@ -41,6 +41,22 @@ export const BrowseHeader = ({ isDesktop }: BrowseHeaderProps) => {
 
           <div className="flex items-center gap-4">
             <LanguageSelector />
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/library')}
+              className="text-muted-foreground hover:text-foreground gap-2"
+            >
+              <LibraryIcon className="h-4 w-4" />
+              Biblioteca
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/stats')}
+              className="text-muted-foreground hover:text-foreground gap-2"
+            >
+              <BarChart3 className="h-4 w-4" />
+              Estatísticas
+            </Button>
             <Button
               variant="ghost"
               onClick={() => navigate('/dashboard')}

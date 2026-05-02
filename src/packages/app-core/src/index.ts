@@ -12,6 +12,8 @@ export { default as EditIndexedAnime } from './pages/EditIndexedAnime';
 export { default as Backup } from './pages/Backup';
 export { default as Settings } from './pages/Settings';
 export { default as AddAnime } from './pages/AddAnime';
+export { default as Library } from './pages/Library';
+export { default as Stats } from './pages/Stats';
 export { default as NotFound } from './pages/NotFound';
 export { default as TermsOfService } from './pages/TermsOfService';
 export { default as PrivacyPolicy } from './pages/PrivacyPolicy';
@@ -33,10 +35,41 @@ export { usePlataform } from './contexts/plataform/usePlataform';
 
 // Export lib functions
 export * from './lib/localStorage';
-export { db } from './lib/indexedDB';
-export type { Driver, LocalAnime, LocalEpisode, WatchHistoryEntry, AnimeIndex } from './lib/indexedDB';
+export {
+  buildLibraryEntryId,
+  db,
+  LIBRARY_STATUSES,
+} from './lib/indexedDB';
+export type {
+  AnimeIndex,
+  Driver,
+  LibraryEntry,
+  LibraryStatus,
+  LocalAnime,
+  LocalEpisode,
+  WatchHistoryEntry,
+} from './lib/indexedDB';
 export { crawlWithDriver, crawlEpisodes, extractVideoUrl, fetchHTML } from './lib/clientCrawler';
 export type { CrawlResult, CrawlProgress } from './lib/clientCrawler';
 export { generateDriverWithAI, validateAPIKey } from './lib/aiDriver';
 export type { AIProvider, AIConfig } from './lib/aiDriver';
+export {
+  addLibraryTag,
+  collectAllTags,
+  getOrCreateLibraryEntry,
+  LIBRARY_STATUS_LABELS_PT,
+  removeFromLibrary,
+  removeLibraryTag,
+  setLibraryNotes,
+  setLibraryScore,
+  setLibraryStatus,
+} from './lib/library';
+export { computeWatchStatistics } from './lib/stats';
+export type {
+  ActivityBucket,
+  AnimeWatchCount,
+  DriverWatchCount,
+  LibraryStatusCount,
+  WatchStatistics,
+} from './lib/stats';
 

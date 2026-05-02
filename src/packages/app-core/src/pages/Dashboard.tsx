@@ -1,7 +1,16 @@
 import { Button, Card, Skeleton } from '@anidock/shared-ui';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Cpu, Plus, Database, Zap, Download, Settings as SettingsIcon } from 'lucide-react';
+import {
+  BarChart3,
+  Cpu,
+  Database,
+  Download,
+  Library as LibraryIcon,
+  Plus,
+  Settings as SettingsIcon,
+  Zap,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { db } from '../lib/indexedDB';
 
@@ -123,6 +132,22 @@ const Dashboard = () => {
               >
                 <Zap className="h-4 w-4 mr-2" />
                 Explorar Catálogo
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => navigate('/library')}
+              >
+                <LibraryIcon className="h-4 w-4 mr-2" />
+                Minha Biblioteca
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => navigate('/stats')}
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Estatísticas
               </Button>
               <Button
                 variant="outline"
